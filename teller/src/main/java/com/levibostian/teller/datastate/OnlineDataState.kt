@@ -1,5 +1,7 @@
 package com.levibostian.teller.datastate
 
+import java.util.*
+
 /**
  * Data in apps are in 1 of 3 different types of state:
  *
@@ -24,6 +26,7 @@ package com.levibostian.teller.datastate
 class OnlineDataState<DATA> private constructor(val firstFetchOfData: Boolean = false,
                                                 val isEmpty: Boolean = false,
                                                 val data: DATA? = null,
+                                                val dataFetched: Date? = null,
                                                 val latestError: Throwable? = null,
                                                 val isFetchingFreshData: Boolean = false,
                                                 val doneFetchingFreshData: Boolean = false,
@@ -39,8 +42,8 @@ class OnlineDataState<DATA> private constructor(val firstFetchOfData: Boolean = 
             return OnlineDataState(isEmpty = true)
         }
 
-        fun <T> data(data: T): OnlineDataState<T> {
-            return OnlineDataState(data = data)
+        fun <T> data(data: T, dataFetched: Date): OnlineDataState<T> {
+            return OnlineDataState(data = data, dataFetched = dataFetched)
         }
     }
 
@@ -99,7 +102,7 @@ class OnlineDataState<DATA> private constructor(val firstFetchOfData: Boolean = 
         if (isEmpty) listener.isEmpty()
         if (isFetchingFreshData) listener.fetchingFreshData()
         if (doneFetchingFreshData) listener.finishedFetchingFreshData(errorDuringFetch)
-        data?.let { listener.data(it) }
+        data?.let { listener.data(it, dataFetched!!) }
         latestError?.let { listener.error(it) }
     }
 

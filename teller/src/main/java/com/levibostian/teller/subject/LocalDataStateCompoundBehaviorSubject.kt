@@ -3,6 +3,7 @@ package com.levibostian.teller.subject
 import com.levibostian.teller.datastate.LocalDataState
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
+import java.util.*
 
 /**
  * A wrapper around [BehaviorSubject] and [StateData] to give a "compound" feature to [StateData] it did not have previously.
@@ -35,8 +36,8 @@ internal class LocalDataStateCompoundBehaviorSubject<DATA: Any> {
     /**
      * The status of data is data (optionally fetching new fresh data as well).
      */
-    fun onNextData(data: DATA) {
-        dataState = LocalDataState.data(data)
+    fun onNextData(data: DATA, dataFetched: Date) {
+        dataState = LocalDataState.data(data, dataFetched)
         subject.onNext(dataState)
     }
 

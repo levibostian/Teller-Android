@@ -1,5 +1,7 @@
 package com.levibostian.teller.datastate
 
+import java.util.*
+
 /**
  * Data in apps are in 1 of 3 different types of state:
  *
@@ -21,6 +23,7 @@ package com.levibostian.teller.datastate
  */
 class LocalDataState<DATA> private constructor(val isEmpty: Boolean = false,
                                                val data: DATA? = null,
+                                               val dataFetched: Date? = null,
                                                val latestError: Throwable? = null) {
 
     companion object {
@@ -29,8 +32,8 @@ class LocalDataState<DATA> private constructor(val isEmpty: Boolean = false,
             return LocalDataState(isEmpty = true)
         }
 
-        fun <T> data(data: T): LocalDataState<T> {
-            return LocalDataState(data = data)
+        fun <T> data(data: T, dataFetched: Date): LocalDataState<T> {
+            return LocalDataState(data = data, dataFetched = dataFetched)
         }
     }
 
@@ -52,7 +55,7 @@ class LocalDataState<DATA> private constructor(val isEmpty: Boolean = false,
      */
     fun deliver(listener: LocalDataStateListener<DATA>) {
         if (isEmpty) listener.isEmpty()
-        data?.let { listener.data(it) }
+        data?.let { listener.data(it, dataFetched!!) }
         latestError?.let { listener.error(it) }
     }
 

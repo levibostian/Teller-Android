@@ -3,6 +3,7 @@ package com.levibostian.teller.subject
 import com.levibostian.teller.datastate.OnlineDataState
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
+import java.util.*
 
 /**
  * A wrapper around [BehaviorSubject] and [StateData] to give a "compound" feature to [StateData] it did not have previously.
@@ -47,8 +48,8 @@ internal class OnlineDataStateBehaviorSubject<DATA: Any> {
     /**
      * The status of data is data (optionally fetching new fresh data as well).
      */
-    fun onNextData(data: DATA, isFetchingFreshData: Boolean) {
-        dataState = OnlineDataState.data(data)
+    fun onNextData(data: DATA, dataFetched: Date, isFetchingFreshData: Boolean) {
+        dataState = OnlineDataState.data(data, dataFetched)
         if (isFetchingFreshData) {
             onNextFetchingFreshData()
             dataState = dataState.fetchingFreshData()

@@ -10,6 +10,7 @@ import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequirements, REQUEST: Any> {
@@ -24,6 +25,29 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
 
     private var compositeDisposable = CompositeDisposable()
     private var stateOfDate: OnlineDataStateBehaviorSubject<RESULT>? = null
+
+    /**
+     * If your repository has some special ID or something to make it unique compared to other instances of your repository, set this tag.
+     *
+     * This tag is used to keep track of the [Date] that data was last saved to determine how old your data is. If you do not set this [tag] property, all instances of your [LocalRepository] subclass will have the same [Date].
+     */
+    open val tag: String = "(none)"
+
+    private val dataLastSavedKey by lazy {
+        "${ConstantsUtil.PREFIX}_${this::class.java.simpleName}_${tag}_LAST_SAVED_KEY"
+    }
+
+    /**
+     * Keeps track of how old your data is.
+     */
+    private var timeSavedData: Date
+        get() {
+            return Date(Teller.shared.sharedPreferences.getLong(dataLastSavedKey, Date().time))
+        }
+        @SuppressLint("ApplySharedPref")
+        set(value) {
+            Teller.shared.sharedPreferences.edit().putLong(dataLastSavedKey, value.time).commit()
+        }
 
     /**
      * Used to set how old data can be in the app for this certain type of data before it is considered too old and new data should be fetched.
@@ -63,7 +87,7 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
                                     if (cachedData == null || isDataEmpty(cachedData)) {
                                         stateOfDate?.onNextEmpty(needsToFetchFreshData)
                                     } else {
-                                        stateOfDate?.onNextData(cachedData, needsToFetchFreshData)
+                                        stateOfDate?.onNextData(cachedData, timeSavedData, needsToFetchFreshData)
                                     }
 
                                     if (needsToFetchFreshData) {
@@ -197,7 +221,18 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
     /**
      * Save the data to whatever storage method Repository chooses.
      */
-    abstract fun saveData(data: REQUEST): Completable
+    protected abstract fun saveData(data: REQUEST?): Completable
+
+    /**
+     * Save the data to whatever storage method Repository chooses.
+     *
+     * It is up to you to call [saveData] when you have new data to save. A good place to do this is in a ViewModel.
+     */
+    fun save(data: REQUEST?): Completable {
+        return Completable.fromAction { timeSavedData = Date() }
+                .andThen(saveData(data))
+                .subscribeOn(Schedulers.io())
+    }
 
     /**
      * Get existing cached data saved to the device if it exists. Return nil is data does not exist or is empty.
