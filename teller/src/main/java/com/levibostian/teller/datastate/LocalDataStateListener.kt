@@ -4,6 +4,6 @@ import java.util.*
 
 interface LocalDataStateListener<in DATA> {
     fun isEmpty()
-    fun data(data: DATA, fetched: Date)
+    fun data(data: DATA)
     fun error(error: Throwable)
 }

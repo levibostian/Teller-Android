@@ -36,8 +36,8 @@ internal class LocalDataStateCompoundBehaviorSubject<DATA: Any> {
     /**
      * The status of data is data (optionally fetching new fresh data as well).
      */
-    fun onNextData(data: DATA, dataFetched: Date) {
-        dataState = LocalDataState.data(data, dataFetched)
+    fun onNextData(data: DATA) {
+        dataState = LocalDataState.data(data)
         subject.onNext(dataState)
     }
 

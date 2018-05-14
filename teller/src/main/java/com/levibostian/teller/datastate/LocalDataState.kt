@@ -23,7 +23,6 @@ import java.util.*
  */
 class LocalDataState<DATA> private constructor(val isEmpty: Boolean = false,
                                                val data: DATA? = null,
-                                               val dataFetched: Date? = null,
                                                val latestError: Throwable? = null) {
 
     companion object {
@@ -32,8 +31,8 @@ class LocalDataState<DATA> private constructor(val isEmpty: Boolean = false,
             return LocalDataState(isEmpty = true)
         }
 
-        fun <T> data(data: T, dataFetched: Date): LocalDataState<T> {
-            return LocalDataState(data = data, dataFetched = dataFetched)
+        fun <T> data(data: T): LocalDataState<T> {
+            return LocalDataState(data = data)
         }
     }
 
@@ -55,7 +54,7 @@ class LocalDataState<DATA> private constructor(val isEmpty: Boolean = false,
      */
     fun deliver(listener: LocalDataStateListener<DATA>) {
         if (isEmpty) listener.isEmpty()
-        data?.let { listener.data(it, dataFetched!!) }
+        data?.let { listener.data(it) }
         latestError?.let { listener.error(it) }
     }
 

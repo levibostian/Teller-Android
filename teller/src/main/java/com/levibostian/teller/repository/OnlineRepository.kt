@@ -27,29 +27,6 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
     private var stateOfDate: OnlineDataStateBehaviorSubject<RESULT>? = null
 
     /**
-     * If your repository has some special ID or something to make it unique compared to other instances of your repository, set this tag.
-     *
-     * This tag is used to keep track of the [Date] that data was last saved to determine how old your data is. If you do not set this [tag] property, all instances of your [LocalRepository] subclass will have the same [Date].
-     */
-    open val tag: String = "(none)"
-
-    private val dataLastSavedKey by lazy {
-        "${ConstantsUtil.PREFIX}_${this::class.java.simpleName}_${tag}_LAST_SAVED_KEY"
-    }
-
-    /**
-     * Keeps track of how old your data is.
-     */
-    private var timeSavedData: Date
-        get() {
-            return Date(Teller.shared.sharedPreferences.getLong(dataLastSavedKey, Date().time))
-        }
-        @SuppressLint("ApplySharedPref")
-        set(value) {
-            Teller.shared.sharedPreferences.edit().putLong(dataLastSavedKey, value.time).commit()
-        }
-
-    /**
      * Used to set how old data can be in the app for this certain type of data before it is considered too old and new data should be fetched.
      */
     abstract var maxAgeOfData: AgeOfData
@@ -87,7 +64,7 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
                                     if (cachedData == null || isDataEmpty(cachedData)) {
                                         stateOfDate?.onNextEmpty(needsToFetchFreshData)
                                     } else {
-                                        stateOfDate?.onNextData(cachedData, timeSavedData, needsToFetchFreshData)
+                                        stateOfDate?.onNextData(cachedData, lastTimeFetchedFreshData!!, needsToFetchFreshData)
                                     }
 
                                     if (needsToFetchFreshData) {
@@ -164,9 +141,13 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
                             })
                 }, { error ->
                     this.resetForceSyncNextTimeFetched()
+                    // Before 5-14-18:
                     // Note: We need to set the last updated time here or else we could run an infinite loop if the api call errors.
                     // The way that I handle errors now: if an error occurs (network error, status code error, any other error) I tell the rxswift subscriber that the error has occurred so you can tell the user. From there, you have the option to ask the user to retry the network call and perform the retry by calling datasource set data query requirements with force param true.
-                    this.updateLastTimeFreshDataFetched(getDataRequirements)
+                    //
+                    // Update 5-14-18:
+                    // I am commenting out line below because of this example. What if I am building a GitHub app where I take a username and I call API for a list of repos for that username. What if that username does not exist and we get a 404 back from GitHub? If we call `updateLastTimeFreshDataFetched()`, we will set the data to empty the next time the user tries to use that github username again in the app. We don't want that because the data is not empty. It's non-existing. So after some thought, I am going to try and comment this out because I should only update the last time fetched fresh data when the data was actually fetched successfully, right? I say this because in the UI I want to show how old data is. I don't want to show "5 minutes ago" for a failed API request because then users will think that data is 5 minutes old. We want to show to the user the age of the data, not when it was last synced. If I do want to show both, I need to store both individually.
+                    // this.updateLastTimeFreshDataFetched(getDataRequirements)
                     this.stateOfDate?.onNextError(error)
                     onError(error)
                 })
@@ -220,19 +201,10 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
 
     /**
      * Save the data to whatever storage method Repository chooses.
-     */
-    protected abstract fun saveData(data: REQUEST?): Completable
-
-    /**
-     * Save the data to whatever storage method Repository chooses.
      *
      * It is up to you to call [saveData] when you have new data to save. A good place to do this is in a ViewModel.
      */
-    fun save(data: REQUEST?): Completable {
-        return Completable.fromAction { timeSavedData = Date() }
-                .andThen(saveData(data))
-                .subscribeOn(Schedulers.io())
-    }
+    abstract fun saveData(data: REQUEST?): Completable
 
     /**
      * Get existing cached data saved to the device if it exists. Return nil is data does not exist or is empty.
