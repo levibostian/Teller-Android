@@ -4,7 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/Driver.iml" filepath="$PROJECT_DIR$/Driver.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/driver/driver.iml" filepath="$PROJECT_DIR$/driver/driver.iml" />
+      <module fileurl="file://$PROJECT_DIR$/teller/teller.iml" filepath="$PROJECT_DIR$/teller/teller.iml" />
     </modules>
   </component>
 </project>
