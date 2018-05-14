@@ -4,6 +4,11 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
+import com.levibostian.teller.repository.GetDataRequirements
+import com.levibostian.teller.repository.OnlineRepository
+import io.reactivex.Completable
+import io.reactivex.Scheduler
+import io.reactivex.schedulers.Schedulers
 
 class Teller private constructor(private val context: Context) {
 
@@ -36,6 +41,17 @@ class Teller private constructor(private val context: Context) {
     internal val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     private fun init() {
+    }
+
+    /**
+     * Run [OnlineRepository.sync] on a list of [OnlineRepository] at one time.
+     */
+    fun sync(repositories: List<OnlineRepository<*, *, *>>, forceSync: Boolean): Completable {
+        var syncs: Completable = Completable.complete()
+        for (repository in repositories) {
+            syncs = syncs.andThen(repository.sync(forceSync))
+        }
+        return syncs.subscribeOn(Schedulers.io())
     }
 
 }
