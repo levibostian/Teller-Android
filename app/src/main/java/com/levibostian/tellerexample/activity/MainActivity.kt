@@ -94,7 +94,6 @@ class MainActivity : AppCompatActivity() {
                             }
                         }
                         override fun error(error: Throwable) {
-                            //showErrorView()
                             AlertDialog.Builder(this@MainActivity)
                                     .setTitle("Error")
                                     .setMessage(error.message?: "Unknown error. Please, try again.")

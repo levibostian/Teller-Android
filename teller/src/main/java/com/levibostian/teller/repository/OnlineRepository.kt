@@ -24,7 +24,6 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
         const val INVALID_LAST_FETCHED_VALUE: Long = -1L
     }
 
-    private var compositeDisposable = CompositeDisposable()
     private var observeCachedDataDisposable: Disposable? = null
     private var stateOfDate: OnlineDataStateBehaviorSubject<RESULT>? = null
 
@@ -43,6 +42,8 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
     var loadDataRequirements: GET_DATA_REQUIREMENTS? = null
         set(value) {
             field = value
+            observeCachedDataDisposable?.dispose()
+            observeCachedDataDisposable = null
             beginObservingStateOfData()
         }
 
@@ -80,7 +81,6 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
                             }, { error ->
                                 this.stateOfDate?.onNextError(error)
                             })
-                    compositeDisposable.add(observeCachedDataDisposable!!)
                 }
             }
 
@@ -90,8 +90,8 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
                 this._sync(getDataRequirements, {
                     initializeObservingCachedData()
                 }, { _ ->
-                    // Note: Even if there is an error, we want to start observing cached data so we can transition to an empty state instead of infinite loading state for the UI for the user.
-                    initializeObservingCachedData()
+                    // Here, I am manually setting empty as an error occurred and I don't want the UI to show an infinite loading screen so I set empty manually but do not begin observing data.
+                    stateOfDate?.onNextEmpty(false)
                 })
             } else {
                 initializeObservingCachedData()
@@ -106,7 +106,7 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
         beginObservingStateOfData()
 
         return stateOfDate!!.asObservable().doOnDispose {
-            compositeDisposable.dispose()
+            observeCachedDataDisposable?.dispose()
         }
     }
 
