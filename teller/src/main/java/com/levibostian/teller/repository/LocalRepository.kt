@@ -31,8 +31,6 @@ abstract class LocalRepository<DATA: Any> {
                                 } else {
                                     stateOfDate!!.onNextData(cachedData)
                                 }
-                            }, { error ->
-                                stateOfDate!!.onNextError(error)
                             })
             )
         }

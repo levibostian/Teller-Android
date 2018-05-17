@@ -6,7 +6,9 @@ import android.content.SharedPreferences
 import android.preference.PreferenceManager
 import com.levibostian.teller.repository.OnlineRepository
 import io.reactivex.Completable
+import io.reactivex.Observable
 import io.reactivex.Scheduler
+import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 
 class Teller private constructor(private val context: Context) {
@@ -44,13 +46,17 @@ class Teller private constructor(private val context: Context) {
 
     /**
      * Run [OnlineRepository.sync] on a list of [OnlineRepository] at one time.
+     *
+     * Pretty simple. This function converts a [List] into an [Observable]. You need to subscribe to it for the list to run.
+     *
+     * @return An [Observable] that will run [OnlineRepository.sync] on the list of [repositories] parameter. Note: The [Observable] returned does *not* run on a particular thread. You need to specify that.
      */
-    fun sync(repositories: List<OnlineRepository<*, *, *>>, forceSync: Boolean): Completable {
-        var syncs: Completable = Completable.complete()
+    fun sync(repositories: List<OnlineRepository<*, *, *>>, forceSync: Boolean): Observable<OnlineRepository.SyncResult> {
+        var syncs: Observable<OnlineRepository.SyncResult> = Observable.empty()
         for (repository in repositories) {
-            syncs = syncs.andThen(repository.sync(forceSync))
+            syncs = syncs.concatWith(repository.sync(forceSync))
         }
-        return syncs.subscribeOn(Schedulers.io())
+        return syncs
     }
 
 }

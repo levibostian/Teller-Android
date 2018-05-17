@@ -78,8 +78,6 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
                                         stateOfDate?.onNextDoneFetchingFreshData(error)
                                     })
                                 }
-                            }, { error ->
-                                this.stateOfDate?.onNextError(error)
                             })
                 }
             }
@@ -115,36 +113,23 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
      *
      * Note: If [loadDataRequirements] is null, [Completable.complete] will be returned from this function and it will be like the sync never happened.
      */
-    fun sync(force: Boolean): Completable {
-        val getDataRequirements = this.loadDataRequirements ?: return Completable.complete()
+    fun sync(force: Boolean): Single<SyncResult> {
+        val getDataRequirements = this.loadDataRequirements ?: return Single.just(SyncResult.skipped(SyncResult.SkippedReason.LOAD_DATA_REQUIREMENTS_NOT_SET))
 
         return if (force || this.doSyncNextTimeFetched() || this.isDataTooOld()) {
-            Completable.create { observer ->
+            Single.create<SyncResult> { observer ->
                 this._sync(getDataRequirements, {
-                    observer.onComplete()
+                    observer.onSuccess(OnlineRepository.SyncResult.success())
                 }, { error ->
-                    observer.onError(error)
+                    observer.onSuccess(OnlineRepository.SyncResult.failure(error))
                 })
             }
         } else {
-            Completable.complete()
+            Single.just(SyncResult.skipped(SyncResult.SkippedReason.DATA_NOT_TOO_OLD))
         }
     }
 
     private fun _sync(getDataRequirements: GET_DATA_REQUIREMENTS, onComplete: () -> Unit, onError: (Throwable) -> Unit) {
-        fun processFailedFetchResult(error: Throwable) {
-            this.resetForceSyncNextTimeFetched()
-            // Before 5-14-18:
-            // Note: We need to set the last updated time here or else we could run an infinite loop if the api call errors.
-            // The way that I handle errors now: if an error occurs (network error, status code error, any other error) I tell the rxswift subscriber that the error has occurred so you can tell the user. From there, you have the option to ask the user to retry the network call and perform the retry by calling datasource set data query requirements with force param true.
-            //
-            // Update 5-14-18:
-            // I am commenting out line below because of this example. What if I am building a GitHub app where I take a username and I call API for a list of repos for that username. What if that username does not exist and we get a 404 back from GitHub? If we call `updateLastTimeFreshDataFetched()`, we will set the data to empty the next time the user tries to use that github username again in the app. We don't want that because the data is not empty. It's non-existing. So after some thought, I am going to try and comment this out because I should only update the last time fetched fresh data when the data was actually fetched successfully, right? I say this because in the UI I want to show how old data is. I don't want to show "5 minutes ago" for a failed API request because then users will think that data is 5 minutes old. We want to show to the user the age of the data, not when it was last synced. If I do want to show both, I need to store both individually.
-            // this.updateLastTimeFreshDataFetched(getDataRequirements)
-            this.stateOfDate?.onNextError(error)
-            onError(error)
-        }
-
         this.fetchFreshData(getDataRequirements)
                 .subscribe({ freshData ->
                     if (freshData.isSuccessful()) {
@@ -153,10 +138,18 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
                         this.updateLastTimeFreshDataFetched(getDataRequirements)
                         onComplete()
                     } else {
-                        processFailedFetchResult(freshData.failure!!)
+                        this.resetForceSyncNextTimeFetched()
+                        // Before 5-14-18:
+                        // Note: We need to set the last updated time here or else we could run an infinite loop if the api call errors.
+                        // The way that I handle errors now: if an error occurs (network error, status code error, any other error) I tell the rxswift subscriber that the error has occurred so you can tell the user. From there, you have the option to ask the user to retry the network call and perform the retry by calling datasource set data query requirements with force param true.
+                        //
+                        // Update 5-14-18:
+                        // I am commenting out line below because of this example. What if I am building a GitHub app where I take a username and I call API for a list of repos for that username. What if that username does not exist and we get a 404 back from GitHub? If we call `updateLastTimeFreshDataFetched()`, we will set the data to empty the next time the user tries to use that github username again in the app. We don't want that because the data is not empty. It's non-existing. So after some thought, I am going to try and comment this out because I should only update the last time fetched fresh data when the data was actually fetched successfully, right? I say this because in the UI I want to show how old data is. I don't want to show "5 minutes ago" for a failed API request because then users will think that data is 5 minutes old. We want to show to the user the age of the data, not when it was last synced. If I do want to show both, I need to store both individually.
+                        // this.updateLastTimeFreshDataFetched(getDataRequirements)
+                        val error = freshData.failure!!
+                        this.stateOfDate?.onNextError(error)
+                        onError(error)
                     }
-                }, { error ->
-                    processFailedFetchResult(error)
                 })
     }
 
@@ -256,5 +249,37 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
 
         class ResponseFail(message: String): Throwable(message)
     }
+
+    class SyncResult private constructor(val successful: Boolean = false,
+                                         val failedError: Throwable? = null,
+                                         val skipped: SkippedReason? = null) {
+
+        companion object {
+            fun success(): SyncResult = SyncResult(successful = true)
+
+            fun failure(error: Throwable): SyncResult = SyncResult(failedError = error)
+
+            fun skipped(reason: SkippedReason): SyncResult = SyncResult(skipped = reason)
+        }
+
+        fun didSkip(): Boolean = skipped != null
+
+        fun didFail(): Boolean = failedError != null
+
+        fun didSucceed(): Boolean = successful
+
+        enum class SkippedReason {
+            /**
+             * The [OnlineRepository.loadDataRequirements] is not set which is required for sync to run.
+             */
+            LOAD_DATA_REQUIREMENTS_NOT_SET,
+            /**
+             * Cached data already exists for the data type, it's not too old yet, and force sync was not true to force sync to run.
+             */
+            DATA_NOT_TOO_OLD
+        }
+
+    }
+
 
 }
