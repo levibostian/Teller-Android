@@ -1,3 +1,7 @@
+# Manually added
+*DS_STORE
+._*
+
 # Built application files
 *.apk
 *.ap_

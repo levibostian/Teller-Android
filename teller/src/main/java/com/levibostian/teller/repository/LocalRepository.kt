@@ -25,7 +25,6 @@ abstract class LocalRepository<DATA: Any> {
 
             compositeDisposable.add(
                     observeData()
-                            .subscribeOn(Schedulers.io())
                             .subscribe({ cachedData ->
                                 if (cachedData == null || isDataEmpty(cachedData)) {
                                     stateOfDate!!.onNextEmpty()
@@ -37,21 +36,24 @@ abstract class LocalRepository<DATA: Any> {
                             })
             )
         }
-        return stateOfDate!!.asObservable()
+        return stateOfDate!!.asObservable().doOnDispose {
+            compositeDisposable.dispose()
+        }
     }
 
     /**
      * Save the data to whatever storage method Repository chooses.
      *
      * It is up to you to call [saveData] when you have new data to save. A good place to do this is in a ViewModel.
+     *
+     * *Note:* It is up to you to run this function from a background thread. This is not done by default for you.
      */
-
-    abstract fun saveData(data: DATA?): Completable
+    abstract fun saveData(data: DATA)
 
     /**
      * This function should be setup to trigger anytime there is a data change. So if you were to call [saveData], anyone observing the [Observable] returned here will get notified of a new update.
      */
-    abstract fun observeData(): Observable<DATA?>
+    abstract fun observeData(): Observable<DATA>
 
     /**
      * DataType determines if data is empty or not. Because data can be of `Any` type, the DataType must determine when data is empty or not.

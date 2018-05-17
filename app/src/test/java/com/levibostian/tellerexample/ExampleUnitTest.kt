@@ -1,4 +1,4 @@
-package com.levibostian.driverexample
+package com.levibostian.tellerexample
 
 import org.junit.Test
 

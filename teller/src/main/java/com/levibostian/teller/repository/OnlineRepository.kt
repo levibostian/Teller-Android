@@ -10,10 +10,11 @@ import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
+import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
 import java.util.*
 
-abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequirements, REQUEST: Any> {
+abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineRepository.GetDataRequirements, REQUEST: Any> {
 
     private val forceSyncNextTimeFetchKey by lazy {
         "${ConstantsUtil.PREFIX}_forceSyncNextTimeFetch_dataSource_${this::class.java.simpleName}_key"
@@ -24,6 +25,7 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
     }
 
     private var compositeDisposable = CompositeDisposable()
+    private var observeCachedDataDisposable: Disposable? = null
     private var stateOfDate: OnlineDataStateBehaviorSubject<RESULT>? = null
 
     /**
@@ -38,8 +40,9 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
      *
      * @see sync On how to force the data source to fetch fresh data if you want that after setting [loadDataRequirements].
      */
-    protected var loadDataRequirements: GET_DATA_REQUIREMENTS? = null
+    var loadDataRequirements: GET_DATA_REQUIREMENTS? = null
         set(value) {
+            field = value
             beginObservingStateOfData()
         }
 
@@ -56,28 +59,29 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
     private fun beginObservingStateOfData() {
         loadDataRequirements?.let { getDataRequirements ->
             fun initializeObservingCachedData() {
-                compositeDisposable.add(
-                        this.observeCachedData(getDataRequirements)
-                                .subscribe({ cachedData ->
-                                    val needsToFetchFreshData = this.doSyncNextTimeFetched() || this.isDataTooOld()
+                if (observeCachedDataDisposable == null || !observeCachedDataDisposable!!.isDisposed) {
+                    observeCachedDataDisposable = this.observeCachedData(getDataRequirements)
+                            .subscribe({ cachedData ->
+                                val needsToFetchFreshData = this.doSyncNextTimeFetched() || this.isDataTooOld()
 
-                                    if (cachedData == null || isDataEmpty(cachedData)) {
-                                        stateOfDate?.onNextEmpty(needsToFetchFreshData)
-                                    } else {
-                                        stateOfDate?.onNextData(cachedData, lastTimeFetchedFreshData!!, needsToFetchFreshData)
-                                    }
+                                if (cachedData == null || isDataEmpty(cachedData)) {
+                                    stateOfDate?.onNextEmpty(needsToFetchFreshData)
+                                } else {
+                                    stateOfDate?.onNextData(cachedData, lastTimeFetchedFreshData!!, needsToFetchFreshData)
+                                }
 
-                                    if (needsToFetchFreshData) {
-                                        this._sync(getDataRequirements, {
-                                            stateOfDate?.onNextDoneFetchingFreshData(null)
-                                        }, { error ->
-                                            stateOfDate?.onNextDoneFetchingFreshData(error)
-                                        })
-                                    }
-                                }, { error ->
-                                    this.stateOfDate?.onNextError(error)
-                                })
-                )
+                                if (needsToFetchFreshData) {
+                                    this._sync(getDataRequirements, {
+                                        stateOfDate?.onNextDoneFetchingFreshData(null)
+                                    }, { error ->
+                                        stateOfDate?.onNextDoneFetchingFreshData(error)
+                                    })
+                                }
+                            }, { error ->
+                                this.stateOfDate?.onNextError(error)
+                            })
+                    compositeDisposable.add(observeCachedDataDisposable!!)
+                }
             }
 
             if (!hasEverFetchedData()) {
@@ -85,7 +89,7 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
 
                 this._sync(getDataRequirements, {
                     initializeObservingCachedData()
-                }, { error ->
+                }, { _ ->
                     // Note: Even if there is an error, we want to start observing cached data so we can transition to an empty state instead of infinite loading state for the UI for the user.
                     initializeObservingCachedData()
                 })
@@ -128,28 +132,31 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
     }
 
     private fun _sync(getDataRequirements: GET_DATA_REQUIREMENTS, onComplete: () -> Unit, onError: (Throwable) -> Unit) {
+        fun processFailedFetchResult(error: Throwable) {
+            this.resetForceSyncNextTimeFetched()
+            // Before 5-14-18:
+            // Note: We need to set the last updated time here or else we could run an infinite loop if the api call errors.
+            // The way that I handle errors now: if an error occurs (network error, status code error, any other error) I tell the rxswift subscriber that the error has occurred so you can tell the user. From there, you have the option to ask the user to retry the network call and perform the retry by calling datasource set data query requirements with force param true.
+            //
+            // Update 5-14-18:
+            // I am commenting out line below because of this example. What if I am building a GitHub app where I take a username and I call API for a list of repos for that username. What if that username does not exist and we get a 404 back from GitHub? If we call `updateLastTimeFreshDataFetched()`, we will set the data to empty the next time the user tries to use that github username again in the app. We don't want that because the data is not empty. It's non-existing. So after some thought, I am going to try and comment this out because I should only update the last time fetched fresh data when the data was actually fetched successfully, right? I say this because in the UI I want to show how old data is. I don't want to show "5 minutes ago" for a failed API request because then users will think that data is 5 minutes old. We want to show to the user the age of the data, not when it was last synced. If I do want to show both, I need to store both individually.
+            // this.updateLastTimeFreshDataFetched(getDataRequirements)
+            this.stateOfDate?.onNextError(error)
+            onError(error)
+        }
+
         this.fetchFreshData(getDataRequirements)
                 .subscribe({ freshData ->
-                    this.resetForceSyncNextTimeFetched()
-                    this.updateLastTimeFreshDataFetched(getDataRequirements)
-                    this.saveData(freshData)
-                            .subscribe({
-                                onComplete()
-                            }, { error ->
-                                this.stateOfDate?.onNextError(error)
-                                onError(error)
-                            })
+                    if (freshData.isSuccessful()) {
+                        this.saveData(freshData.data!!)
+                        this.resetForceSyncNextTimeFetched()
+                        this.updateLastTimeFreshDataFetched(getDataRequirements)
+                        onComplete()
+                    } else {
+                        processFailedFetchResult(freshData.failure!!)
+                    }
                 }, { error ->
-                    this.resetForceSyncNextTimeFetched()
-                    // Before 5-14-18:
-                    // Note: We need to set the last updated time here or else we could run an infinite loop if the api call errors.
-                    // The way that I handle errors now: if an error occurs (network error, status code error, any other error) I tell the rxswift subscriber that the error has occurred so you can tell the user. From there, you have the option to ask the user to retry the network call and perform the retry by calling datasource set data query requirements with force param true.
-                    //
-                    // Update 5-14-18:
-                    // I am commenting out line below because of this example. What if I am building a GitHub app where I take a username and I call API for a list of repos for that username. What if that username does not exist and we get a 404 back from GitHub? If we call `updateLastTimeFreshDataFetched()`, we will set the data to empty the next time the user tries to use that github username again in the app. We don't want that because the data is not empty. It's non-existing. So after some thought, I am going to try and comment this out because I should only update the last time fetched fresh data when the data was actually fetched successfully, right? I say this because in the UI I want to show how old data is. I don't want to show "5 minutes ago" for a failed API request because then users will think that data is 5 minutes old. We want to show to the user the age of the data, not when it was last synced. If I do want to show both, I need to store both individually.
-                    // this.updateLastTimeFreshDataFetched(getDataRequirements)
-                    this.stateOfDate?.onNextError(error)
-                    onError(error)
+                    processFailedFetchResult(error)
                 })
     }
 
@@ -197,23 +204,57 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: GetDataRequi
     /**
      * Repository does what it needs in order to fetch fresh data. Probably call network API.
      */
-    abstract fun fetchFreshData(requirements: GET_DATA_REQUIREMENTS): Single<REQUEST>
+    abstract fun fetchFreshData(requirements: GET_DATA_REQUIREMENTS): Single<FetchResponse<REQUEST>>
 
     /**
      * Save the data to whatever storage method Repository chooses.
      *
      * It is up to you to call [saveData] when you have new data to save. A good place to do this is in a ViewModel.
+     *
+     * *Note:* It is up to you to run this function from a background thread. This is not done by default for you.
      */
-    abstract fun saveData(data: REQUEST?): Completable
+    abstract fun saveData(data: REQUEST)
 
     /**
      * Get existing cached data saved to the device if it exists. Return nil is data does not exist or is empty.
      */
-    abstract fun observeCachedData(requirements: GET_DATA_REQUIREMENTS): Observable<RESULT?>
+    abstract fun observeCachedData(requirements: GET_DATA_REQUIREMENTS): Observable<RESULT>
 
     /**
      * DataType determines if data is empty or not. Because data can be of `Any` type, the DataType must determine when data is empty or not.
      */
     abstract fun isDataEmpty(data: RESULT): Boolean
+
+    /**
+     * Data object that are the requirements to fetch, get cached data. It could contain a query term to search for data. It could contain a user id to fetch a user from an API.
+     *
+     * @property tag Unique tag that drives the behavior of a [OnlineDataSource]. If the [tag] is ever changed, [OnlineDataSource] will trigger a new data fetch so that you can get new data.
+     */
+    interface GetDataRequirements {
+        var tag: String
+    }
+
+    class FetchResponse<DATA: Any> private constructor(val data: DATA? = null,
+                                                       val failure: Throwable? = null) {
+        companion object {
+            fun <DATA: Any> success(data: DATA): FetchResponse<DATA> {
+                return FetchResponse(data = data)
+            }
+
+            fun <DATA: Any> fail(message: String): FetchResponse<DATA> {
+                return FetchResponse(failure = ResponseFail(message))
+            }
+
+            fun <DATA: Any> fail(throwable: Throwable): FetchResponse<DATA> {
+                return FetchResponse(failure = throwable)
+            }
+        }
+
+        fun isSuccessful(): Boolean = data != null
+
+        fun isFailure(): Boolean = failure != null
+
+        class ResponseFail(message: String): Throwable(message)
+    }
 
 }

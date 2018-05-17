@@ -4,7 +4,6 @@ import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
 import android.preference.PreferenceManager
-import com.levibostian.teller.repository.GetDataRequirements
 import com.levibostian.teller.repository.OnlineRepository
 import io.reactivex.Completable
 import io.reactivex.Scheduler
@@ -28,7 +27,7 @@ class Teller private constructor(private val context: Context) {
          * @throws RuntimeException If you have not called [Teller.Companion.init] yet to initialize singleton instance.
          */
         @JvmStatic fun sharedInstance(): Teller {
-            if (instance == null) throw RuntimeException("Sorry, you must call Teller.init() first.")
+            if (instance == null) throw RuntimeException("Oh, no! You forgot to call Teller.init()")
             return instance!!
         }
 
