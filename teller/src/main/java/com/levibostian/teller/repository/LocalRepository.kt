@@ -25,13 +25,13 @@ abstract class LocalRepository<DATA: Any> {
 
             compositeDisposable.add(
                     observeData()
-                            .subscribe({ cachedData ->
+                            .subscribe { cachedData ->
                                 if (cachedData == null || isDataEmpty(cachedData)) {
                                     stateOfDate!!.onNextEmpty()
                                 } else {
                                     stateOfDate!!.onNextData(cachedData)
                                 }
-                            })
+                            }
             )
         }
         return stateOfDate!!.asObservable().doOnDispose {

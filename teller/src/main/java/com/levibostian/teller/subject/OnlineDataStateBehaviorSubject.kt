@@ -73,13 +73,8 @@ internal class OnlineDataStateBehaviorSubject<DATA: Any> {
         subject.onNext(dataState)
     }
 
-    /**
-     * An error occurred with this data.
-     */
-    fun onNextError(error: Throwable) {
-        // We don't want a user to have to look at a loading screen after an error occurred therefore, we want to show them an empty view and an error. That's better then an infinite loading screen!
-        if (subject.hasValue() && subject.value!!.firstFetchOfData) dataState = OnlineDataState.isEmpty()
-        dataState = dataState.errorOccurred(error)
+    fun onNextDoneFirstFetch(errorDuringFetch: Throwable?) {
+        dataState = dataState.doneFirstFetch(errorDuringFetch)
         subject.onNext(dataState)
     }
 

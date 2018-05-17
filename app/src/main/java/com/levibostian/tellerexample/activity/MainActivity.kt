@@ -77,6 +77,20 @@ class MainActivity : AppCompatActivity() {
         reposViewModel.observeRepos()
                 .observe(this, Observer { reposState ->
                     reposState?.deliver(object : OnlineDataStateListener<List<RepoModel>> {
+                        override fun finishedFirstFetchOfData(errorDuringFetch: Throwable?) {
+                            if (errorDuringFetch != null) {
+                                errorDuringFetch.message?.let { showEmptyView(it) }
+
+                                AlertDialog.Builder(this@MainActivity)
+                                        .setTitle("Error")
+                                        .setMessage(errorDuringFetch.message?: "Unknown error. Please, try again.")
+                                        .setPositiveButton("Ok") { dialog, _ ->
+                                            dialog.dismiss()
+                                        }
+                                        .create()
+                                        .show()
+                            }
+                        }
                         override fun firstFetchOfData() {
                             showLoadingView()
                         }
@@ -92,16 +106,6 @@ class MainActivity : AppCompatActivity() {
                                 adapter = RepoRecyclerViewAdapter(data)
                                 setHasFixedSize(true)
                             }
-                        }
-                        override fun error(error: Throwable) {
-                            AlertDialog.Builder(this@MainActivity)
-                                    .setTitle("Error")
-                                    .setMessage(error.message?: "Unknown error. Please, try again.")
-                                    .setPositiveButton("Ok") { dialog, _ ->
-                                        dialog.dismiss()
-                                    }
-                                    .create()
-                                    .show()
                         }
                         override fun fetchingFreshData() {
                             fetchingSnackbar = Snackbar.make(parent_view, "Updating repos list...", Snackbar.LENGTH_LONG)
@@ -129,7 +133,6 @@ class MainActivity : AppCompatActivity() {
                             reposViewModel.setUsername(data)
                         }
                         override fun error(error: Throwable) {
-                            showErrorView(error.message ?: "Unknown error occurred. Please, try again.")
                         }
                     })
                 })
@@ -151,24 +154,18 @@ class MainActivity : AppCompatActivity() {
         repos_recyclerview.visibility = View.GONE
     }
 
-    private fun showEmptyView() {
+    private fun showEmptyView(message: String = "There are no repos.") {
         loading_view.visibility = View.GONE
         empty_view.visibility = View.VISIBLE
         repos_recyclerview.visibility = View.GONE
 
-        empty_view_textview.text = "There are no repos."
+        empty_view_textview.text = message
     }
 
     private fun showDataView() {
         loading_view.visibility = View.GONE
         empty_view.visibility = View.GONE
         repos_recyclerview.visibility = View.VISIBLE
-    }
-
-    private fun showErrorView(message: String) {
-        showEmptyView()
-
-        empty_view_textview.text = message
     }
 
 }

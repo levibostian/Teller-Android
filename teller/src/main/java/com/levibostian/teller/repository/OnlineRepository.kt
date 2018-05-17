@@ -9,9 +9,7 @@ import com.levibostian.teller.util.ConstantsUtil
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
-import io.reactivex.schedulers.Schedulers
 import java.util.*
 
 abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineRepository.GetDataRequirements, REQUEST: Any> {
@@ -62,7 +60,7 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
             fun initializeObservingCachedData() {
                 if (observeCachedDataDisposable == null || !observeCachedDataDisposable!!.isDisposed) {
                     observeCachedDataDisposable = this.observeCachedData(getDataRequirements)
-                            .subscribe({ cachedData ->
+                            .subscribe { cachedData ->
                                 val needsToFetchFreshData = this.doSyncNextTimeFetched() || this.isDataTooOld()
 
                                 if (cachedData == null || isDataEmpty(cachedData)) {
@@ -78,7 +76,7 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
                                         stateOfDate?.onNextDoneFetchingFreshData(error)
                                     })
                                 }
-                            })
+                            }
                 }
             }
 
@@ -86,10 +84,10 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
                 stateOfDate?.onNextFirstFetchOfData()
 
                 this._sync(getDataRequirements, {
+                    stateOfDate?.onNextDoneFirstFetch(null)
                     initializeObservingCachedData()
-                }, { _ ->
-                    // Here, I am manually setting empty as an error occurred and I don't want the UI to show an infinite loading screen so I set empty manually but do not begin observing data.
-                    stateOfDate?.onNextEmpty(false)
+                }, { error ->
+                    stateOfDate?.onNextDoneFirstFetch(error)
                 })
             } else {
                 initializeObservingCachedData()
@@ -131,7 +129,7 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
 
     private fun _sync(getDataRequirements: GET_DATA_REQUIREMENTS, onComplete: () -> Unit, onError: (Throwable) -> Unit) {
         this.fetchFreshData(getDataRequirements)
-                .subscribe({ freshData ->
+                .subscribe { freshData ->
                     if (freshData.isSuccessful()) {
                         this.saveData(freshData.data!!)
                         this.resetForceSyncNextTimeFetched()
@@ -139,18 +137,10 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
                         onComplete()
                     } else {
                         this.resetForceSyncNextTimeFetched()
-                        // Before 5-14-18:
-                        // Note: We need to set the last updated time here or else we could run an infinite loop if the api call errors.
-                        // The way that I handle errors now: if an error occurs (network error, status code error, any other error) I tell the rxswift subscriber that the error has occurred so you can tell the user. From there, you have the option to ask the user to retry the network call and perform the retry by calling datasource set data query requirements with force param true.
-                        //
-                        // Update 5-14-18:
-                        // I am commenting out line below because of this example. What if I am building a GitHub app where I take a username and I call API for a list of repos for that username. What if that username does not exist and we get a 404 back from GitHub? If we call `updateLastTimeFreshDataFetched()`, we will set the data to empty the next time the user tries to use that github username again in the app. We don't want that because the data is not empty. It's non-existing. So after some thought, I am going to try and comment this out because I should only update the last time fetched fresh data when the data was actually fetched successfully, right? I say this because in the UI I want to show how old data is. I don't want to show "5 minutes ago" for a failed API request because then users will think that data is 5 minutes old. We want to show to the user the age of the data, not when it was last synced. If I do want to show both, I need to store both individually.
-                        // this.updateLastTimeFreshDataFetched(getDataRequirements)
                         val error = freshData.failure!!
-                        this.stateOfDate?.onNextError(error)
                         onError(error)
                     }
-                })
+                }
     }
 
     private fun getDateFromAllowedAgeOfDate(ageOfDate: AgeOfData): Date {

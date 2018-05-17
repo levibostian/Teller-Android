@@ -24,10 +24,11 @@ import java.util.*
  * @property errorDuringFetch Says that the [latestError] was caused during the fetching phase.
  */
 class OnlineDataState<DATA> private constructor(val firstFetchOfData: Boolean = false,
+                                                val doneFirstFetchOfData: Boolean = false,
                                                 val isEmpty: Boolean = false,
                                                 val data: DATA? = null,
                                                 val dataFetched: Date? = null,
-                                                val latestError: Throwable? = null,
+                                                val errorDuringFirstFetch: Throwable? = null,
                                                 val isFetchingFreshData: Boolean = false,
                                                 val doneFetchingFreshData: Boolean = false,
                                                 val errorDuringFetch: Throwable? = null) {
@@ -52,14 +53,13 @@ class OnlineDataState<DATA> private constructor(val firstFetchOfData: Boolean = 
      *
      * @return New immutable instance of [OnlineDataState]
      */
-    fun errorOccurred(error: Throwable): OnlineDataState<DATA> {
-        return OnlineDataState(firstFetchOfData = firstFetchOfData,
-                isEmpty = isEmpty,
-                data = data,
-                latestError = error,
-                isFetchingFreshData = isFetchingFreshData,
-                doneFetchingFreshData = doneFetchingFreshData,
-                errorDuringFetch = null) // Set null to avoid calling the listener error() multiple times.
+    fun doneFirstFetch(error: Throwable?): OnlineDataState<DATA> {
+        return duplicate(
+                isEmpty = error != null, // To prevent the UI from having an infinite loading UI, set to empty data here first and then say we are done with first fetch.
+                firstFetchOfData = false,
+                doneFirstFetchOfData = true,
+                errorDuringFirstFetch = error
+        )
     }
 
     /**
@@ -68,13 +68,11 @@ class OnlineDataState<DATA> private constructor(val firstFetchOfData: Boolean = 
      * @return New immutable instance of [OnlineDataState]
      */
     fun fetchingFreshData(): OnlineDataState<DATA> {
-        return OnlineDataState(firstFetchOfData = firstFetchOfData,
-                isEmpty = isEmpty,
-                data = data,
-                latestError = null, // Set null to avoid calling the listener error() multiple times.
-                isFetchingFreshData = true,
-                doneFetchingFreshData = false,
-                errorDuringFetch = null) // Set null to avoid calling the listener error() multiple times.
+        if (firstFetchOfData) throw RuntimeException("The state of data is saying you are already fetching for the first time. You cannot fetch for first time and fetch after cache.")
+
+        return duplicate(
+                isFetchingFreshData = true
+        )
     }
 
     /**
@@ -83,13 +81,34 @@ class OnlineDataState<DATA> private constructor(val firstFetchOfData: Boolean = 
      * @return New immutable instance of [OnlineDataState]
      */
     fun doneFetchingFreshData(errorDuringFetch: Throwable?): OnlineDataState<DATA> {
-        return OnlineDataState(firstFetchOfData = firstFetchOfData,
-                isEmpty = isEmpty,
-                data = data,
-                latestError = null, // Set null to avoid calling the listener error() multiple times.
+        if (firstFetchOfData) throw RuntimeException("Call doneFirstFetch() instead.")
+
+        return duplicate(
                 isFetchingFreshData = false,
                 doneFetchingFreshData = true,
-                errorDuringFetch = errorDuringFetch)
+                errorDuringFetch = errorDuringFetch
+        )
+    }
+
+    // This exists because I have tried to make OnlineDataSource immutable. With that, there are fields that need to be copied over from the previous state of the previous object. So, I am using this where you can override fields one at a time that you need.
+    private fun duplicate(firstFetchOfData: Boolean = this.firstFetchOfData,
+                          doneFirstFetchOfData: Boolean = this.doneFirstFetchOfData,
+                          isEmpty: Boolean = this.isEmpty,
+                          data: DATA? = this.data,
+                          dataFetched: Date? = this.dataFetched,
+                          errorDuringFirstFetch: Throwable? = this.errorDuringFirstFetch,
+                          isFetchingFreshData: Boolean = this.isFetchingFreshData,
+                          doneFetchingFreshData: Boolean = this.doneFetchingFreshData,
+                          errorDuringFetch: Throwable? = this.errorDuringFetch): OnlineDataState<DATA> {
+        return OnlineDataState(firstFetchOfData = firstFetchOfData,
+                doneFirstFetchOfData = doneFirstFetchOfData,
+                isEmpty = isEmpty,
+                data = data,
+                dataFetched = dataFetched,
+                errorDuringFirstFetch = errorDuringFirstFetch, // Set null to avoid calling the listener error() multiple times.
+                isFetchingFreshData = isFetchingFreshData,
+                doneFetchingFreshData = doneFetchingFreshData,
+                errorDuringFetch = errorDuringFetch) // Set null to avoid calling the listener error() multiple times.
     }
 
     /**
@@ -103,7 +122,7 @@ class OnlineDataState<DATA> private constructor(val firstFetchOfData: Boolean = 
         if (isFetchingFreshData) listener.fetchingFreshData()
         if (doneFetchingFreshData) listener.finishedFetchingFreshData(errorDuringFetch)
         data?.let { listener.data(it, dataFetched!!) }
-        latestError?.let { listener.error(it) }
+        if (doneFirstFetchOfData) listener.finishedFirstFetchOfData(errorDuringFirstFetch)
     }
 
 }
