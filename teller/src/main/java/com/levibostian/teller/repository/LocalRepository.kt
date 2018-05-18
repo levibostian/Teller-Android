@@ -40,9 +40,9 @@ abstract class LocalRepository<DATA: Any> {
     }
 
     /**
-     * Save the data to whatever storage method Repository chooses.
+     * Save the cacheData to whatever storage method Repository chooses.
      *
-     * It is up to you to call [saveData] when you have new data to save. A good place to do this is in a ViewModel.
+     * It is up to you to call [saveData] when you have new cacheData to save. A good place to do this is in a ViewModel.
      *
      * *Note:* It is up to you to run this function from a background thread. This is not done by default for you.
      */
@@ -54,12 +54,12 @@ abstract class LocalRepository<DATA: Any> {
     abstract fun observeData(): Observable<DATA>
 
     /**
-     * DataType determines if data is empty or not. Because data can be of `Any` type, the DataType must determine when data is empty or not.
+     * DataType determines if cacheData is empty or not. Because cacheData can be of `Any` type, the DataType must determine when cacheData is empty or not.
      */
     abstract fun isDataEmpty(data: DATA): Boolean
 
     /**
-     * Get data if exists instead of observing it. Great for one off getting data.
+     * Get cacheData if exists instead of observing it. Great for one off getting cacheData.
      */
     open fun getValue(): DATA? {
         return observeData().blockingFirst()

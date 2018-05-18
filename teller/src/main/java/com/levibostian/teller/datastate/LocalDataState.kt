@@ -9,16 +9,16 @@ import java.util.*
  * 2. It is empty. Data has been obtained before, but there is none.
  * 3. Data exists.
  *
- * This class takes in a type of data to keep state on via generic [DATA] and it maintains the state of that data.
+ * This class takes in a type of cacheData to keep state on via generic [DATA] and it maintains the state of that cacheData.
  *
- * Along with the 3 different states data could be in, there are temporary states that data could also be in.
+ * Along with the 3 different states cacheData could be in, there are temporary states that cacheData could also be in.
  *
- * * An error occurred with that data.
- * * Fresh data is being fetched for this data. It may be updated soon.
+ * * An error occurred with that cacheData.
+ * * Fresh cacheData is being fetched for this cacheData. It may be updated soon.
  *
- * The 3 states listed above empty, data, loading are all permanent. Data is 1 of those 3 at all times. Data has this error or fetching status temporarily until someone calls [deliver] one time and then those temporary states are deleted.
+ * The 3 states listed above empty, cacheData, loading are all permanent. Data is 1 of those 3 at all times. Data has this error or fetching status temporarily until someone calls [deliver] one time and then those temporary states are deleted.
  *
- * This class is used in companion with [Repository] and [OnlineStateDataCompoundBehaviorSubject] to maintain the state of data to deliver to someone observing.
+ * This class is used in companion with [Repository] and [OnlineStateDataCompoundBehaviorSubject] to maintain the state of cacheData to deliver to someone observing.
  *
  */
 class LocalDataState<DATA> private constructor(val isEmpty: Boolean = false,
@@ -37,7 +37,7 @@ class LocalDataState<DATA> private constructor(val isEmpty: Boolean = false,
     }
 
     /**
-     * Tag on an error to this data. Errors could be an error fetching fresh data or reading data off the device. The errors should have to deal with this data, not some generic error encountered in the app.
+     * Tag on an error to this cacheData. Errors could be an error fetching fresh cacheData or reading cacheData off the device. The errors should have to deal with this cacheData, not some generic error encountered in the app.
      *
      * @return New immutable instance of [LocalDataState]
      */
@@ -48,9 +48,9 @@ class LocalDataState<DATA> private constructor(val isEmpty: Boolean = false,
     }
 
     /**
-     * This is usually used in the UI of an app to display data to a user.
+     * This is usually used in the UI of an app to display cacheData to a user.
      *
-     * Using this function, you can get the state of the data as well as handle errors that may have happened with data (during fetching fresh data or reading the data off the device) or get the status of fetching fresh new data.
+     * Using this function, you can get the state of the cacheData as well as handle errors that may have happened with cacheData (during fetching fresh cacheData or reading the cacheData off the device) or get the status of fetching fresh new cacheData.
      */
     fun deliver(listener: LocalDataStateListener<DATA>) {
         if (isEmpty) listener.isEmpty()

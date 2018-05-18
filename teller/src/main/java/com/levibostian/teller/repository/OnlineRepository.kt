@@ -26,16 +26,16 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
     private var stateOfDate: OnlineDataStateBehaviorSubject<RESULT>? = null
 
     /**
-     * Used to set how old data can be in the app for this certain type of data before it is considered too old and new data should be fetched.
+     * Used to set how old cacheData can be in the app for this certain type of cacheData before it is considered too old and new cacheData should be fetched.
      */
     abstract var maxAgeOfData: AgeOfData
 
     /**
-     * Requirements needed to be able to load data in the [OnlineRepository].
+     * Requirements needed to be able to load cacheData in the [OnlineRepository].
      *
-     * When this property is set, the [OnlineRepository] instance will begin to observe the data by loading the cached data and checking if it needs to fetch fresh.
+     * When this property is set, the [OnlineRepository] instance will begin to observe the cacheData by loading the cached cacheData and checking if it needs to fetch fresh.
      *
-     * @see sync On how to force the data source to fetch fresh data if you want that after setting [loadDataRequirements].
+     * @see sync On how to force the cacheData source to fetch fresh cacheData if you want that after setting [loadDataRequirements].
      */
     var loadDataRequirements: GET_DATA_REQUIREMENTS? = null
         set(value) {
@@ -64,9 +64,9 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
                                 val needsToFetchFreshData = this.doSyncNextTimeFetched() || this.isDataTooOld()
 
                                 if (cachedData == null || isDataEmpty(cachedData)) {
-                                    stateOfDate?.onNextEmpty(needsToFetchFreshData)
+                                    stateOfDate?.onNextCacheEmpty(needsToFetchFreshData)
                                 } else {
-                                    stateOfDate?.onNextData(cachedData, lastTimeFetchedFreshData!!, needsToFetchFreshData)
+                                    stateOfDate?.onNextCachedData(cachedData, lastTimeFetchedFreshData!!, needsToFetchFreshData)
                                 }
 
                                 if (needsToFetchFreshData) {
@@ -107,7 +107,7 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
     }
 
     /**
-     * Perform a one time sync of the data. Sync will check the last updated date and the allowed age of data to determine if it should fetch fresh data or not. You may override this behavior with `force`.
+     * Perform a one time sync of the cacheData. Sync will check the last updated date and the allowed age of cacheData to determine if it should fetch fresh cacheData or not. You may override this behavior with `force`.
      *
      * Note: If [loadDataRequirements] is null, [Completable.complete] will be returned from this function and it will be like the sync never happened.
      */
@@ -168,7 +168,7 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
     }
 
     /**
-     * Call if you want to flag the [Repository] to force sync the next time that it needs to sync data.
+     * Call if you want to flag the [Repository] to force sync the next time that it needs to sync cacheData.
      */
     @SuppressLint("ApplySharedPref")
     fun forceSyncNextTimeFetched() {
@@ -185,33 +185,33 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
     }
 
     /**
-     * Repository does what it needs in order to fetch fresh data. Probably call network API.
+     * Repository does what it needs in order to fetch fresh cacheData. Probably call network API.
      */
     abstract fun fetchFreshData(requirements: GET_DATA_REQUIREMENTS): Single<FetchResponse<REQUEST>>
 
     /**
-     * Save the data to whatever storage method Repository chooses.
+     * Save the cacheData to whatever storage method Repository chooses.
      *
-     * It is up to you to call [saveData] when you have new data to save. A good place to do this is in a ViewModel.
+     * It is up to you to call [saveData] when you have new cacheData to save. A good place to do this is in a ViewModel.
      *
      * *Note:* It is up to you to run this function from a background thread. This is not done by default for you.
      */
     abstract fun saveData(data: REQUEST)
 
     /**
-     * Get existing cached data saved to the device if it exists. Return nil is data does not exist or is empty.
+     * Get existing cached cacheData saved to the device if it exists. Return nil is cacheData does not exist or is empty.
      */
     abstract fun observeCachedData(requirements: GET_DATA_REQUIREMENTS): Observable<RESULT>
 
     /**
-     * DataType determines if data is empty or not. Because data can be of `Any` type, the DataType must determine when data is empty or not.
+     * DataType determines if cacheData is empty or not. Because cacheData can be of `Any` type, the DataType must determine when cacheData is empty or not.
      */
     abstract fun isDataEmpty(data: RESULT): Boolean
 
     /**
-     * Data object that are the requirements to fetch, get cached data. It could contain a query term to search for data. It could contain a user id to fetch a user from an API.
+     * Data object that are the requirements to fetch, get cached cacheData. It could contain a query term to search for cacheData. It could contain a user id to fetch a user from an API.
      *
-     * @property tag Unique tag that drives the behavior of a [OnlineDataSource]. If the [tag] is ever changed, [OnlineDataSource] will trigger a new data fetch so that you can get new data.
+     * @property tag Unique tag that drives the behavior of a [OnlineDataSource]. If the [tag] is ever changed, [OnlineDataSource] will trigger a new cacheData fetch so that you can get new cacheData.
      */
     interface GetDataRequirements {
         var tag: String
@@ -264,7 +264,7 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
              */
             LOAD_DATA_REQUIREMENTS_NOT_SET,
             /**
-             * Cached data already exists for the data type, it's not too old yet, and force sync was not true to force sync to run.
+             * Cached cacheData already exists for the cacheData type, it's not too old yet, and force sync was not true to force sync to run.
              */
             DATA_NOT_TOO_OLD
         }

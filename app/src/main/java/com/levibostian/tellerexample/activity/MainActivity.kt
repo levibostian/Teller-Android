@@ -94,10 +94,10 @@ class MainActivity : AppCompatActivity() {
                         override fun firstFetchOfData() {
                             showLoadingView()
                         }
-                        override fun isEmpty() {
+                        override fun cacheEmpty() {
                             showEmptyView()
                         }
-                        override fun data(data: List<RepoModel>, fetched: Date) {
+                        override fun cacheData(data: List<RepoModel>, fetched: Date) {
                             showDataView()
                             data_age_textview.text = "Data last synced ${DateUtils.getRelativeTimeSpanString(fetched.time)}"
 
