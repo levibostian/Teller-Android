@@ -10,15 +10,14 @@ import com.levibostian.tellerexample.service.GitHubService
 import com.levibostian.tellerexample.viewmodel.ReposViewModel
 import retrofit2.Retrofit
 import android.arch.persistence.room.Room
-import android.content.Context
 import android.os.Handler
 import android.support.design.widget.Snackbar
 import android.support.v7.widget.LinearLayoutManager
 import android.text.format.DateUtils
 import android.view.View
 import android.widget.TextView
-import com.levibostian.teller.datastate.LocalDataStateListener
-import com.levibostian.teller.datastate.OnlineDataStateListener
+import com.levibostian.teller.datastate.listener.LocalDataStateListener
+import com.levibostian.teller.datastate.listener.OnlineDataStateListener
 import com.levibostian.tellerexample.adapter.RepoRecyclerViewAdapter
 import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.viewmodel.GitHubUsernameViewModel
@@ -29,10 +28,7 @@ import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
-import android.content.Context.INPUT_METHOD_SERVICE
-import android.content.DialogInterface
 import android.support.v7.app.AlertDialog
-import android.view.inputmethod.InputMethodManager
 import com.levibostian.tellerexample.extensions.closeKeyboard
 
 

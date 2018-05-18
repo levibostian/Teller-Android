@@ -1,6 +1,4 @@
-package com.levibostian.teller.datastate
-
-import java.util.*
+package com.levibostian.teller.datastate.listener
 
 interface LocalDataStateListener<in DATA> {
     fun isEmpty()

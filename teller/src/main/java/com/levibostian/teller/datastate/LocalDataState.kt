@@ -1,6 +1,6 @@
 package com.levibostian.teller.datastate
 
-import java.util.*
+import com.levibostian.teller.datastate.listener.LocalDataStateListener
 
 /**
  * Data in apps are in 1 of 3 different types of state:

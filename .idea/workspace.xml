@@ -32,11 +32,73 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="OnlineDataStateListener.kt" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/OnlineDataStateListener.kt">
+      <file leaf-file-name="OnlineRepository.kt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/repository/OnlineRepository.kt">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="391">
-              <caret line="18" column="6" lean-forward="true" selection-start-line="18" selection-start-column="6" selection-end-line="18" selection-end-column="6" />
+            <state relative-caret-position="372">
+              <caret line="199" column="0" lean-forward="false" selection-start-line="199" selection-start-column="0" selection-end-line="199" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="OnlineDataStateListener.kt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDataStateListener.kt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="85">
+              <caret line="5" column="146" lean-forward="false" selection-start-line="5" selection-start-column="146" selection-end-line="5" selection-end-column="146" />
+              <folding>
+                <element signature="e#51#127#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="OnlineDataStateBehaviorSubject.kt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/subject/OnlineDataStateBehaviorSubject.kt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-97">
+              <caret line="34" column="0" lean-forward="false" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="OnlineDataStateCacheListener.kt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDataStateCacheListener.kt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="102">
+              <caret line="6" column="35" lean-forward="true" selection-start-line="6" selection-start-column="35" selection-end-line="6" selection-end-column="35" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="OnlineDataStateFirstFetchListener.kt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDataStateFirstFetchListener.kt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="136">
+              <caret line="7" column="62" lean-forward="false" selection-start-line="7" selection-start-column="62" selection-end-line="7" selection-end-column="62" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="OnlineDataStateFetchingListener.kt" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDataStateFetchingListener.kt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="357">
+              <caret line="11" column="63" lean-forward="false" selection-start-line="11" selection-start-column="63" selection-end-line="11" selection-end-column="63" />
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="OnlineDataState.kt" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/OnlineDataState.kt">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="532">
+              <caret line="127" column="0" lean-forward="true" selection-start-line="127" selection-start-column="0" selection-end-line="127" selection-end-column="0" />
               <folding />
             </state>
           </provider>
@@ -3295,12 +3357,17 @@
         <option value="$PROJECT_DIR$/README.md" />
         <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/subject/OnlineDataStateBehaviorSubject.kt" />
         <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/repository/OnlineRepository.kt" />
-        <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/OnlineDataState.kt" />
         <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/subject/LocalDataStateCompoundBehaviorSubject.kt" />
         <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/LocalDataState.kt" />
         <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/LocalDataStateListener.kt" />
         <option value="$PROJECT_DIR$/app/src/main/java/com/levibostian/tellerexample/activity/MainActivity.kt" />
         <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/OnlineDataStateListener.kt" />
+        <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDatatStateFetchingFreshDataListener.kt" />
+        <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDataStateFetchingListener.kt" />
+        <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDataStateFirstFetchListener.kt" />
+        <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDataStateCacheListener.kt" />
+        <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDataStateListener.kt" />
+        <option value="$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/OnlineDataState.kt" />
       </list>
     </option>
   </component>
@@ -3430,6 +3497,14 @@
               <item name="teller" type="feadf853:AndroidModuleNode" />
               <item name="java" type="edd41e36:AndroidSourceTypeNode" />
               <item name="teller" type="cbb59c9e:AndroidPsiDirectoryNode" />
+              <item name="datastate" type="462c0819:PsiDirectoryNode" />
+              <item name="listener" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="Driver" type="1abcf292:AndroidViewProjectNode" />
+              <item name="teller" type="feadf853:AndroidModuleNode" />
+              <item name="java" type="edd41e36:AndroidSourceTypeNode" />
+              <item name="teller" type="cbb59c9e:AndroidPsiDirectoryNode" />
               <item name="repository" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -3456,6 +3531,11 @@
     <property name="DEBUGGABLE_PROCESS" value="com.levibostian.tellerexample" />
     <property name="SHOW_ALL_PROCESSES" value="false" />
     <property name="DEBUGGER_ID" value="Auto" />
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveKotlinTopLevelDeclarationsDialog.RECENTS_KEY">
+      <recent name="com.levibostian.teller.datastate.listener" />
+    </key>
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -3677,7 +3757,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="kotlin-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/levibostian/tellerexample/activity/MainActivity.kt</url>
-          <line>97</line>
+          <line>93</line>
           <properties />
           <option name="timeStamp" value="4" />
         </line-breakpoint>
@@ -3707,7 +3787,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" type="kotlin-line">
           <url>file://$PROJECT_DIR$/app/src/main/java/com/levibostian/tellerexample/activity/MainActivity.kt</url>
-          <line>83</line>
+          <line>79</line>
           <properties />
           <option name="timeStamp" value="14" />
         </line-breakpoint>
@@ -3955,31 +4035,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/repository/OnlineRepository.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="372">
-          <caret line="199" column="0" lean-forward="false" selection-start-line="199" selection-start-column="0" selection-end-line="199" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/subject/OnlineDataStateBehaviorSubject.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="629">
-          <caret line="34" column="0" lean-forward="false" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/OnlineDataState.kt">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="379">
-          <caret line="54" column="7" lean-forward="false" selection-start-line="54" selection-start-column="7" selection-end-line="54" selection-end-column="7" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/LocalDataStateListener.kt">
+    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/LocalDataStateListener.kt">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="51">
           <caret line="3" column="0" lean-forward="true" selection-start-line="3" selection-start-column="0" selection-end-line="3" selection-end-column="0" />
@@ -4011,10 +4067,60 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/OnlineDataStateListener.kt">
+    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDataStateFetchingListener.kt">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="391">
-          <caret line="18" column="6" lean-forward="true" selection-start-line="18" selection-start-column="6" selection-end-line="18" selection-end-column="6" />
+        <state relative-caret-position="357">
+          <caret line="11" column="63" lean-forward="false" selection-start-line="11" selection-start-column="63" selection-end-line="11" selection-end-column="63" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDataStateFirstFetchListener.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="136">
+          <caret line="7" column="62" lean-forward="false" selection-start-line="7" selection-start-column="62" selection-end-line="7" selection-end-column="62" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDataStateCacheListener.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="6" column="35" lean-forward="true" selection-start-line="6" selection-start-column="35" selection-end-line="6" selection-end-column="35" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/listener/OnlineDataStateListener.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="85">
+          <caret line="5" column="146" lean-forward="false" selection-start-line="5" selection-start-column="146" selection-end-line="5" selection-end-column="146" />
+          <folding>
+            <element signature="e#51#127#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/subject/OnlineDataStateBehaviorSubject.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-97">
+          <caret line="34" column="0" lean-forward="false" selection-start-line="34" selection-start-column="0" selection-end-line="34" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/repository/OnlineRepository.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="372">
+          <caret line="199" column="0" lean-forward="false" selection-start-line="199" selection-start-column="0" selection-end-line="199" selection-end-column="0" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/teller/src/main/java/com/levibostian/teller/datastate/OnlineDataState.kt">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="532">
+          <caret line="127" column="0" lean-forward="true" selection-start-line="127" selection-start-column="0" selection-end-line="127" selection-end-column="0" />
           <folding />
         </state>
       </provider>

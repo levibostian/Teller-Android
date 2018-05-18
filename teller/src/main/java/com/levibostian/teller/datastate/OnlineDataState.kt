@@ -1,5 +1,9 @@
 package com.levibostian.teller.datastate
 
+import com.levibostian.teller.datastate.listener.OnlineDataStateCacheListener
+import com.levibostian.teller.datastate.listener.OnlineDataStateListener
+import com.levibostian.teller.datastate.listener.OnlineDataStateFetchingListener
+import com.levibostian.teller.datastate.listener.OnlineDataStateFirstFetchListener
 import java.util.*
 
 /**
@@ -117,11 +121,23 @@ class OnlineDataState<DATA> private constructor(val firstFetchOfData: Boolean = 
      * Using this function, you can get the state of the cacheData as well as handle errors that may have happened with cacheData (during fetching fresh cacheData or reading the cacheData off the device) or get the status of fetching fresh new cacheData.
      */
     fun deliver(listener: OnlineDataStateListener<DATA>) {
-        if (firstFetchOfData) listener.firstFetchOfData()
-        if (isEmpty) listener.cacheEmpty()
+        deliverCache(listener)
+        deliverFetching(listener)
+        deliverFirstFetch(listener)
+    }
+
+    fun deliverFetching(listener: OnlineDataStateFetchingListener) {
         if (isFetchingFreshData) listener.fetchingFreshData()
         if (doneFetchingFreshData) listener.finishedFetchingFreshData(errorDuringFetch)
+    }
+
+    fun deliverCache(listener: OnlineDataStateCacheListener<DATA>) {
+        if (isEmpty) listener.cacheEmpty()
         data?.let { listener.cacheData(it, dataFetched!!) }
+    }
+
+    fun deliverFirstFetch(listener: OnlineDataStateFirstFetchListener) {
+        if (firstFetchOfData) listener.firstFetchOfData()
         if (doneFirstFetchOfData) listener.finishedFirstFetchOfData(errorDuringFirstFetch)
     }
 
