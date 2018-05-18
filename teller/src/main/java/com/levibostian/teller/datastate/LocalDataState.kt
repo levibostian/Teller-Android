@@ -22,8 +22,7 @@ import java.util.*
  *
  */
 class LocalDataState<DATA> private constructor(val isEmpty: Boolean = false,
-                                               val data: DATA? = null,
-                                               val latestError: Throwable? = null) {
+                                               val data: DATA? = null) {
 
     companion object {
         // Use these constructors to construct the initial state of this immutable object. Use the functions
@@ -37,17 +36,6 @@ class LocalDataState<DATA> private constructor(val isEmpty: Boolean = false,
     }
 
     /**
-     * Tag on an error to this cacheData. Errors could be an error fetching fresh cacheData or reading cacheData off the device. The errors should have to deal with this cacheData, not some generic error encountered in the app.
-     *
-     * @return New immutable instance of [LocalDataState]
-     */
-    fun errorOccurred(error: Throwable): LocalDataState<DATA> {
-        return LocalDataState(isEmpty = isEmpty,
-                data = data,
-                latestError = error)
-    }
-
-    /**
      * This is usually used in the UI of an app to display cacheData to a user.
      *
      * Using this function, you can get the state of the cacheData as well as handle errors that may have happened with cacheData (during fetching fresh cacheData or reading the cacheData off the device) or get the status of fetching fresh new cacheData.
@@ -55,7 +43,6 @@ class LocalDataState<DATA> private constructor(val isEmpty: Boolean = false,
     fun deliver(listener: LocalDataStateListener<DATA>) {
         if (isEmpty) listener.isEmpty()
         data?.let { listener.data(it) }
-        latestError?.let { listener.error(it) }
     }
 
 }

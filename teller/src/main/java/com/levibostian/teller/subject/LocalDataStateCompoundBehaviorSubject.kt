@@ -42,14 +42,6 @@ internal class LocalDataStateCompoundBehaviorSubject<DATA: Any> {
     }
 
     /**
-     * An error occurred with this cacheData.
-     */
-    fun onNextError(error: Throwable) {
-        dataState = dataState.errorOccurred(error)
-        subject.onNext(dataState)
-    }
-
-    /**
      * Get a [BehaviorSubject] as an [Observable]. Convenient as you more then likely do not need to care about the extra functionality of [BehaviorSubject] when you simply want to observe cacheData changes.
      */
     fun asObservable(): Observable<LocalDataState<DATA>> = subject

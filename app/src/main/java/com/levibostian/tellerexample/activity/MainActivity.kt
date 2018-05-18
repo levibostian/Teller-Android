@@ -132,8 +132,6 @@ class MainActivity : AppCompatActivity() {
                             username_edittext.setText(data, TextView.BufferType.EDITABLE)
                             reposViewModel.setUsername(data)
                         }
-                        override fun error(error: Throwable) {
-                        }
                     })
                 })
 
