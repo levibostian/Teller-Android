@@ -127,8 +127,8 @@ class OnlineDataState<DATA> private constructor(val firstFetchOfData: Boolean = 
     }
 
     fun deliverFetching(listener: OnlineDataStateFetchingListener) {
-        if (isFetchingFreshData) listener.fetchingFreshData()
-        if (doneFetchingFreshData) listener.finishedFetchingFreshData(errorDuringFetch)
+        if (isFetchingFreshData) listener.fetchingFreshCacheData()
+        if (doneFetchingFreshData) listener.finishedFetchingFreshCacheData(errorDuringFetch)
     }
 
     fun deliverCache(listener: OnlineDataStateCacheListener<DATA>) {

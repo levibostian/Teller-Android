@@ -2,20 +2,21 @@ package com.levibostian.tellerexample.repository
 
 import com.levibostian.teller.repository.OnlineRepository
 import com.levibostian.teller.type.AgeOfData
-import com.levibostian.tellerexample.model.AppDatabase
+import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.service.GitHubService
-import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
-import io.reactivex.schedulers.Schedulers
-import retrofit2.Retrofit
 
 class ReposRepository(private val service: GitHubService,
                       private val db: AppDatabase): OnlineRepository<List<RepoModel>, ReposRepository.GetRequirements, List<RepoModel>>() {
 
+    // This property tells Teller how old cached data can be before it's determined "too old" and new data is fetched automatically by calling `fetchFreshData()`.
+    // If you ever need to manually fetch fresh data and ignore this property, you may do so by calling `.sync(true)` on any `OnlineRepository` subclass to force a sync.
     override var maxAgeOfData: AgeOfData = AgeOfData(1, AgeOfData.Unit.HOURS)
 
+    // Fetch fresh data via a network call. You are in charge of performing any error handling and parsing of the network call body.
+    // After the network call, you tell Teller if the fetch was successful or a failure. If successful, Teller will cache the data and deliver it to the listeners. If it fails, Teller will deliver your error to the listeners so you can notify your users of errors if you wish.
     override fun fetchFreshData(requirements: GetRequirements): Single<FetchResponse<List<RepoModel>>> {
         return service.listRepos(requirements.username)
                 .map { response ->
@@ -41,14 +42,17 @@ class ReposRepository(private val service: GitHubService,
                 }
     }
 
+    // Save data to a cache on the device.
     override fun saveData(data: List<RepoModel>) {
         db.reposDao().insertRepos(data)
     }
 
+    // Using RxJava2 Observables, query cached data on the device.
     override fun observeCachedData(requirements: GetRequirements): Observable<List<RepoModel>> {
         return db.reposDao().observeReposForUser(requirements.username).toObservable()
     }
 
+    // Help Teller to determine if data is empty or not. Teller uses this when parsing the cache to determine if a data set is empty or not.
     override fun isDataEmpty(data: List<RepoModel>): Boolean = data.isEmpty()
 
     class GetRequirements(val username: String): GetDataRequirements {

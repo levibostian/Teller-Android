@@ -28,17 +28,24 @@
             android:text="GO"/>
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/data_age_textview"
+    <LinearLayout
+        android:id="@+id/data_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        tools:text="Data last synced 5 minutes ago"
-        android:gravity="end"/>
+        android:layout_height="match_parent"
+        android:orientation="vertical">
 
-    <android.support.v7.widget.RecyclerView
-        android:id="@+id/repos_recyclerview"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        <TextView
+            android:id="@+id/data_age_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            tools:text="Data last synced 5 minutes ago"
+            android:gravity="end"/>
+
+        <android.support.v7.widget.RecyclerView
+            android:id="@+id/repos_recyclerview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/empty_view"

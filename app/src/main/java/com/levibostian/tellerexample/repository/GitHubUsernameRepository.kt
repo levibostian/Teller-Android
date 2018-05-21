@@ -16,10 +16,12 @@ class GitHubUsernameRepository(private val context: Context): LocalRepository<St
     private val githubUsernameSharedPrefsKey = "${this::class.java.simpleName}_githubUsername_key"
     private val rxSharedPreferences: RxSharedPreferences = RxSharedPreferences.create(PreferenceManager.getDefaultSharedPreferences(context))
 
+    // Save data to a cache. In this case, we are using SharedPreferences to save our data.
     override fun saveData(data: String) {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString(githubUsernameSharedPrefsKey, data).apply()
     }
 
+    // Using RxJava2 Observables, you query your cached data.
     override fun observeData(): Observable<String> {
         return rxSharedPreferences.getString(githubUsernameSharedPrefsKey, "")
                 .asObservable()
@@ -27,6 +29,7 @@ class GitHubUsernameRepository(private val context: Context): LocalRepository<St
                 .subscribeOn(Schedulers.io())
     }
 
+    // Help Teller to determine if data is empty or not. Teller uses this when parsing the cache to determine if a data set is empty or not.
     override fun isDataEmpty(data: String): Boolean = data.isBlank()
 
 }

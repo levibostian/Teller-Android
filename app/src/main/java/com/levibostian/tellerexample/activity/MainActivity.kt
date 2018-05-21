@@ -5,7 +5,7 @@ import android.arch.lifecycle.ViewModelProviders
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import com.levibostian.tellerexample.R
-import com.levibostian.tellerexample.model.AppDatabase
+import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.service.GitHubService
 import com.levibostian.tellerexample.viewmodel.ReposViewModel
 import retrofit2.Retrofit
@@ -30,6 +30,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 import android.support.v7.app.AlertDialog
 import com.levibostian.tellerexample.extensions.closeKeyboard
+import com.levibostian.tellerexample.util.DependencyUtil
 
 
 class MainActivity : AppCompatActivity() {
@@ -38,6 +39,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gitHubUsernameViewModel: GitHubUsernameViewModel
     private lateinit var service: GitHubService
     private lateinit var db: AppDatabase
+
+    private var updateLastSyncedHandler: Handler? = null
+    private var updateLastSyncedRunnable: Runnable? = null
 
     private var fetchingSnackbar: Snackbar? = null
 
@@ -51,19 +55,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun initialize() {
-        val httpLoggingInterceptor = HttpLoggingInterceptor()
-        httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
-        val client = OkHttpClient.Builder()
-                .addInterceptor(httpLoggingInterceptor)
-                .build()
-        service = Retrofit.Builder()
-                .client(client)
-                .baseUrl("https://api.github.com/")
-                .addCallAdapterFactory(RxJava2CallAdapterFactory.createWithScheduler(Schedulers.io()))
-                .addConverterFactory(GsonConverterFactory.create())
-                .build()
-                .create(GitHubService::class.java)
-        db = Room.databaseBuilder(applicationContext, AppDatabase::class.java, "teller-example").build()
+        service = DependencyUtil.serviceInstance()
+        db = DependencyUtil.dbInstance(application)
 
         reposViewModel = ViewModelProviders.of(this).get(ReposViewModel::class.java)
         gitHubUsernameViewModel = ViewModelProviders.of(this).get(GitHubUsernameViewModel::class.java)
@@ -95,7 +88,14 @@ class MainActivity : AppCompatActivity() {
                         }
                         override fun cacheData(data: List<RepoModel>, fetched: Date) {
                             showDataView()
-                            data_age_textview.text = "Data last synced ${DateUtils.getRelativeTimeSpanString(fetched.time)}"
+
+                            updateLastSyncedRunnable?.let { updateLastSyncedHandler?.removeCallbacks(it) }
+                            updateLastSyncedHandler = Handler()
+                            updateLastSyncedRunnable = Runnable {
+                                data_age_textview.text = "Data last synced ${DateUtils.getRelativeTimeSpanString(fetched.time, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS)}"
+                                updateLastSyncedHandler?.postDelayed(updateLastSyncedRunnable!!, 1000)
+                            }
+                            updateLastSyncedHandler?.post(updateLastSyncedRunnable!!)
 
                             repos_recyclerview.apply {
                                 layoutManager = LinearLayoutManager(this@MainActivity)
@@ -103,18 +103,12 @@ class MainActivity : AppCompatActivity() {
                                 setHasFixedSize(true)
                             }
                         }
-                        override fun fetchingFreshData() {
+                        override fun fetchingFreshCacheData() {
                             fetchingSnackbar = Snackbar.make(parent_view, "Updating repos list...", Snackbar.LENGTH_LONG)
                             fetchingSnackbar?.show()
                         }
-                        override fun finishedFetchingFreshData(errorDuringFetch: Throwable?) {
-                            Handler().postDelayed({
-                                fetchingSnackbar?.setText(errorDuringFetch?.message ?: "Done fetching repos!")
-
-                                Handler().postDelayed({
-                                    fetchingSnackbar?.dismiss()
-                                }, 3000)
-                            }, 1500)
+                        override fun finishedFetchingFreshCacheData(errorDuringFetch: Throwable?) {
+                            fetchingSnackbar?.dismiss()
                         }
                     })
                 })
@@ -142,16 +136,22 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+
+        updateLastSyncedRunnable?.let { updateLastSyncedHandler?.removeCallbacks(it) }
+    }
+
     private fun showLoadingView() {
         loading_view.visibility = View.VISIBLE
         empty_view.visibility = View.GONE
-        repos_recyclerview.visibility = View.GONE
+        data_view.visibility = View.GONE
     }
 
     private fun showEmptyView(message: String = "There are no repos.") {
         loading_view.visibility = View.GONE
         empty_view.visibility = View.VISIBLE
-        repos_recyclerview.visibility = View.GONE
+        data_view.visibility = View.GONE
 
         empty_view_textview.text = message
     }
@@ -159,7 +159,7 @@ class MainActivity : AppCompatActivity() {
     private fun showDataView() {
         loading_view.visibility = View.GONE
         empty_view.visibility = View.GONE
-        repos_recyclerview.visibility = View.VISIBLE
+        data_view.visibility = View.VISIBLE
     }
 
 }
