@@ -74,7 +74,7 @@ Alpha:
 
 - [ ] Make non-RxJava version of the library to make it even smaller and more portable.
 - [ ] Documentation in form of JavaDoc created.
-  - [ ] Documentation on how to use in MVVM, MVI setup and other setups as well.
+- [ ] Documentation on how to use in MVVM, MVI setup and other setups as well.
 - [ ] Fixup the API for the library if needed.
 
 Beta:
@@ -92,7 +92,7 @@ The steps to get Teller up and running is pretty simple: (1) Initialize Teller. 
 
 * Initialize Teller in your app's `Application`:
 
-```
+```Kotlin
 Teller.init(this)
 ```
 
@@ -110,7 +110,7 @@ Here is an example of each:
 
 `LocalRepository`
 
-```
+```Kotlin
 class GitHubUsernameRepository(private val context: Context): LocalRepository<String>() {
 
     private val githubUsernameSharedPrefsKey = "${this::class.java.simpleName}_githubUsername_key"
@@ -139,7 +139,7 @@ This is a `LocalRepository` that is meant to store a `String` representing a Git
 
 `OnlineRepository`
 
-```
+```Kotlin
 class ReposRepository(private val service: GitHubService,
                       private val db: AppDatabase): OnlineRepository<List<RepoModel>, ReposRepository.GetRequirements, List<RepoModel>>() {
 
@@ -202,7 +202,7 @@ Now it's your turn. Create subclasses of `OnlineRepository` and `LocalRepository
 
 `LocalRepository`
 
-```
+```Kotlin
 val githubUsernameRepository: GitHubUsernameRepository = GitHubUsernameRepository(context)
 githubUsernameRepository.observe()
                 .subscribeOn(Schedulers.io())
@@ -221,7 +221,7 @@ githubUsernameRepository.observe()
 
 `OnlineRepository`
 
-```
+```Kotlin
 val reposRepository: ReposRepository = ReposRepository(service, database)
 reposRepository.observe()
                 .subscribeOn(Schedulers.io())
@@ -280,7 +280,7 @@ Teller comes with extra, but optional, features you may also enjoy.
 
 You want to make sure that the data of your app is always up-to-date. When your users open your app, it's nice that they can jump right into some new content and not need to wait for a fetch to complete. Teller provides a simple method to sync your `Repository`s with your remote storage.
 
-```
+```Kotlin
 Teller.shared.sync(listOf(ReposRepository(), OtherRepository(), AndAnotherRepository()), false)
                 .subscribeOn(Schedulers.io())
                 .subscribe {}
