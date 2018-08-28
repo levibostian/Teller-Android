@@ -36,7 +36,7 @@ jobs:
     - stage: danger
       script: bundle exec danger
     - stage: pr
-      script: ruby ./bin/ci/pr_tasks.rb
+      script: ruby ./ci/pr_tasks.rb
 
 stages:
   - name: danger
