@@ -1,0 +1,161 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>OnlineRepository - teller</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">teller</a>&nbsp;/&nbsp;<a href="../index.html">com.levibostian.teller.repository</a>&nbsp;/&nbsp;<a href="./index.html">OnlineRepository</a><br/>
+<br/>
+<h1>OnlineRepository</h1>
+<code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">OnlineRepository</span><span class="symbol">&lt;</span><span class="identifier">RESULT</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">, </span><span class="identifier">GET_DATA_REQUIREMENTS</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-get-data-requirements/index.html"><span class="identifier">GetDataRequirements</span></a><span class="symbol">, </span><span class="identifier">REQUEST</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">&gt;</span></code>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-fetch-response/index.html">FetchResponse</a></p>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">FetchResponse</span><span class="symbol">&lt;</span><span class="identifier">DATA</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="-get-data-requirements/index.html">GetDataRequirements</a></p>
+</td>
+<td>
+<code><span class="keyword">interface </span><span class="identifier">GetDataRequirements</span></code>
+<p>Data object that are the requirements to fetch, get cached cacheData. It could contain a query term to search for cacheData. It could contain a user id to fetch a user from an API.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-sync-result/index.html">SyncResult</a></p>
+</td>
+<td>
+<code><span class="keyword">class </span><span class="identifier">SyncResult</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Constructors</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-init-.html">&lt;init&gt;</a></p>
+</td>
+<td>
+<code><span class="identifier">OnlineRepository</span><span class="symbol">(</span><span class="symbol">)</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="last-time-fetched-fresh-data.html">lastTimeFetchedFreshData</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">lastTimeFetchedFreshData</span><span class="symbol">: </span><a href="https://developer.android.com/reference/java/util/Date.html"><span class="identifier">Date</span></a><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="load-data-requirements.html">loadDataRequirements</a></p>
+</td>
+<td>
+<code><span class="keyword">var </span><span class="identifier">loadDataRequirements</span><span class="symbol">: </span><a href="index.html#GET_DATA_REQUIREMENTS"><span class="identifier">GET_DATA_REQUIREMENTS</span></a><span class="symbol">?</span></code>
+<p>Requirements needed to be able to load cacheData in the <a href="./index.html">OnlineRepository</a>.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="max-age-of-data.html">maxAgeOfData</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">var </span><span class="identifier">maxAgeOfData</span><span class="symbol">: </span><a href="../../com.levibostian.teller.type/-age-of-data/index.html"><span class="identifier">AgeOfData</span></a></code>
+<p>Used to set how old cacheData can be in the app for this certain type of cacheData before it is considered too old and new cacheData should be fetched.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="fetch-fresh-data.html">fetchFreshData</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">fetchFreshData</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.OnlineRepository$fetchFreshData(com.levibostian.teller.repository.OnlineRepository.GET_DATA_REQUIREMENTS)/requirements">requirements</span><span class="symbol">:</span>&nbsp;<a href="index.html#GET_DATA_REQUIREMENTS"><span class="identifier">GET_DATA_REQUIREMENTS</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Single</span><span class="symbol">&lt;</span><a href="-fetch-response/index.html"><span class="identifier">FetchResponse</span></a><span class="symbol">&lt;</span><a href="index.html#REQUEST"><span class="identifier">REQUEST</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span></code>
+<p>Repository does what it needs in order to fetch fresh cacheData. Probably call network API.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="force-sync-next-time-fetched.html">forceSyncNextTimeFetched</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">forceSyncNextTimeFetched</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Call if you want to flag the <a href="#">Repository</a> to force sync the next time that it needs to sync cacheData.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="is-data-empty.html">isDataEmpty</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">isDataEmpty</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.OnlineRepository$isDataEmpty(com.levibostian.teller.repository.OnlineRepository.RESULT)/data">data</span><span class="symbol">:</span>&nbsp;<a href="index.html#RESULT"><span class="identifier">RESULT</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code>
+<p>DataType determines if cacheData is empty or not. Because cacheData can be of <code>Any</code> type, the DataType must determine when cacheData is empty or not.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="observe.html">observe</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">observe</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Observable</span><span class="symbol">&lt;</span><a href="../../com.levibostian.teller.datastate/-online-data-state/index.html"><span class="identifier">OnlineDataState</span></a><span class="symbol">&lt;</span><a href="index.html#RESULT"><span class="identifier">RESULT</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="observe-cached-data.html">observeCachedData</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">observeCachedData</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.OnlineRepository$observeCachedData(com.levibostian.teller.repository.OnlineRepository.GET_DATA_REQUIREMENTS)/requirements">requirements</span><span class="symbol">:</span>&nbsp;<a href="index.html#GET_DATA_REQUIREMENTS"><span class="identifier">GET_DATA_REQUIREMENTS</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Observable</span><span class="symbol">&lt;</span><a href="index.html#RESULT"><span class="identifier">RESULT</span></a><span class="symbol">&gt;</span></code>
+<p>Get existing cached cacheData saved to the device if it exists. Return nil is cacheData does not exist or is empty.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="save-data.html">saveData</a></p>
+</td>
+<td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">saveData</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.OnlineRepository$saveData(com.levibostian.teller.repository.OnlineRepository.REQUEST)/data">data</span><span class="symbol">:</span>&nbsp;<a href="index.html#REQUEST"><span class="identifier">REQUEST</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Save the cacheData to whatever storage method Repository chooses.</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="sync.html">sync</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">sync</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.OnlineRepository$sync(kotlin.Boolean)/force">force</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Single</span><span class="symbol">&lt;</span><a href="-sync-result/index.html"><span class="identifier">SyncResult</span></a><span class="symbol">&gt;</span></code>
+<p>Perform a one time sync of the cacheData. Sync will check the last updated date and the allowed age of cacheData to determine if it should fetch fresh cacheData or not. You may override this behavior with <code>force</code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-i-n-v-a-l-i-d_-l-a-s-t_-f-e-t-c-h-e-d_-v-a-l-u-e.html">INVALID_LAST_FETCHED_VALUE</a></p>
+</td>
+<td>
+<code><span class="keyword">const</span> <span class="keyword">val </span><span class="identifier">INVALID_LAST_FETCHED_VALUE</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-long/index.html"><span class="identifier">Long</span></a></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

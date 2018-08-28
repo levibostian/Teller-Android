@@ -1,0 +1,18 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>Teller.sync - teller</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">teller</a>&nbsp;/&nbsp;<a href="../index.html">com.levibostian.teller</a>&nbsp;/&nbsp;<a href="index.html">Teller</a>&nbsp;/&nbsp;<a href="./sync.html">sync</a><br/>
+<br/>
+<h1>sync</h1>
+<a name="com.levibostian.teller.Teller$sync(kotlin.collections.List((com.levibostian.teller.repository.OnlineRepository((kotlin.Any, com.levibostian.teller.repository.OnlineRepository.GetDataRequirements, )))), kotlin.Boolean)"></a>
+<code><span class="keyword">fun </span><span class="identifier">sync</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.Teller$sync(kotlin.collections.List((com.levibostian.teller.repository.OnlineRepository((kotlin.Any, com.levibostian.teller.repository.OnlineRepository.GetDataRequirements, )))), kotlin.Boolean)/repositories">repositories</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html"><span class="identifier">List</span></a><span class="symbol">&lt;</span><a href="../../com.levibostian.teller.repository/-online-repository/index.html"><span class="identifier">OnlineRepository</span></a><span class="symbol">&lt;</span><span class="identifier">*</span><span class="symbol">,</span>&nbsp;<span class="identifier">*</span><span class="symbol">,</span>&nbsp;<span class="identifier">*</span><span class="symbol">&gt;</span><span class="symbol">&gt;</span><span class="symbol">, </span><span class="identifier" id="com.levibostian.teller.Teller$sync(kotlin.collections.List((com.levibostian.teller.repository.OnlineRepository((kotlin.Any, com.levibostian.teller.repository.OnlineRepository.GetDataRequirements, )))), kotlin.Boolean)/forceSync">forceSync</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Observable</span><span class="symbol">&lt;</span><a href="../../com.levibostian.teller.repository/-online-repository/-sync-result/index.html"><span class="identifier">SyncResult</span></a><span class="symbol">&gt;</span></code>
+<p>Run <a href="../../com.levibostian.teller.repository/-online-repository/sync.html">OnlineRepository.sync</a> on a list of <a href="../../com.levibostian.teller.repository/-online-repository/index.html">OnlineRepository</a> at one time.</p>
+<p>Pretty simple. This function converts a <a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin.collections/-list/index.html">List</a> into an <a href="#">Observable</a>. You need to subscribe to it for the list to run.</p>
+<p><strong>Return</strong><br/>
+An <a href="#">Observable</a> that will run <a href="../../com.levibostian.teller.repository/-online-repository/sync.html">OnlineRepository.sync</a> on the list of <a href="sync.html#com.levibostian.teller.Teller$sync(kotlin.collections.List((com.levibostian.teller.repository.OnlineRepository((kotlin.Any, com.levibostian.teller.repository.OnlineRepository.GetDataRequirements, )))), kotlin.Boolean)/repositories">repositories</a> parameter. Note: The <a href="#">Observable</a> returned does <em>not</em> run on a particular thread. You need to specify that.</p>
+</BODY>
+</HTML>

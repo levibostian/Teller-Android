@@ -1,0 +1,16 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>OnlineRepository.sync - teller</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">teller</a>&nbsp;/&nbsp;<a href="../index.html">com.levibostian.teller.repository</a>&nbsp;/&nbsp;<a href="index.html">OnlineRepository</a>&nbsp;/&nbsp;<a href="./sync.html">sync</a><br/>
+<br/>
+<h1>sync</h1>
+<a name="com.levibostian.teller.repository.OnlineRepository$sync(kotlin.Boolean)"></a>
+<code><span class="keyword">fun </span><span class="identifier">sync</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.OnlineRepository$sync(kotlin.Boolean)/force">force</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Single</span><span class="symbol">&lt;</span><a href="-sync-result/index.html"><span class="identifier">SyncResult</span></a><span class="symbol">&gt;</span></code>
+<p>Perform a one time sync of the cacheData. Sync will check the last updated date and the allowed age of cacheData to determine if it should fetch fresh cacheData or not. You may override this behavior with <code>force</code>.</p>
+<p>Note: If <a href="load-data-requirements.html">loadDataRequirements</a> is null, <a href="#">Completable.complete</a> will be returned from this function and it will be like the sync never happened.</p>
+</BODY>
+</HTML>
