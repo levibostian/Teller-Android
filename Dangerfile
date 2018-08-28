@@ -15,7 +15,7 @@ if github.branch_for_base == "production"
 #   if !git.modified_files.include? "docs/*"
 #     warn 'Did you remember to generate documentation via dokku? (Hint: `./gradlew dokka`)'
 #  end
-  if git.pr_body.include? "#non-release"
+  if github.pr_body.include? "#non-release"
     if !git.modified_files.include? "app/*"
       warn 'You edited some files in `app/`. Are you sure this is a #non-release?'
     end
