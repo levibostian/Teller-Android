@@ -35,6 +35,8 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
      *
      * When this property is set, the [OnlineRepository] instance will begin to observe the cacheData by loading the cached cacheData and checking if it needs to fetch fresh.
      *
+     * **Note:** Make sure to call [dispose]
+     *
      * @see sync On how to force the cacheData source to fetch fresh cacheData if you want that after setting [loadDataRequirements].
      */
     var loadDataRequirements: GET_DATA_REQUIREMENTS? = null
@@ -95,6 +97,9 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
         }
     }
 
+    /**
+     * How to begin observing the state of the data for this [OnlineRepository]. Teller will automatically perform a [sync] if the cached data does not exist or is too old. You will get notified anytime that the state of the data changes or the data itself ever changes.
+     */
     fun observe(): Observable<OnlineDataState<RESULT>> {
         if (stateOfDate == null) {
             stateOfDate = OnlineDataStateBehaviorSubject()
@@ -103,6 +108,15 @@ abstract class OnlineRepository<RESULT: Any, GET_DATA_REQUIREMENTS: OnlineReposi
 
         return stateOfDate!!.asObservable().doOnDispose {
             observeCachedDataDisposable?.dispose()
+        }
+    }
+
+    /**
+     * It is assumed that you will use [observe] while using an [OnlineRepository]. However, if you ever do not, make sure to call [dispose] to dispose of the repository and make sure there are not trailing [Observable]s.
+     */
+    fun dispose() {
+        observeCachedDataDisposable?.let {
+            if (!it.isDisposed) it.dispose()
         }
     }
 
