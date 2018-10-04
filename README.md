@@ -10,7 +10,7 @@ Teller works very well with MVVM and MVI design patterns (note the use of `Repos
 
 [Read the official announcement of Teller](https://levibostian.com/blog/manage-cached-data-teller/) to learn more about what it does and why to use it.
 
-iOS developer? The iOS version of Teller [is coming soon](https://github.com/levibostian/teller-ios).
+iOS developer? Check out the [iOS version of Teller](https://github.com/levibostian/teller-ios).
 
 ## What is Teller?
 
@@ -306,7 +306,7 @@ Documentation is coming shortly. This README is all of the documentation created
 
 ## Are you building an offline-first mobile app?
 
-Teller works is designed for developers building offline-first mobile apps. If you are someone looking to build an offline-first mobile app, also be sure to checkout [Wendy-Android](https://github.com/levibostian/wendy-android) (there is an [iOS version too](https://github.com/levibostian/wendy-ios)). Wendy is designed to sync your device's cached data with remote storage. Think of it like this: Teller is really good at GET calls for your network API, Wendy is really good at PUT, POST, DELETE network API calls. Teller pulls data, Wendy pushes data.
+Teller is designed for developers building offline-first mobile apps. If you are someone looking to build an offline-first mobile app, also be sure to checkout [Wendy-Android](https://github.com/levibostian/wendy-android) (there is an [iOS version too](https://github.com/levibostian/wendy-ios)). Wendy is designed to sync your device's cached data with remote storage. Think of it like this: Teller is really good at GET calls for your network API, Wendy is really good at PUT, POST, DELETE network API calls. Teller pulls data, Wendy pushes data.
 
 ## Author
 
