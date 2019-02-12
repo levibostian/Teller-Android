@@ -36,7 +36,7 @@ jobs:
     - stage: danger
       script: bundle exec danger
     - stage: build
-      script: ruby ./ci/build.rb
+      script: ruby ./bin/ci/build.rb
 
 stages:
   - name: danger

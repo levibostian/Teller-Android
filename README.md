@@ -320,6 +320,19 @@ Teller is open for pull requests. Check out the [list of issues](https://github.
 
 **Want to add features to Teller?** Before you decide to take a bunch of time and add functionality to the library, please, [create an issue](https://github.com/levibostian/Teller-Android/issues/new) stating what you wish to add. This might save you some time in case your purpose does not fit well in the use cases of Teller.
 
+If you plan to contribute to Teller, follow these steps to prepare your machine for development.
+
+* Install git hooks to run misc tasks for you while developing.
+
+```
+bundle install
+bundle exec overcommit --install
+```
+
+Each time you use git, some code will now run to help you perform lint tasks, generating documentation, etc.
+
+* At this time, that is the only tip you need for contributing to Teller. [Ask questions](https://github.com/levibostian/Teller-Android/issues/new), and have fun!
+
 # Where did the name come from?
 
 This library is a powerful Repository. The Repository design pattern is commonly found in the MVVM and MVI patterns. A synonym of repository is *bank*. A *bank teller* is someone who manages your money at a bank and triggers transactions. So, since this library facilitates transactions, teller fits.

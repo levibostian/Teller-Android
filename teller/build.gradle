@@ -34,11 +34,52 @@ dokka {
 
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
     implementation "io.reactivex.rxjava2:rxjava:2.1.13"
+
+    // JUnit
+    testImplementation 'junit:junit:4.12'
+
+    // Android Testing Support Library's runner and rules
+    def androidTestLibVersion = "1.1.0"
+    androidTestImplementation "androidx.test:runner:$androidTestLibVersion"
+    androidTestImplementation "androidx.test:rules:$androidTestLibVersion"
+    androidTestImplementation "androidx.test.ext:junit:$androidTestLibVersion"
+    androidTestImplementation "androidx.test.ext:truth:$androidTestLibVersion"
+
+    // Truth
+    def truthVersion = "0.42"
+    testImplementation "com.google.truth:truth:$truthVersion"
+    androidTestImplementation "com.google.truth:truth:$truthVersion"
+
+    // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+
+    // Mockito
+    def mockitoVersion = "2.18.3"
+    def mockitoKotlinVersion = "1.5.0"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "com.nhaarman:mockito-kotlin-kt1.1:$mockitoKotlinVersion", {
+        exclude group: 'org.jetbrains.kotlin'
+        exclude group: 'org.mockito'
+    }
+    androidTestImplementation "org.mockito:mockito-android:$mockitoVersion"
+    androidTestImplementation "com.nhaarman:mockito-kotlin-kt1.1:$mockitoKotlinVersion", {
+        exclude group: 'org.jetbrains.kotlin'
+        exclude group: 'org.mockito'
+    }
+
+    // Espresso UI Testing
+    def espressoVersion = "3.1.0"
+    androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
+    // androidTestImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
+    // androidTestImplementation "androidx.test.espresso:espresso-accessibility:$espressoVersion"
+    // androidTestImplementation "androidx.test.espresso:espresso-web:$espressoVersion"
+    androidTestImplementation "androidx.test.espresso.idling:idling-concurrent:$espressoVersion"
+    androidTestImplementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
 }
 repositories {
     mavenCentral()

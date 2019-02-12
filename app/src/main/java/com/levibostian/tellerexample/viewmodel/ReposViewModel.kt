@@ -21,7 +21,7 @@ class ReposViewModel: ViewModel() {
     }
 
     fun setUsername(username: String) {
-        reposRepository.loadDataRequirements = ReposRepository.GetRequirements(username)
+        reposRepository.requirements = ReposRepository.GetRequirements(username)
     }
 
     fun observeRepos(): LiveData<OnlineDataState<List<RepoModel>>> {
