@@ -1,6 +1,7 @@
 package com.levibostian.teller.repository.manager
 
 import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.repository.GetDataRequirementsTag
 import com.levibostian.teller.repository.OnlineRepository
 import io.reactivex.subjects.PublishSubject
@@ -45,13 +46,13 @@ class OnlineRepositoryRefreshManagerTest {
         repo1TestObserver
                 .await()
                 .assertValue(check {
-                    Truth.assertThat(it.didSucceed()).isTrue()
+                    assertThat(it.didSucceed()).isTrue()
                 })
 
         repo2TestObserver
                 .await()
                 .assertValue(check {
-                    Truth.assertThat(it.didSucceed()).isTrue()
+                    assertThat(it.didSucceed()).isTrue()
                 })
 
         verify(repo1).refreshBegin()
@@ -62,8 +63,8 @@ class OnlineRepositoryRefreshManagerTest {
         val repo2RefreshCompleteArgumentCaptor = argumentCaptor<OnlineRepository.FetchResponse<String>>()
         verify(repo2).refreshComplete(repo2RefreshCompleteArgumentCaptor.capture())
 
-        Truth.assertThat(repo1RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Result)
-        Truth.assertThat(repo2RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Result)
+        assertThat(repo1RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Result)
+        assertThat(repo2RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Result)
     }
 
     @Test
@@ -90,13 +91,13 @@ class OnlineRepositoryRefreshManagerTest {
         repo1TestObserver
                 .await()
                 .assertValue(check {
-                    Truth.assertThat(it.didSucceed()).isTrue()
+                    assertThat(it.didSucceed()).isTrue()
                 })
 
         repo2TestObserver
                 .await()
                 .assertValue(check {
-                    Truth.assertThat(it.didFail()).isTrue()
+                    assertThat(it.didFail()).isTrue()
                 })
 
         verify(repo1).refreshBegin()
@@ -107,8 +108,8 @@ class OnlineRepositoryRefreshManagerTest {
         val repo2RefreshCompleteArgumentCaptor = argumentCaptor<OnlineRepository.FetchResponse<String>>()
         verify(repo2).refreshComplete(repo2RefreshCompleteArgumentCaptor.capture())
 
-        Truth.assertThat(repo1RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Result)
-        Truth.assertThat(repo2RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task2Result)
+        assertThat(repo1RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Result)
+        assertThat(repo2RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task2Result)
     }
 
     @Test
@@ -135,13 +136,13 @@ class OnlineRepositoryRefreshManagerTest {
         repo1TestObserver
                 .await()
                 .assertValue(check {
-                    Truth.assertThat(it.didSucceed()).isTrue()
+                    assertThat(it.didSucceed()).isTrue()
                 })
 
         repo1SecondTestObserver
                 .await()
                 .assertValue(check {
-                    Truth.assertThat(it.didSucceed()).isTrue()
+                    assertThat(it.didSucceed()).isTrue()
                 })
 
         verify(repo1).refreshBegin()
@@ -149,7 +150,7 @@ class OnlineRepositoryRefreshManagerTest {
         val repo1RefreshCompleteArgumentCaptor = argumentCaptor<OnlineRepository.FetchResponse<String>>()
         verify(repo1).refreshComplete(repo1RefreshCompleteArgumentCaptor.capture())
 
-        Truth.assertThat(repo1RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Result)
+        assertThat(repo1RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Result)
     }
 
     @Test
@@ -165,12 +166,12 @@ class OnlineRepositoryRefreshManagerTest {
 
         SharedOnlineRepositoryRefreshManager.cancelTasksForRepository(defaultTag, repo1)
 
-        Truth.assertThat(task1Disposed).isTrue()
+        assertThat(task1Disposed).isTrue()
 
         repo1TestObserver
                 .await()
                 .assertValue(check {
-                    Truth.assertThat(it.didSkip()).isTrue()
+                    assertThat(it.didSkip()).isTrue()
                 })
 
         verify(repo1, never()).refreshComplete(any<OnlineRepository.FetchResponse<String>>())
@@ -198,7 +199,7 @@ class OnlineRepositoryRefreshManagerTest {
         SharedOnlineRepositoryRefreshManager.cancelTasksForRepository(defaultTag, repo1)
 
         // Continue running task as repo2 is still observing.
-        Truth.assertThat(task1Disposed).isFalse()
+        assertThat(task1Disposed).isFalse()
 
         task1Subject.apply {
             onNext(task1Response)
@@ -212,21 +213,21 @@ class OnlineRepositoryRefreshManagerTest {
         repo1TestObserver
                 .await()
                 .assertValue(check {
-                    Truth.assertThat(it.didSkip()).isTrue()
-                    Truth.assertThat(it.didSucceed()).isFalse()
+                    assertThat(it.didSkip()).isTrue()
+                    assertThat(it.didSucceed()).isFalse()
                 })
 
         repo2TestObserver
                 .await()
                 .assertValue(check {
-                    Truth.assertThat(it.didSkip()).isFalse()
-                    Truth.assertThat(it.didSucceed()).isTrue()
+                    assertThat(it.didSkip()).isFalse()
+                    assertThat(it.didSucceed()).isTrue()
                 })
 
         verify(repo1, never()).refreshComplete(any<OnlineRepository.FetchResponse<String>>())
         val refreshCompleteArgumentCaptor = argumentCaptor<OnlineRepository.FetchResponse<String>>()
         verify(repo2).refreshComplete(refreshCompleteArgumentCaptor.capture())
-        Truth.assertThat(refreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Response)
+        assertThat(refreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Response)
     }
 
     @Test
@@ -246,7 +247,7 @@ class OnlineRepositoryRefreshManagerTest {
         SharedOnlineRepositoryRefreshManager.cancelTasksForRepository(defaultTag, repo2)
 
         // Continue running task as repo2 is still observing.
-        Truth.assertThat(task1Disposed).isFalse()
+        assertThat(task1Disposed).isFalse()
 
         task1Subject.apply {
             onNext(task1Response)
@@ -256,13 +257,13 @@ class OnlineRepositoryRefreshManagerTest {
         repo1TestObserver
                 .await()
                 .assertValue(check {
-                    Truth.assertThat(it.didSucceed()).isTrue()
-                    Truth.assertThat(it.didSkip()).isFalse()
+                    assertThat(it.didSucceed()).isTrue()
+                    assertThat(it.didSkip()).isFalse()
                 })
 
         val refreshCompleteArgumentCaptor = argumentCaptor<OnlineRepository.FetchResponse<String>>()
         verify(repo1).refreshComplete(refreshCompleteArgumentCaptor.capture())
-        Truth.assertThat(refreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Response)
+        assertThat(refreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Response)
     }
 
 }

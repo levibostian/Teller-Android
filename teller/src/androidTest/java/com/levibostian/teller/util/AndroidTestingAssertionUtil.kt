@@ -2,7 +2,7 @@ package com.levibostian.teller.util
 
 import io.reactivex.functions.Predicate
 
-class AndroidTestingAssertionUtil {
+internal class AndroidTestingAssertionUtil {
 
     companion object {
 

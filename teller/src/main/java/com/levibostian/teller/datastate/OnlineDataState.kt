@@ -3,142 +3,137 @@ package com.levibostian.teller.datastate
 import com.levibostian.teller.datastate.listener.OnlineDataStateCacheListener
 import com.levibostian.teller.datastate.listener.OnlineDataStateListener
 import com.levibostian.teller.datastate.listener.OnlineDataStateFetchingListener
-import com.levibostian.teller.datastate.listener.OnlineDataStateFirstFetchListener
+import com.levibostian.teller.datastate.listener.OnlineDataStateNoCacheStateListener
+import com.levibostian.teller.datastate.online.statemachine.OnlineDataStateStateMachine
+import com.levibostian.teller.repository.OnlineRepository
 import java.util.*
 
 /**
- * Data in apps are in 1 of 3 different types of state:
- *
- * 1. Data does not exist. It has never been obtained before.
- * 2. It is empty. Data has been obtained before, but there is none.
- * 3. Data exists.
- *
- * This class takes in a type of cacheData to keep state on via generic [DATA] and it maintains the state of that cacheData.
- *
- * Along with the 3 different states cacheData could be in, there are temporary states that cacheData could also be in.
- *
- * * An error occurred with that cacheData.
- * * Fresh cacheData is being fetched for this cacheData. It may be updated soon.
- *
- * The 3 states listed above empty, cacheData, loading are all permanent. Data is 1 of those 3 at all times. Data has this error or fetching status temporarily until someone calls [deliver] one time and then those temporary states are deleted.
- *
- * This class is used in companion with [Repository] and [OnlineStateDataCompoundBehaviorSubject] to maintain the state of cacheData to deliver to someone observing.
- *
- * @property firstFetchOfData When cacheData has never been fetched before for a cacheData type, this is where it all begins. After this, cacheData will be empty or cacheData state.
- * @property errorDuringFetch Says that the [latestError] was caused during the fetching phase.
+Holds the current state of data that is obtained via a network call. This data structure is meant to be passed out of Teller and to the application using Teller so it can parse it and display the data representation in the app.
+The online data state is *not* manipulated here. It is only stored.
+Data in apps are in 1 of 3 different types of state:
+1. Cache data does not exist. It has never been attempted to be fetched or it has been attempted but failed and needs to be attempted again.
+2. Data has been cached in the app and is either empty or not.
+3. A cache exists, and we are fetching fresh data to update the cache.
  */
-class OnlineDataState<DATA> private constructor(val firstFetchOfData: Boolean = false,
-                                                val doneFirstFetchOfData: Boolean = false,
-                                                val isEmpty: Boolean = false,
-                                                val data: DATA? = null,
-                                                val dataFetched: Date? = null,
-                                                val errorDuringFirstFetch: Throwable? = null,
-                                                val isFetchingFreshData: Boolean = false,
-                                                val doneFetchingFreshData: Boolean = false,
-                                                val errorDuringFetch: Throwable? = null) {
+data class OnlineDataState<CACHE: Any> internal constructor(val noCacheExists: Boolean,
+                                                           val fetchingForFirstTime: Boolean,
+                                                           val cacheData: CACHE?,
+                                                           val lastTimeFetched: Date?,
+                                                           val isFetchingFreshData: Boolean,
+                                                           val requirements: OnlineRepository.GetDataRequirements?,
+                                                           internal val stateMachine: OnlineDataStateStateMachine<CACHE>?,
+        // To prevent the end user getting spammed like crazy with UI messages of the same error or same status of data, the following properties should be set once in the constructor and then for future state calls, negate them.
+                                                           val errorDuringFirstFetch: Throwable?,
+                                                           val justCompletedSuccessfulFirstFetch: Boolean,
+                                                           val errorDuringFetch: Throwable?,
+                                                           val justCompletedSuccessfullyFetchingFreshData: Boolean) {
 
-    companion object {
-        // Use these constructors to construct the initial state of this immutable object. Use the functions
-        fun <T> firstFetchOfData(): OnlineDataState<T> {
-            return OnlineDataState(firstFetchOfData = true)
+    internal companion object {
+        /**
+         * This constructor is meant to be more of a placeholder. It's having "no state".
+         */
+        fun <CACHE: Any> none(): OnlineDataState<CACHE> {
+            return OnlineDataState(
+                    noCacheExists = false,
+                    fetchingForFirstTime = false,
+                    cacheData = null,
+                    lastTimeFetched = null,
+                    isFetchingFreshData = false,
+                    requirements = null,
+                    stateMachine = null,
+                    errorDuringFirstFetch = null,
+                    justCompletedSuccessfulFirstFetch = false,
+                    errorDuringFetch = null,
+                    justCompletedSuccessfullyFetchingFreshData = false)
         }
+    }
 
-        fun <T> isEmpty(): OnlineDataState<T> {
-            return OnlineDataState(isEmpty = true)
+    /**
+     * Used to change the state of data.
+     */
+    internal fun change(): OnlineDataStateStateMachine<CACHE> {
+        return stateMachine!!
+    }
+
+    /**
+     * Receive the full status of the data.
+     *
+     * @see OnlineDataStateNoCacheStateListener
+     * @see OnlineDataStateCacheListener
+     * @see OnlineDataStateFetchingListener
+     */
+    fun deliverAllStates(listener: OnlineDataStateListener<CACHE>) {
+        deliverCacheState(listener)
+        deliverFetchingFreshCacheState(listener)
+        deliverNoCacheState(listener)
+    }
+
+    /**
+     * This is usually used in the UI of an app to display the status of loading the data type for the first time to a user.
+     */
+    fun deliverFetchingFreshCacheState(listener: OnlineDataStateFetchingListener) {
+        if (isFetchingFreshData) listener.fetching()
+        errorDuringFetch?.let { listener.finishedFetching(it) }
+        if (justCompletedSuccessfullyFetchingFreshData) listener.finishedFetching(errorDuringFetch)
+    }
+
+    /**
+     * This is usually used in the UI of an app to display the cached data to a user.
+     *
+     * Using this function, you can get the state of the cached data as well as handle errors that may have happened during fetching the cached data.
+     */
+    fun deliverCacheState(listener: OnlineDataStateCacheListener<CACHE>) {
+        if (!noCacheExists) {
+            val data = cacheData
+            if (data != null) {
+                listener.cacheData(data, lastTimeFetched!!)
+            } else {
+                listener.cacheEmpty(lastTimeFetched!!)
+            }
         }
-
-        fun <T> data(data: T, dataFetched: Date): OnlineDataState<T> {
-            return OnlineDataState(data = data, dataFetched = dataFetched)
-        }
     }
 
     /**
-     * Tag on an error to this cacheData. Errors could be an error fetching fresh cacheData or reading cacheData off the device. The errors should have to deal with this cacheData, not some generic error encountered in the app.
-     *
-     * @return New immutable instance of [OnlineDataState]
+     * This is usually used in the UI of an app to display that the cached data on the device is empty to a user.
      */
-    fun doneFirstFetch(error: Throwable?): OnlineDataState<DATA> {
-        return duplicate(
-                firstFetchOfData = false,
-                doneFirstFetchOfData = true,
-                errorDuringFirstFetch = error
-        )
+    fun deliverNoCacheState(listener: OnlineDataStateNoCacheStateListener) {
+        if (justCompletedSuccessfulFirstFetch) listener.finishedFirstFetch(null)
+        if (fetchingForFirstTime) listener.firstFetch()
+        errorDuringFirstFetch?.let { listener.finishedFirstFetch(it) }
+        if (noCacheExists) listener.noCache()
     }
 
-    /**
-     * Set the status of this cacheData as fetching fresh cacheData.
-     *
-     * @return New immutable instance of [OnlineDataState]
-     */
-    fun fetchingFreshData(): OnlineDataState<DATA> {
-        if (firstFetchOfData) throw RuntimeException("The state of cacheData is saying you are already fetching for the first time. You cannot fetch for first time and fetch after cache.")
-
-        return duplicate(
-                isFetchingFreshData = true
-        )
+    override fun hashCode(): Int {
+        var result = noCacheExists.hashCode()
+        result = 31 * result + fetchingForFirstTime.hashCode()
+        result = 31 * result + (cacheData?.hashCode() ?: 0)
+        result = 31 * result + (lastTimeFetched?.hashCode() ?: 0)
+        result = 31 * result + isFetchingFreshData.hashCode()
+        result = 31 * result + (requirements?.hashCode() ?: 0)
+        result = 31 * result + (errorDuringFirstFetch?.hashCode() ?: 0)
+        result = 31 * result + justCompletedSuccessfulFirstFetch.hashCode()
+        result = 31 * result + (errorDuringFetch?.hashCode() ?: 0)
+        result = 31 * result + justCompletedSuccessfullyFetchingFreshData.hashCode()
+        return result
     }
 
-    /**
-     * Set the status of this cacheData as done fetching fresh cacheData.
-     *
-     * @return New immutable instance of [OnlineDataState]
-     */
-    fun doneFetchingFreshData(errorDuringFetch: Throwable?): OnlineDataState<DATA> {
-        if (firstFetchOfData) throw RuntimeException("Call doneFirstFetch() instead.")
+    override fun equals(other: Any?): Boolean {
+        if (other == null || other !is OnlineDataState<*>) return false
 
-        return duplicate(
-                isFetchingFreshData = false,
-                doneFetchingFreshData = true,
-                errorDuringFetch = errorDuringFetch
-        )
-    }
+        // Everything but state machine. That doesn't matter. The data here does.
+        return this.noCacheExists == other.noCacheExists &&
+                this.fetchingForFirstTime == other.fetchingForFirstTime &&
+                this.cacheData == other.cacheData &&
+                this.isFetchingFreshData == other.isFetchingFreshData &&
+                this.lastTimeFetched == other.lastTimeFetched &&
 
-    // This exists because I have tried to make OnlineDataSource immutable. With that, there are fields that need to be copied over from the previous state of the previous object. So, I am using this where you can override fields one at a time that you need.
-    private fun duplicate(firstFetchOfData: Boolean = this.firstFetchOfData,
-                          doneFirstFetchOfData: Boolean = this.doneFirstFetchOfData,
-                          isEmpty: Boolean = this.isEmpty,
-                          data: DATA? = this.data,
-                          dataFetched: Date? = this.dataFetched,
-                          errorDuringFirstFetch: Throwable? = null, // Set null to avoid calling the listener error() multiple times.
-                          isFetchingFreshData: Boolean = this.isFetchingFreshData,
-                          doneFetchingFreshData: Boolean = this.doneFetchingFreshData,
-                          errorDuringFetch: Throwable? = null // Set null to avoid calling the listener error() multiple times.
-    ): OnlineDataState<DATA> {
-        return OnlineDataState(firstFetchOfData = firstFetchOfData,
-                doneFirstFetchOfData = doneFirstFetchOfData,
-                isEmpty = isEmpty,
-                data = data,
-                dataFetched = dataFetched,
-                errorDuringFirstFetch = errorDuringFirstFetch,
-                isFetchingFreshData = isFetchingFreshData,
-                doneFetchingFreshData = doneFetchingFreshData,
-                errorDuringFetch = errorDuringFetch)
-    }
+                this.requirements?.tag == other.requirements?.tag &&
 
-    /**
-     * This is usually used in the UI of an app to display cacheData to a user.
-     *
-     * Using this function, you can get the state of the cacheData as well as handle errors that may have happened with cacheData (during fetching fresh cacheData or reading the cacheData off the device) or get the status of fetching fresh new cacheData.
-     */
-    fun deliver(listener: OnlineDataStateListener<DATA>) {
-        deliverCache(listener)
-        deliverFetching(listener)
-        deliverFirstFetch(listener)
-    }
-
-    fun deliverFetching(listener: OnlineDataStateFetchingListener) {
-        if (isFetchingFreshData) listener.fetchingFreshCacheData()
-        if (doneFetchingFreshData) listener.finishedFetchingFreshCacheData(errorDuringFetch)
-    }
-
-    fun deliverCache(listener: OnlineDataStateCacheListener<DATA>) {
-        if (isEmpty) listener.cacheEmpty()
-        data?.let { listener.cacheData(it, dataFetched!!) }
-    }
-
-    fun deliverFirstFetch(listener: OnlineDataStateFirstFetchListener) {
-        if (firstFetchOfData) listener.firstFetchOfData()
-        if (doneFirstFetchOfData) listener.finishedFirstFetchOfData(errorDuringFirstFetch)
+                this.errorDuringFirstFetch == other.errorDuringFirstFetch &&
+                this.justCompletedSuccessfulFirstFetch == other.justCompletedSuccessfulFirstFetch &&
+                this.justCompletedSuccessfullyFetchingFreshData == other.justCompletedSuccessfullyFetchingFreshData &&
+                this.errorDuringFetch == other.errorDuringFetch
     }
 
 }

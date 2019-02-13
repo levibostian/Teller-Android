@@ -10,7 +10,7 @@ import com.levibostian.tellerexample.job.RepositorySyncJob
 class MainApplication: Application() {
 
     companion object {
-        @JvmStatic lateinit var appContext: Context
+        lateinit var appContext: Context
     }
 
     override fun onCreate() {

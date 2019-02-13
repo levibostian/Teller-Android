@@ -2,7 +2,7 @@ package com.levibostian.teller.util
 
 import io.reactivex.functions.Predicate
 
-class AssertionUtil {
+internal class AssertionUtil {
 
     companion object {
 

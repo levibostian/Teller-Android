@@ -3,6 +3,7 @@ package com.levibostian.teller.repository.manager
 
 import android.content.SharedPreferences
 import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.type.AgeOfData
 import com.nhaarman.mockito_kotlin.verify
 import org.junit.Test
@@ -35,7 +36,7 @@ class TellerOnlineRepositorySyncStateManagerTest {
     fun isDataTooOld_neverFetchedDataBefore_returnTrue() {
         `when`(sharedPreferences.getLong(defaultTag, TellerOnlineRepositorySyncStateManager.INVALID_LAST_FETCHED_VALUE)).thenReturn(TellerOnlineRepositorySyncStateManager.INVALID_LAST_FETCHED_VALUE)
 
-        Truth.assertThat(manager.isDataTooOld(defaultTag, AgeOfData(1, AgeOfData.Unit.HOURS))).isTrue()
+        assertThat(manager.isDataTooOld(defaultTag, AgeOfData(1, AgeOfData.Unit.HOURS))).isTrue()
     }
 
     @Test
@@ -47,7 +48,7 @@ class TellerOnlineRepositorySyncStateManagerTest {
 
         `when`(sharedPreferences.getLong(defaultTag, TellerOnlineRepositorySyncStateManager.INVALID_LAST_FETCHED_VALUE)).thenReturn(lastFetchedOneDayAgo.time)
 
-        Truth.assertThat(manager.isDataTooOld(defaultTag, AgeOfData(1, AgeOfData.Unit.DAYS))).isFalse()
+        assertThat(manager.isDataTooOld(defaultTag, AgeOfData(1, AgeOfData.Unit.DAYS))).isFalse()
     }
 
     @Test
@@ -59,7 +60,7 @@ class TellerOnlineRepositorySyncStateManagerTest {
 
         `when`(sharedPreferences.getLong(defaultTag, TellerOnlineRepositorySyncStateManager.INVALID_LAST_FETCHED_VALUE)).thenReturn(lastFetchedOneDayAgo.time)
 
-        Truth.assertThat(manager.isDataTooOld(defaultTag, AgeOfData(1, AgeOfData.Unit.DAYS))).isTrue()
+        assertThat(manager.isDataTooOld(defaultTag, AgeOfData(1, AgeOfData.Unit.DAYS))).isTrue()
     }
 
     @Test
@@ -81,14 +82,14 @@ class TellerOnlineRepositorySyncStateManagerTest {
     fun hasEverFetchedData_neverFetchedDataBefore_returnFalse() {
         `when`(sharedPreferences.getLong(defaultTag, TellerOnlineRepositorySyncStateManager.INVALID_LAST_FETCHED_VALUE)).thenReturn(TellerOnlineRepositorySyncStateManager.INVALID_LAST_FETCHED_VALUE)
 
-        Truth.assertThat(manager.hasEverFetchedData(defaultTag)).isFalse()
+        assertThat(manager.hasEverFetchedData(defaultTag)).isFalse()
     }
 
     @Test
     fun hasEverFetchedData_hasFetchedBefore_returnTrue() {
         `when`(sharedPreferences.getLong(defaultTag, TellerOnlineRepositorySyncStateManager.INVALID_LAST_FETCHED_VALUE)).thenReturn(Date().time)
 
-        Truth.assertThat(manager.hasEverFetchedData(defaultTag)).isTrue()
+        assertThat(manager.hasEverFetchedData(defaultTag)).isTrue()
     }
 
 }

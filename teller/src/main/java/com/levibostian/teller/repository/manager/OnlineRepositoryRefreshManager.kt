@@ -17,7 +17,7 @@ internal interface OnlineRepositoryRefreshManager {
      */
     interface Listener {
         fun refreshBegin()
-        fun <RefreshResultDataType: Any> refreshComplete(response: RefreshResultDataType)
+        fun <RefreshResultDataType: Any> refreshComplete(response: OnlineRepository.FetchResponse<RefreshResultDataType>)
     }
 
     /**

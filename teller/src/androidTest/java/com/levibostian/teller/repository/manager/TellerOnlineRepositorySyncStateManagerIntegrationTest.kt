@@ -10,6 +10,7 @@ import org.junit.runner.RunWith
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth
+import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.repository.GetDataRequirementsTag
 
 import org.junit.Before
@@ -34,7 +35,7 @@ class TellerOnlineRepositorySyncStateManagerIntegrationTest {
 
     @Test
     fun lastTimeFetchedData_null_clearedManagerData() {
-        Truth.assertThat(manager.lastTimeFetchedData(defaultTag)).isNull()
+        assertThat(manager.lastTimeFetchedData(defaultTag)).isNull()
     }
 
     @Test
@@ -45,9 +46,9 @@ class TellerOnlineRepositorySyncStateManagerIntegrationTest {
 
         manager.updateAgeOfData(defaultTag, lastFetchedOneDayAgo)
 
-        Truth.assertThat(manager.lastTimeFetchedData(defaultTag)!!).isEqualTo(lastFetchedOneDayAgo)
+        assertThat(manager.lastTimeFetchedData(defaultTag)!!).isEqualTo(lastFetchedOneDayAgo)
 
-        Truth.assertThat(manager.lastTimeFetchedData(otherTag)).isNull()
+        assertThat(manager.lastTimeFetchedData(otherTag)).isNull()
     }
 
 }
