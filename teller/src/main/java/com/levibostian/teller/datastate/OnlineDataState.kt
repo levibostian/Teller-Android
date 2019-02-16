@@ -136,4 +136,12 @@ data class OnlineDataState<CACHE: Any> internal constructor(val noCacheExists: B
                 this.errorDuringFetch == other.errorDuringFetch
     }
 
+    override fun toString(): String {
+        return if (stateMachine != null) {
+            stateMachine.toString()
+        } else {
+            "State: none"
+        }
+    }
+
 }

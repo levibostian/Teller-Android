@@ -9,6 +9,7 @@ internal class NoCacheStateMachine private constructor(val state: State, val err
 
     var isFetching: Boolean = false
         get() = state == State.IS_FETCHING
+        private set
 
     companion object {
         fun noCacheExists(): NoCacheStateMachine = NoCacheStateMachine(State.NO_CACHE_EXISTS, null)
@@ -25,7 +26,10 @@ internal class NoCacheStateMachine private constructor(val state: State, val err
     override fun toString(): String {
         return when (state) {
             State.IS_FETCHING -> "Cache data does not exist, but it is being fetched for first time."
-            State.NO_CACHE_EXISTS -> "Cache data does not exist. It is not fetching data."
+            State.NO_CACHE_EXISTS -> {
+                return if (errorDuringFetch != null) "Cache data does not exist. It just got done fetching but failed with error: $errorDuringFetch."
+                else "Cache data does not exist. It is not fetching data."
+            }
         }
     }
 

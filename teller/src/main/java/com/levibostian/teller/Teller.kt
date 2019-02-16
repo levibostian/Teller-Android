@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.app.Application
 import android.content.Context
 import android.content.SharedPreferences
+import com.levibostian.teller.extensions.getTellerSharedPreferences
 import com.levibostian.teller.repository.OnlineRepository
 import com.levibostian.teller.util.ConstantsUtil
 import io.reactivex.Observable
@@ -39,7 +40,7 @@ class Teller internal constructor(private val context: Context) {
         val shared: Teller by lazy { sharedInstance() }
     }
 
-    internal val sharedPreferences: SharedPreferences = context.getSharedPreferences(ConstantsUtil.NAMESPACE, Context.MODE_PRIVATE)
+    internal val sharedPreferences: SharedPreferences = context.getTellerSharedPreferences()
 
     private fun init() {
     }

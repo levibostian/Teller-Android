@@ -15,6 +15,11 @@ class GitHubUsernameRepository(private val context: Context): LocalRepository<St
 
     private val githubUsernameSharedPrefsKey = "${this::class.java.simpleName}_githubUsername_key"
     private val rxSharedPreferences: RxSharedPreferences = RxSharedPreferences.create(PreferenceManager.getDefaultSharedPreferences(context))
+    private val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+    var currentUsernameSaved: String? = null
+        get() = sharedPreferences.getString(githubUsernameSharedPrefsKey, null)
+        private set
 
     // Save data to a cache. In this case, we are using SharedPreferences to save our data.
     override fun saveData(data: String) {

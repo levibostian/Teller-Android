@@ -10,6 +10,7 @@ internal class FetchingFreshCacheStateMachine private constructor(val state: Sta
 
     var isFetching: Boolean = false
         get() = state == State.IS_FETCHING
+        private set
 
     companion object {
         fun notFetching(lastTimeFetched: Date): FetchingFreshCacheStateMachine = FetchingFreshCacheStateMachine(State.NOT_FETCHING, null, lastTimeFetched)
@@ -28,8 +29,11 @@ internal class FetchingFreshCacheStateMachine private constructor(val state: Sta
 
     override fun toString(): String {
         return when (state) {
-            State.IS_FETCHING -> "Fetching fresh cache data."
-            State.NOT_FETCHING -> "Not fetching fresh cache data."
+            State.IS_FETCHING -> "Fetching fresh cache data, last time fetched: $lastTimeFetched."
+            State.NOT_FETCHING -> {
+                return if (errorDuringFetch != null) "Done fetching fresh data, error occurred: $errorDuringFetch, last time fetched: $lastTimeFetched."
+                else "Not fetching fresh cache data, last time fetched: $lastTimeFetched."
+            }
         }
     }
 

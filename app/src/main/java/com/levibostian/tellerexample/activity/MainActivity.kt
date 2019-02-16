@@ -65,8 +65,11 @@ class MainActivity : AppCompatActivity() {
 
         reposViewModel.observeRepos()
                 .observe(this, Observer { reposState ->
-                    reposState?.deliver(object : OnlineDataStateListener<List<RepoModel>> {
-                        override fun finishedFirstFetchOfData(errorDuringFetch: Throwable?) {
+                    reposState?.deliverAllStates(object : OnlineDataStateListener<List<RepoModel>> {
+                        override fun noCache() {
+                            // great place to show empty state where first fetch fails.
+                        }
+                        override fun finishedFirstFetch(errorDuringFetch: Throwable?) {
                             if (errorDuringFetch != null) {
                                 errorDuringFetch.message?.let { showEmptyView(it) }
 
@@ -80,10 +83,10 @@ class MainActivity : AppCompatActivity() {
                                         .show()
                             }
                         }
-                        override fun firstFetchOfData() {
+                        override fun firstFetch() {
                             showLoadingView()
                         }
-                        override fun cacheEmpty() {
+                        override fun cacheEmpty(fetched: Date) {
                             showEmptyView()
                         }
                         override fun cacheData(data: List<RepoModel>, fetched: Date) {
@@ -103,18 +106,18 @@ class MainActivity : AppCompatActivity() {
                                 setHasFixedSize(true)
                             }
                         }
-                        override fun fetchingFreshCacheData() {
+                        override fun fetching() {
                             fetchingSnackbar = Snackbar.make(parent_view, "Updating repos list...", Snackbar.LENGTH_LONG)
                             fetchingSnackbar?.show()
                         }
-                        override fun finishedFetchingFreshCacheData(errorDuringFetch: Throwable?) {
+                        override fun finishedFetching(errorDuringFetch: Throwable?) {
                             fetchingSnackbar?.dismiss()
                         }
                     })
                 })
         gitHubUsernameViewModel.observeUsername()
                 .observe(this, Observer { username ->
-                    username?.deliver(object : LocalDataStateListener<String> {
+                    username?.deliverState(object : LocalDataStateListener<String> {
                         override fun isEmpty() {
                             username_edittext.setText("", TextView.BufferType.EDITABLE)
                         }

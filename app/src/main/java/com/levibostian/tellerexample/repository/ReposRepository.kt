@@ -13,7 +13,7 @@ class ReposRepository(private val service: GitHubService,
 
     // This property tells Teller how old cached data can be before it's determined "too old" and new data is fetched automatically by calling `fetchFreshData()`.
     // If you ever need to manually fetch fresh data and ignore this property, you may do so by calling `.sync(true)` on any `OnlineRepository` subclass to force a sync.
-    override var maxAgeOfData: AgeOfData = AgeOfData(1, AgeOfData.Unit.HOURS)
+    override var maxAgeOfData: AgeOfData = AgeOfData(1, AgeOfData.Unit.DAYS)
 
     // Fetch fresh data via a network call. You are in charge of performing any error handling and parsing of the network call body.
     // After the network call, you tell Teller if the fetch was successful or a failure. If successful, Teller will cache the data and deliver it to the listeners. If it fails, Teller will deliver your error to the listeners so you can notify your users of errors if you wish.
@@ -42,8 +42,7 @@ class ReposRepository(private val service: GitHubService,
                 }
     }
 
-    // Save data to a cache on the device.
-    override fun saveData(data: List<RepoModel>) {
+    override fun saveData(data: List<RepoModel>, requirements: GetRequirements) {
         db.reposDao().insertRepos(data)
     }
 
@@ -53,10 +52,10 @@ class ReposRepository(private val service: GitHubService,
     }
 
     // Help Teller to determine if data is empty or not. Teller uses this when parsing the cache to determine if a data set is empty or not.
-    override fun isDataEmpty(data: List<RepoModel>): Boolean = data.isEmpty()
+    override fun isDataEmpty(cache: List<RepoModel>, requirements: GetRequirements): Boolean = cache.isEmpty()
 
     class GetRequirements(val username: String): GetDataRequirements {
-        override var tag: String = "${this::class.java.simpleName}_$username"
+        override var tag: String = "Repos for user:$username"
     }
 
 }

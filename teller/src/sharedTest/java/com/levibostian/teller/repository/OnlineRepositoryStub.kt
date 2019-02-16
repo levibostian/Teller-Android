@@ -14,17 +14,33 @@ internal class OnlineRepositoryStub(syncStateManager: OnlineRepositorySyncStateM
     override var maxAgeOfData: AgeOfData = AgeOfData(1, AgeOfData.Unit.HOURS)
 
     var fetchFreshData_return = Single.never<FetchResponse<String>>()
-    override fun fetchFreshData(requirements: GetRequirements): Single<FetchResponse<String>> = fetchFreshData_return
+    var fetchFreshData_invoke: ((GetRequirements) -> Unit)? = null
+    override fun fetchFreshData(requirements: GetRequirements): Single<FetchResponse<String>> {
+        fetchFreshData_invoke?.invoke(requirements)
+        return fetchFreshData_return
+    }
 
     var saveData_results = arrayListOf<String>()
     var saveData_invoke: ((String) -> Unit)? = null
+    var saveData_count = 0
+        get() = saveData_results.size
+        private set
     override fun saveData(data: String, requirements: GetRequirements) {
         saveData_invoke?.invoke(data)
         saveData_results.add(data)
     }
 
+    var observeCachedData_results = arrayListOf<GetRequirements>()
     var observeCachedData_return = Observable.never<String>()
-    override fun observeCachedData(requirements: GetRequirements): Observable<String> = observeCachedData_return
+    var observeCachedData_invoke: ((GetRequirements) -> Unit)? = null
+    var observeCachedData_count = 0
+        get() = observeCachedData_results.size
+        private set
+    override fun observeCachedData(requirements: GetRequirements): Observable<String> {
+        observeCachedData_results.add(requirements)
+        observeCachedData_invoke?.invoke(requirements)
+        return observeCachedData_return
+    }
 
     var isDataEmpty_return = false
     override fun isDataEmpty(cache: String, requirements: GetRequirements): Boolean = isDataEmpty_return

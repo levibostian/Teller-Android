@@ -19,7 +19,7 @@ internal class CacheStateMachine<CACHE: Any> private constructor(val state: Stat
     override fun toString(): String {
         return when (state) {
             State.CACHE_EMPTY -> "Cache data exists and is empty."
-            State.CACHE_NOT_EMPTY -> "Cache data exists and is not empty."
+            State.CACHE_NOT_EMPTY -> "Cache data exists and is not empty (cache value: ${cache.toString()})."
         }
     }
 

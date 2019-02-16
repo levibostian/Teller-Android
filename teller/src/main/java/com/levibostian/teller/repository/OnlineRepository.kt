@@ -2,7 +2,9 @@ package com.levibostian.teller.repository
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import com.levibostian.teller.datastate.OnlineDataState
+import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.provider.SchedulersProvider
 import com.levibostian.teller.provider.TellerSchedulersProvider
 import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
@@ -108,7 +110,7 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
         Observable.fromCallable {
             stopObservingCache()
 
-            observeCachedData(requirements)
+            observeCacheDisposeBag += observeCachedData(requirements)
                     .subscribeOn(schedulersProvider.main())
                     .observeOn(schedulersProvider.main())
                     .subscribe { cache ->
@@ -217,10 +219,16 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
         } else {
             val timeFetched = Date()
 
+            if (!hasEverFetchedDataBefore) {
+                currentStateOfData.changeState { it.successfulFirstFetch(timeFetched) }
+            } else {
+                currentStateOfData.changeState { it.successfulFetchingFreshCache(timeFetched) }
+            }
+
             Observable.fromCallable {
                 stopObservingCache()
 
-                val newCache = response.data as FETCH_RESPONSE
+                @Suppress("UNCHECKED_CAST") val newCache = response.data as FETCH_RESPONSE
                 saveData(newCache, requirements)
 
                 syncStateManager.updateAgeOfData(requirements.tag, timeFetched)
@@ -229,12 +237,6 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
             }
                     .subscribeOn(schedulersProvider.io())
                     .subscribe()
-
-            if (!hasEverFetchedDataBefore) {
-                currentStateOfData.changeState { it.successfulFirstFetch(timeFetched) }
-            } else {
-                currentStateOfData.changeState { it.successfulFetchingFreshCache(timeFetched) }
-            }
         }
     }
 

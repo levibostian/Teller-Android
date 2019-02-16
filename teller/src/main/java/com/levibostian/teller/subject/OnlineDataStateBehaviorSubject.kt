@@ -38,6 +38,7 @@ internal class OnlineDataStateBehaviorSubject<CACHE: Any> {
                 subject.value!!
             }
         }
+        private set
 
     /**
     When the `OnlineRepositoryGetDataRequirements` is changed in an `OnlineRepository` to nil, we want to reset to a "none" state where the data has no state and there is nothing to keep track of. This is just like calling `init()` except we are not re-initializing this whole class. We get to keep the original `subject`.
