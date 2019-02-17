@@ -28,7 +28,7 @@ internal class LocalDataStateCompoundBehaviorSubject<CACHE: Any> {
                 subject.onNext(field)
             }
         }
-    private val subject: BehaviorSubject<LocalDataState<CACHE>> = BehaviorSubject.createDefault(dataState)
+    val subject: BehaviorSubject<LocalDataState<CACHE>> = BehaviorSubject.createDefault(dataState)
 
     var currentState: LocalDataState<CACHE> = LocalDataState.none()
         get() {
@@ -36,6 +36,7 @@ internal class LocalDataStateCompoundBehaviorSubject<CACHE: Any> {
                 subject.value!!
             }
         }
+        private set
 
     fun resetStateToNone() {
         changeDataState(LocalDataState.none())

@@ -33,7 +33,7 @@ typealias GetDataRequirementsTag = String
  * 2. Call [observe] to begin observing the current state of the cached data.
  * 3. Set [requirements] with an object used to begin querying cached data and fetching fresh data if the data does not exist or is old.
  *
- * OnlineRepository is thread safe. Actions called upon for OnlineRepository can be performed on any thread.
+ * [OnlineRepository] is thread safe. Actions called upon for [OnlineRepository] can be performed on any thread.
  */
 abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineRepository.GetDataRequirements, FETCH_RESPONSE: Any>: OnlineRepositoryRefreshManager.Listener {
 
@@ -106,7 +106,7 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
             throw RuntimeException("You cannot begin observing cached data until after data has been successfully fetched at least once")
         }
 
-        // I need to subscribe and observe on the UI thread because popular database solutions such as Realm, Core Data all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.
+        // I need to subscribe and observe on the UI thread because popular database solutions such as Realm, SQLite all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.
         Observable.fromCallable {
             stopObservingCache()
 
@@ -243,18 +243,16 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
     /**
      * Repository does what it needs in order to fetch fresh cacheData. Probably call network API.
      *
-     * Feel free to call this function yourself anytime that you want to perform an API call *without* affecting the [OnlineRepository].
-     *
      * **Called on a background thread.**
      */
-    abstract fun fetchFreshData(requirements: GET_DATA_REQUIREMENTS): Single<FetchResponse<FETCH_RESPONSE>>
+    protected abstract fun fetchFreshData(requirements: GET_DATA_REQUIREMENTS): Single<FetchResponse<FETCH_RESPONSE>>
 
     /**
      * Save the new cache [data] to whatever storage method [OnlineRepository] chooses.
      *
      * **Called on a background thread.**
      */
-    abstract fun saveData(data: FETCH_RESPONSE, requirements: GET_DATA_REQUIREMENTS)
+    protected abstract fun saveData(data: FETCH_RESPONSE, requirements: GET_DATA_REQUIREMENTS)
 
     /**
      * Get existing cached data saved on the device if it exists. If no data exists, return an empty data set in the Observable and return true in [isDataEmpty]. **Do not** return nil or an Observable with nil as a value as this will cause an exception.
@@ -263,14 +261,14 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
      *
      * **Called on main UI thread.**
      */
-    abstract fun observeCachedData(requirements: GET_DATA_REQUIREMENTS): Observable<CACHE>
+    protected abstract fun observeCachedData(requirements: GET_DATA_REQUIREMENTS): Observable<CACHE>
 
     /**
      * DataType determines if cacheData is empty or not. Because cacheData can be of `Any` type, the DataType must determine when cacheData is empty or not.
      *
      * **Called on main UI thread.**
      */
-    abstract fun isDataEmpty(cache: CACHE, requirements: GET_DATA_REQUIREMENTS): Boolean
+    protected abstract fun isDataEmpty(cache: CACHE, requirements: GET_DATA_REQUIREMENTS): Boolean
 
     /**
      * Data object that are the requirements to fetch fresh data or get cached data on device.

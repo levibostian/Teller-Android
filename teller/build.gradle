@@ -58,6 +58,10 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidTestLibVersion"
     androidTestImplementation "androidx.test.ext:truth:$androidTestLibVersion"
 
+    // RxSharedPreferences
+    testImplementation 'com.f2prateek.rx.preferences2:rx-preferences:2.0.0'
+    androidTestImplementation 'com.f2prateek.rx.preferences2:rx-preferences:2.0.0'
+
     // Truth
     def truthVersion = "0.42"
     testImplementation "com.google.truth:truth:$truthVersion"

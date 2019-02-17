@@ -394,33 +394,6 @@ class OnlineRepositoryIntegrationTest {
         assertThat(repository.observeCachedData_count).isEqualTo(0)
     }
 
-//    @Test
-//    fun exceptionDuringFetch_exceptionHandled() {
-//        val fetchException = RuntimeException("fail")
-//
-//        var errorThrown = false
-//        RxJavaPlugins.setErrorHandler {
-//            if (it == fetchException) errorThrown = true
-//            else throw it
-//        }
-//
-//        val fetchCache = ReplaySubject.create<OnlineRepository.FetchResponse<String>>().apply {
-//            onError(fetchException)
-//            onComplete()
-//        }
-//        repository.fetchFreshData_return = fetchCache.singleOrError()
-//
-//        val testObserver = repository.observe().test()
-//
-//        repository.requirements = requirements
-//
-//        testObserver
-//                .awaitDone()
-//                .dispose()
-//
-//        assertThat(errorThrown).isTrue()
-//    }
-
     @Test
     fun successfulFirstFetch_observeProcess() {
         val fetchedCache = "new cache"
