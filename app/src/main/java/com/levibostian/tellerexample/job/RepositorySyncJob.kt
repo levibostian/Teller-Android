@@ -5,9 +5,14 @@ import com.evernote.android.job.Job
 import com.levibostian.teller.Teller
 import com.levibostian.tellerexample.repository.ReposRepository
 import android.content.ContentValues.TAG
+import android.os.UserManager
 import com.evernote.android.job.JobRequest
+import com.levibostian.teller.repository.OnlineRepository
 import com.levibostian.tellerexample.MainApplication
+import com.levibostian.tellerexample.repository.GitHubUsernameRepository
 import com.levibostian.tellerexample.util.DependencyUtil
+import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import java.util.concurrent.TimeUnit
 
@@ -29,9 +34,18 @@ class RepositorySyncJob: Job() {
     }
 
     override fun onRunJob(params: Params): Result {
-        Teller.shared.sync(listOf(ReposRepository(DependencyUtil.serviceInstance(), DependencyUtil.dbInstance(MainApplication.appContext))), false)
+        val repos: ArrayList<Single<OnlineRepository.RefreshResult>> = arrayListOf()
+
+        val latestUsername = GitHubUsernameRepository(MainApplication.appContext).currentUsernameSaved
+        if (latestUsername != null) repos.add(
+                ReposRepository(DependencyUtil.serviceInstance(), DependencyUtil.dbInstance(MainApplication.appContext)).apply {
+                    requirements = ReposRepository.GetRequirements(latestUsername)
+                }.refresh(false)
+        )
+
+        Single.concat(repos)
                 .subscribeOn(Schedulers.io())
-                .blockingLast()
+                .subscribe()
 
         return Result.SUCCESS
     }
