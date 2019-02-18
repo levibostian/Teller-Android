@@ -21,3 +21,10 @@ PreCommit:
     quiet: false
     enabled: true
     command: ['ruby', './bin/githooks/pre-commit.rb']
+
+PrePush:
+  AndroidBuild:
+    description: "Building app, unit tests, UI tests to make sure they build before running tests on CI server..."    
+    quiet: false
+    enabled: true
+    command: ['ruby', 'bin/githooks/pre-push.rb']
