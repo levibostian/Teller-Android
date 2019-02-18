@@ -1,5 +1,8 @@
 package com.levibostian.teller.repository
 
+import android.os.AsyncTask
+import android.os.Handler
+import android.os.Looper
 import com.levibostian.teller.datastate.LocalDataState
 import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.provider.SchedulersProvider
@@ -7,6 +10,9 @@ import com.levibostian.teller.provider.TellerSchedulersProvider
 import com.levibostian.teller.subject.LocalDataStateCompoundBehaviorSubject
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
+import java.lang.ref.WeakReference
+import java.util.*
+import java.util.concurrent.Executors
 
 /**
  * Teller repository that manages cache that is obtained and stored on the local device.
@@ -30,6 +36,8 @@ abstract class LocalRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: LocalReposito
 
     private var currentStateOfCache: LocalDataStateCompoundBehaviorSubject<CACHE> = LocalDataStateCompoundBehaviorSubject()
     private var observeCacheDisposeBag: CompositeDisposable = CompositeDisposable()
+    // Single thread executor to act as a "background queue".
+    private val saveCacheExecutor = Executors.newSingleThreadExecutor()
 
     private val schedulersProvider: SchedulersProvider
 
@@ -39,17 +47,16 @@ abstract class LocalRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: LocalReposito
 
             val newValue = field
             if (newValue != null) {
-                beginObservingCachedData(newValue)
+                restartObservingCachedData(newValue)
             } else {
                 currentStateOfCache.resetStateToNone()
             }
         }
 
-    private fun beginObservingCachedData(requirements: GET_CACHE_REQUIREMENTS) {
-        stopObservingCache()
-
+    @Synchronized
+    private fun restartObservingCachedData(requirements: GET_CACHE_REQUIREMENTS) {
         // I need to subscribe and observe on the UI thread because popular database solutions such as Realm, SQLite all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.
-        Observable.fromCallable {
+        Handler(Looper.getMainLooper()).post {
             stopObservingCache()
 
             observeCacheDisposeBag += observeCache(requirements)
@@ -63,8 +70,6 @@ abstract class LocalRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: LocalReposito
                         }
                     }
         }
-                .subscribeOn(schedulersProvider.main())
-                .subscribe()
     }
 
     /**
@@ -94,15 +99,9 @@ abstract class LocalRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: LocalReposito
      */
     @Synchronized
     fun newCache(cache: CACHE, requirements: GET_CACHE_REQUIREMENTS) {
-        Observable.fromCallable {
-            stopObservingCache()
-
-            saveCache(cache, requirements)
-
-            beginObservingCachedData(requirements)
+        SaveCacheAsyncTask(WeakReference(this), requirements).apply {
+            executeOnExecutor(saveCacheExecutor, cache)
         }
-                .subscribeOn(schedulersProvider.io())
-                .subscribe()
     }
 
     /**
@@ -136,5 +135,24 @@ abstract class LocalRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: LocalReposito
     protected abstract fun isCacheEmpty(cache: CACHE, requirements: GET_CACHE_REQUIREMENTS): Boolean
 
     interface GetCacheRequirements
+
+    /**
+     * [saveCache] on background thread via [AsyncTask].
+     */
+    private class SaveCacheAsyncTask<CACHE: Any, GET_CACHE_REQUIREMENTS: LocalRepository.GetCacheRequirements>(
+            val repo: WeakReference<LocalRepository<CACHE, GET_CACHE_REQUIREMENTS>>,
+            val requirements: GET_CACHE_REQUIREMENTS) : AsyncTask<CACHE, Void, Void>() {
+
+        override fun doInBackground(vararg params: CACHE): Void? {
+            val newCache: CACHE = params[0]
+
+            repo.get()?.let { repo ->
+                repo.stopObservingCache()
+                repo.saveCache(newCache, requirements)
+                repo.restartObservingCachedData(requirements)
+            }
+            return null
+        }
+    }
 
 }

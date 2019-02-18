@@ -12,12 +12,16 @@ class GitHubUsernameViewModel: ViewModel() {
 
     private lateinit var repository: GitHubUsernameRepository
 
+    private val requirements = GitHubUsernameRepository.GetRequirements()
+
     fun init(context: Context) {
-        repository = GitHubUsernameRepository(context)
+        repository = GitHubUsernameRepository(context).apply {
+            requirements = this@GitHubUsernameViewModel.requirements
+        }
     }
 
     fun setUsername(username: String) {
-        repository.saveData(username)
+        repository.newCache(username, requirements)
     }
 
     fun observeUsername(): LiveData<LocalDataState<String>> {

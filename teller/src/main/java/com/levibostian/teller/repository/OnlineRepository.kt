@@ -1,5 +1,6 @@
 package com.levibostian.teller.repository
 
+import android.os.AsyncTask
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
@@ -13,6 +14,8 @@ import com.levibostian.teller.repository.manager.OnlineRepositorySyncStateManage
 import com.levibostian.teller.repository.manager.TellerOnlineRepositorySyncStateManager
 import com.levibostian.teller.subject.OnlineDataStateBehaviorSubject
 import com.levibostian.teller.type.AgeOfData
+import com.levibostian.teller.util.TaskExecutor
+import com.levibostian.teller.util.TellerTaskExecutor
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Scheduler
@@ -21,7 +24,9 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import java.lang.ref.WeakReference
 import java.util.*
+import java.util.concurrent.Executors
 
 typealias GetDataRequirementsTag = String
 
@@ -41,21 +46,28 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
         schedulersProvider = TellerSchedulersProvider()
         syncStateManager = TellerOnlineRepositorySyncStateManager()
         refreshManager = OnlineRepositoryRefreshManagerWrapper()
+        taskExecutor = TellerTaskExecutor()
     }
 
     private var observeCacheDisposeBag: CompositeDisposable = CompositeDisposable()
-    private var currentStateOfData: OnlineDataStateBehaviorSubject<CACHE> = OnlineDataStateBehaviorSubject() // This is important to never be nil so that we can call `observe` on this class and always be able to listen.
+    // Important to never be nil so that we can call `observe` on this class and always be able to listen.
+    private var currentStateOfData: OnlineDataStateBehaviorSubject<CACHE> = OnlineDataStateBehaviorSubject()
+    // Single thread executor to act as a "background queue".
+    private val saveCacheExecutor = Executors.newSingleThreadExecutor()
     private val schedulersProvider: SchedulersProvider
+    private val taskExecutor: TaskExecutor
 
     private val syncStateManager: OnlineRepositorySyncStateManager
     private val refreshManager: OnlineRepositoryRefreshManager
 
     internal constructor(syncStateManager: OnlineRepositorySyncStateManager,
                          refreshManager: OnlineRepositoryRefreshManager,
-                         schedulersProvider: SchedulersProvider) {
+                         schedulersProvider: SchedulersProvider,
+                         taskExecutor: TaskExecutor) {
         this.syncStateManager = syncStateManager
         this.refreshManager = refreshManager
         this.schedulersProvider = schedulersProvider
+        this.taskExecutor = taskExecutor
     }
 
     /**
@@ -89,7 +101,7 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
             if (newValue != null) {
                 if (syncStateManager.hasEverFetchedData(newValue.tag)) {
                     currentStateOfData.resetToCacheState(newValue, syncStateManager.lastTimeFetchedData(newValue.tag)!!)
-                    beginObservingCachedData(newValue)
+                    restartObservingCachedData(newValue)
                 } else {
                     currentStateOfData.resetToNoCacheState(newValue)
                     // When we set new requirements, we want to fetch for first time if have never been done before. Example: paging data. If we go to a new page we have never gotten before, we want to fetch that data for the first time.
@@ -101,13 +113,13 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
         }
 
     @Synchronized
-    private fun beginObservingCachedData(requirements: GET_DATA_REQUIREMENTS) {
-        if (!syncStateManager.hasEverFetchedData(requirements.tag)) {
-            throw RuntimeException("You cannot begin observing cached data until after data has been successfully fetched at least once")
-        }
-
-        // I need to subscribe and observe on the UI thread because popular database solutions such as Realm, SQLite all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.
-        Observable.fromCallable {
+    private fun restartObservingCachedData(requirements: GET_DATA_REQUIREMENTS) {
+        /**
+         * You need to subscribe and observe on the UI thread because popular database solutions such as Realm, SQLite all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.
+         *
+         * Also, you need to call [observeCachedData] while on the UI thread for cases like Realm where the Realm instance constructed in [observeCachedData] needs to be constructed and used on the same thread.
+         */
+        taskExecutor.postUI {
             stopObservingCache()
 
             observeCacheDisposeBag += observeCachedData(requirements)
@@ -127,8 +139,6 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
                         }
                     }
         }
-                .subscribeOn(schedulersProvider.main())
-                .subscribe()
     }
 
     private fun performRefresh() {
@@ -225,18 +235,10 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
                 currentStateOfData.changeState { it.successfulFetchingFreshCache(timeFetched) }
             }
 
-            Observable.fromCallable {
-                stopObservingCache()
-
-                @Suppress("UNCHECKED_CAST") val newCache = response.data as FETCH_RESPONSE
-                saveData(newCache, requirements)
-
-                syncStateManager.updateAgeOfData(requirements.tag, timeFetched)
-
-                beginObservingCachedData(requirements)
+            @Suppress("UNCHECKED_CAST") val newCache = response.data as FETCH_RESPONSE
+            SaveCacheAsyncTask(WeakReference(this), requirements, timeFetched, syncStateManager).apply {
+                executeOnExecutor(saveCacheExecutor, newCache)
             }
-                    .subscribeOn(schedulersProvider.io())
-                    .subscribe()
         }
     }
 
@@ -329,6 +331,21 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
 
         fun didSucceed(): Boolean = successful
 
+        override fun equals(other: Any?): Boolean {
+            if (other == null || other !is RefreshResult) return false
+
+            return this.successful == other.successful &&
+                    this.failedError == other.failedError &&
+                    this.skipped == other.skipped
+        }
+
+        override fun hashCode(): Int {
+            var result = successful.hashCode()
+            result = 31 * result + (failedError?.hashCode() ?: 0)
+            result = 31 * result + (skipped?.hashCode() ?: 0)
+            return result
+        }
+
         /**
          * If a [OnlineRepository.refresh] task was skipped, compare the [skipped] property with the enum cases below to determine why the refresh task was skipped.
          */
@@ -343,6 +360,28 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
             CANCELLED
         }
 
+    }
+
+    /**
+     * [saveData] on background thread via [AsyncTask].
+     */
+    private class SaveCacheAsyncTask<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineRepository.GetDataRequirements, FETCH_RESPONSE: Any>(
+            val repo: WeakReference<OnlineRepository<CACHE, GET_DATA_REQUIREMENTS, FETCH_RESPONSE>>,
+            val requirements: GET_DATA_REQUIREMENTS,
+            val timeFetched: Date,
+            val syncStateManager: OnlineRepositorySyncStateManager) : AsyncTask<FETCH_RESPONSE, Void, Void>() {
+
+        override fun doInBackground(vararg params: FETCH_RESPONSE): Void? {
+            val newCache: FETCH_RESPONSE = params[0]
+
+            repo.get()?.let { repo ->
+                repo.stopObservingCache()
+                repo.saveData(newCache, requirements)
+                syncStateManager.updateAgeOfData(requirements.tag, timeFetched)
+                repo.restartObservingCachedData(requirements)
+            }
+            return null
+        }
     }
 
 }
