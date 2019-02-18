@@ -78,6 +78,9 @@ class LocalRepositoryIntegrationTest {
 
     @Test
     fun setRequirements_observeExistingCache() {
+        val cache = "cache"
+        repository.setExistingCache(cache)
+
         val expectedEventsSequence = arrayListOf<LocalDataState<String>>()
 
         val testObserver = repository.observe().test()
@@ -88,16 +91,12 @@ class LocalRepositoryIntegrationTest {
                     add(LocalDataState.none())
                 })
 
-        val cache = "cache"
-        repository.newCache(cache, requirements)
-
         repository.requirements = requirements
 
         compositeDisposable += testObserver
-                .awaitCount(expectedEventsSequence.size + 2)
+                .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalDataState.data(cache),
                             LocalDataState.data(cache)
                     ))
                 })
@@ -195,6 +194,9 @@ class LocalRepositoryIntegrationTest {
 
     @Test
     fun setRequirementsNull_expectObserveStateOfDataNone() {
+        val cache = "cache"
+        repository.setExistingCache(cache)
+
         val expectedEventsSequence = arrayListOf<LocalDataState<String>>()
 
         val testObserver = repository.observe().test()
@@ -205,15 +207,12 @@ class LocalRepositoryIntegrationTest {
                     add(LocalDataState.none())
                 })
 
-        val cache = "cache"
-        repository.newCache(cache, requirements)
         repository.requirements = requirements
 
         compositeDisposable += testObserver
-                .awaitCount(expectedEventsSequence.size + 2)
+                .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalDataState.data(cache),
                             LocalDataState.data(cache)
                     ))
                 })
@@ -232,7 +231,7 @@ class LocalRepositoryIntegrationTest {
     @Test
     fun observe_cacheExists_expectReceiveCache() {
         val cache = "cache"
-        repository.newCache(cache, requirements)
+        repository.setExistingCache(cache)
 
         val expectedEventsSequence = arrayListOf<LocalDataState<String>>()
 
@@ -258,7 +257,7 @@ class LocalRepositoryIntegrationTest {
     @Test
     fun observe_cacheEmpty_expectReceiveCache() {
         val cache = ""
-        repository.newCache(cache, requirements)
+        repository.setExistingCache(cache)
 
         val expectedEventsSequence = arrayListOf<LocalDataState<String>>()
 
@@ -273,10 +272,9 @@ class LocalRepositoryIntegrationTest {
         repository.requirements = requirements
 
         compositeDisposable += testObserver
-                .awaitCount(expectedEventsSequence.size + 2)
+                .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalDataState.isEmpty(),
                             LocalDataState.isEmpty()
                     ))
                 })
@@ -285,7 +283,7 @@ class LocalRepositoryIntegrationTest {
     @Test
     fun saveNewCache_observeNewCacheData() {
         val oldCache = "old cache"
-        repository.newCache(oldCache, requirements)
+        repository.setExistingCache(oldCache)
 
         val expectedEventsSequence = arrayListOf<LocalDataState<String>>()
 
@@ -300,10 +298,9 @@ class LocalRepositoryIntegrationTest {
         repository.requirements = requirements
 
         compositeDisposable += testObserver
-                .awaitCount(expectedEventsSequence.size + 2)
+                .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalDataState.data(oldCache),
                             LocalDataState.data(oldCache)
                     ))
                 })

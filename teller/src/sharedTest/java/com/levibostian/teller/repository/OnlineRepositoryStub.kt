@@ -4,12 +4,14 @@ import com.levibostian.teller.provider.SchedulersProvider
 import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
 import com.levibostian.teller.repository.manager.OnlineRepositorySyncStateManager
 import com.levibostian.teller.type.AgeOfData
+import com.levibostian.teller.util.TaskExecutor
 import io.reactivex.Observable
 import io.reactivex.Single
 
 internal class OnlineRepositoryStub(syncStateManager: OnlineRepositorySyncStateManager,
                                     refreshManager: OnlineRepositoryRefreshManager,
-                                    schedulersProvider: SchedulersProvider): OnlineRepository<String, OnlineRepositoryStub.GetRequirements, String>(syncStateManager, refreshManager, schedulersProvider) {
+                                    schedulersProvider: SchedulersProvider,
+                                    taskExecutor: TaskExecutor): OnlineRepository<String, OnlineRepositoryStub.GetRequirements, String>(syncStateManager, refreshManager, schedulersProvider, taskExecutor) {
 
     override var maxAgeOfData: AgeOfData = AgeOfData(1, AgeOfData.Unit.HOURS)
 

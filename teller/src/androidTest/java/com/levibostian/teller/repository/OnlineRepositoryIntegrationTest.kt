@@ -24,6 +24,7 @@ import com.levibostian.teller.repository.manager.TellerOnlineRepositorySyncState
 import com.levibostian.teller.rule.ClearSharedPreferencesRule
 import com.levibostian.teller.rule.MockitoInitRule
 import com.levibostian.teller.util.AssertionUtil.Companion.check
+import com.levibostian.teller.util.TellerTaskExecutor
 import com.levibostian.teller.util.TestUtil.isOnMainThread
 import io.reactivex.Observable
 import io.reactivex.Single
@@ -49,6 +50,7 @@ class OnlineRepositoryIntegrationTest {
     private lateinit var syncStateManager: OnlineRepositorySyncStateManager
     private lateinit var refreshManager: OnlineRepositoryRefreshManager
     private val schedulersProvider = TellerSchedulersProvider()
+    private val taskExecutor = TellerTaskExecutor()
 
     @get:Rule val mockitoInitMocks = MockitoInitRule(this)
     @get:Rule val clearSharedPreferencesRule = ClearSharedPreferencesRule(sharedPreferences)
@@ -73,7 +75,7 @@ class OnlineRepositoryIntegrationTest {
         refreshManager = OnlineRepositoryRefreshManagerWrapper()
         syncStateManager = TellerOnlineRepositorySyncStateManager(sharedPreferences)
         requirements = OnlineRepositoryStub.GetRequirements("param")
-        repository = OnlineRepositoryStub(syncStateManager, refreshManager, schedulersProvider)
+        repository = OnlineRepositoryStub(syncStateManager, refreshManager, schedulersProvider, taskExecutor)
     }
 
     @After
@@ -159,16 +161,12 @@ class OnlineRepositoryIntegrationTest {
     @Test
     // Call on background thread to assert thread changes.
     fun observeCachedData_calledOnUIThread() {
+        setupDataHasBeenFetchedBefore(dataTooOld = false)
+
         repository.observeCachedData_invoke = {
             assertThat(isOnMainThread()).isTrue()
         }
 
-        val newCache = "newCache"
-        val fetchFreshData = ReplaySubject.create<OnlineRepository.FetchResponse<String>>().apply {
-            onNext(OnlineRepository.FetchResponse.success(newCache))
-            onComplete()
-        }
-        repository.fetchFreshData_return = fetchFreshData.singleOrError()
         repository.observeCachedData_return = Observable.never()
 
         val testObserver = repository.observe().test()

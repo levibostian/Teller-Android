@@ -76,7 +76,7 @@ dependencies {
     // Mockito
     def mockitoVersion = "2.24.0"
     def mockitoKotlinVersion = "1.5.0"
-    testImplementation "org.mockito:mockito-android:$mockitoVersion"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "com.nhaarman:mockito-kotlin-kt1.1:$mockitoKotlinVersion", {
         exclude group: 'org.jetbrains.kotlin'
         exclude group: 'org.mockito'

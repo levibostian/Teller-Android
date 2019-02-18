@@ -413,7 +413,10 @@ class OnlineDataStateStateMachineTest {
 
     @Test
     fun successfulFetchingFreshCache_setsCorrectProperties() {
-        val lastTimeFetched = Date()
+        val lastTimeFetched: Date = Calendar.getInstance().apply {
+            add(Calendar.DATE, -1)
+        }.time
+
         dataState = OnlineDataStateStateMachine.cacheExists(dataRequirements, lastTimeFetched)
         val cache = "cache"
         dataState = dataState.change().fetchingFreshCache()
@@ -424,7 +427,7 @@ class OnlineDataStateStateMachineTest {
         assertThat(dataState.noCacheExists).isFalse()
         assertThat(dataState.fetchingForFirstTime).isFalse()
         assertThat(dataState.cacheData).isEqualTo(cache)
-        assertThat(dataState.lastTimeFetched).isEqualTo(lastTimeFetched)
+        assertThat(dataState.lastTimeFetched).isEqualTo(newTimeFetched)
         assertThat(dataState.isFetchingFreshData).isFalse()
         assertThat(dataState.requirements).isEqualTo(dataRequirements)
         assertThat(dataState.stateMachine).isNotNull()

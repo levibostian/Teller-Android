@@ -12,6 +12,11 @@ internal class LocalRepositoryStub(
 
     private val rxSharedPrefs = RxSharedPreferences.create(sharedPreferences)
 
+    // Used for testing. Persist data to shared prefs immediately to be ready for tests to run.
+    fun setExistingCache(cache: String) {
+        sharedPreferences.edit().putString(CACHE_KEY, cache).commit()
+    }
+
     companion object {
         private const val CACHE_KEY = "CACHE_KEY.LocalRepositoryStub"
     }
@@ -28,7 +33,7 @@ internal class LocalRepositoryStub(
         saveCache_invoke?.invoke(cache)
         saveCache_results.add(cache)
 
-        sharedPreferences.edit().putString(CACHE_KEY, cache).commit()
+        setExistingCache(cache)
     }
 
     var observeCachedData_results = arrayListOf<GetRequirements>()

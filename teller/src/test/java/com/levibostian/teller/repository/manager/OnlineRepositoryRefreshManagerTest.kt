@@ -12,6 +12,7 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 import com.nhaarman.mockito_kotlin.*
+import io.reactivex.subjects.ReplaySubject
 
 @RunWith(MockitoJUnitRunner::class)
 class OnlineRepositoryRefreshManagerTest {
@@ -24,8 +25,8 @@ class OnlineRepositoryRefreshManagerTest {
 
     @Test
     fun refresh_twoRepositoriesSameTag_expectRefreshTaskToBeShared() {
-        val task1 = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
-        val task2 = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
+        val task1 = ReplaySubject.create<OnlineRepository.FetchResponse<String>>()
+        val task2 = ReplaySubject.create<OnlineRepository.FetchResponse<String>>()
 
         val task1Result = OnlineRepository.FetchResponse.success("task1")
         val task2Result = RuntimeException("task2")
