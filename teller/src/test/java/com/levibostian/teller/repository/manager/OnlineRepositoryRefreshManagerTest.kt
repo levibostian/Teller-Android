@@ -70,8 +70,8 @@ class OnlineRepositoryRefreshManagerTest {
 
     @Test
     fun refresh_twoRepositoriesDifferentTag_expectBothRefreshTasksToRun() {
-        val task1 = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
-        val task2 = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
+        val task1 = ReplaySubject.create<OnlineRepository.FetchResponse<String>>()
+        val task2 = ReplaySubject.create<OnlineRepository.FetchResponse<String>>()
 
         val task1Result = OnlineRepository.FetchResponse.success("task1")
         val task2Result = OnlineRepository.FetchResponse.fail<String>(RuntimeException("error"))
@@ -115,8 +115,8 @@ class OnlineRepositoryRefreshManagerTest {
 
     @Test
     fun refresh_oneRepositoryMultipleRefreshCalls_expectToIgnoreSecondRequest() {
-        val task1 = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
-        val task2 = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
+        val task1 = ReplaySubject.create<OnlineRepository.FetchResponse<String>>()
+        val task2 = ReplaySubject.create<OnlineRepository.FetchResponse<String>>()
 
         val task1Result = OnlineRepository.FetchResponse.success("task1")
         val task2Result = RuntimeException("task2")
