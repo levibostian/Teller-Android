@@ -1,0 +1,17 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>OnlineRepository.observeCachedData - teller</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">teller</a>&nbsp;/&nbsp;<a href="../index.html">com.levibostian.teller.repository</a>&nbsp;/&nbsp;<a href="index.html">OnlineRepository</a>&nbsp;/&nbsp;<a href="./observe-cached-data.html">observeCachedData</a><br/>
+<br/>
+<h1>observeCachedData</h1>
+<a name="com.levibostian.teller.repository.OnlineRepository$observeCachedData(com.levibostian.teller.repository.OnlineRepository.GET_DATA_REQUIREMENTS)"></a>
+<code><span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">observeCachedData</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.OnlineRepository$observeCachedData(com.levibostian.teller.repository.OnlineRepository.GET_DATA_REQUIREMENTS)/requirements">requirements</span><span class="symbol">:</span>&nbsp;<a href="index.html#GET_DATA_REQUIREMENTS"><span class="identifier">GET_DATA_REQUIREMENTS</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Observable</span><span class="symbol">&lt;</span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">&gt;</span></code>
+<p>Get existing cached data saved on the device if it exists. If no data exists, return an empty data set in the Observable and return true in <a href="is-data-empty.html">isDataEmpty</a>. <strong>Do not</strong> return nil or an Observable with nil as a value as this will cause an exception.</p>
+<p>This function is only called after data has been fetched successfully.</p>
+<p><strong>Called on main UI thread.</strong></p>
+</BODY>
+</HTML>

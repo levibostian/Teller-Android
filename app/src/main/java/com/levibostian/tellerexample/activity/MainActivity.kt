@@ -130,7 +130,7 @@ class MainActivity : AppCompatActivity() {
 
         go_button.setOnClickListener {
             if (username_edittext.text.isBlank()) {
-                username_edittext.error = "Enter a GitHub username"
+                username_edittext.error = "Enter a GitHub githubUsername"
             } else {
                 gitHubUsernameViewModel.setUsername(username_edittext.text.toString())
 
@@ -143,6 +143,8 @@ class MainActivity : AppCompatActivity() {
         super.onDestroy()
 
         updateLastSyncedRunnable?.let { updateLastSyncedHandler?.removeCallbacks(it) }
+        gitHubUsernameViewModel.dispose()
+        reposViewModel.dispose()
     }
 
     private fun showLoadingView() {

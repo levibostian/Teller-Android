@@ -21,7 +21,7 @@ class ReposViewModel: ViewModel() {
     }
 
     fun setUsername(username: String) {
-        reposRepository.requirements = ReposRepository.GetRequirements(username)
+        reposRepository.requirements = ReposRepository.GetReposRequirements(username)
     }
 
     fun observeRepos(): LiveData<OnlineDataState<List<RepoModel>>> {
@@ -29,6 +29,10 @@ class ReposViewModel: ViewModel() {
                 .toFlowable(BackpressureStrategy.LATEST)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread()))
+    }
+
+    fun dispose() {
+        reposRepository.dispose()
     }
 
 }
