@@ -1,6 +1,7 @@
 # Manually added
 *DS_STORE
 ._*
+node_modules/
 
 # --- below https://github.com/github/gitignore/blob/master/Android.gitignore
 
@@ -69,3 +70,4 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
+node_modules
