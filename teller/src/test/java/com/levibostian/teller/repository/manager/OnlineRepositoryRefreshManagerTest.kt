@@ -167,13 +167,13 @@ class OnlineRepositoryRefreshManagerTest {
 
         SharedOnlineRepositoryRefreshManager.cancelTasksForRepository(defaultTag, repo1)
 
-        assertThat(task1Disposed).isTrue()
-
         repo1TestObserver
                 .await()
                 .assertValue(check {
                     assertThat(it.didSkip()).isTrue()
                 })
+
+        assertThat(task1Disposed).isTrue()
 
         verify(repo1, never()).refreshComplete(any<OnlineRepository.FetchResponse<String>>())
     }
