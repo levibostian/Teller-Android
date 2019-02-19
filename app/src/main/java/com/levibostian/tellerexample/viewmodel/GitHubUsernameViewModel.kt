@@ -12,7 +12,7 @@ class GitHubUsernameViewModel: ViewModel() {
 
     private lateinit var repository: GitHubUsernameRepository
 
-    private val requirements = GitHubUsernameRepository.GetRequirements()
+    private val requirements = GitHubUsernameRepository.GitHubUsernameGetCacheRequirements()
 
     fun init(context: Context) {
         repository = GitHubUsernameRepository(context).apply {
@@ -26,6 +26,10 @@ class GitHubUsernameViewModel: ViewModel() {
 
     fun observeUsername(): LiveData<LocalDataState<String>> {
         return LiveDataReactiveStreams.fromPublisher(repository.observe().toFlowable(BackpressureStrategy.LATEST))
+    }
+
+    fun dispose() {
+        repository.dispose()
     }
 
 }

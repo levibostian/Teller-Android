@@ -40,7 +40,7 @@ android {
 
 dokka {
     outputFormat = 'html'
-    outputDirectory = "docs"
+    outputDirectory = "docs/javadoc"
     moduleName = 'teller'
 }
 
