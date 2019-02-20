@@ -11,7 +11,8 @@ import io.reactivex.Single
 internal class OnlineRepositoryStub(syncStateManager: OnlineRepositorySyncStateManager,
                                     refreshManager: OnlineRepositoryRefreshManager,
                                     schedulersProvider: SchedulersProvider,
-                                    taskExecutor: TaskExecutor): OnlineRepository<String, OnlineRepositoryStub.GetRequirements, String>(syncStateManager, refreshManager, schedulersProvider, taskExecutor) {
+                                    taskExecutor: TaskExecutor,
+                                    refreshManagerListener: OnlineRepositoryRefreshManager.Listener): OnlineRepository<String, OnlineRepositoryStub.GetRequirements, String>(syncStateManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener) {
 
     override var maxAgeOfData: AgeOfData = AgeOfData(1, AgeOfData.Unit.HOURS)
 
@@ -28,8 +29,8 @@ internal class OnlineRepositoryStub(syncStateManager: OnlineRepositorySyncStateM
         get() = saveData_results.size
         private set
     override fun saveData(data: String, requirements: GetRequirements) {
-        saveData_invoke?.invoke(data)
         saveData_results.add(data)
+        saveData_invoke?.invoke(data)
     }
 
     var observeCachedData_results = arrayListOf<GetRequirements>()

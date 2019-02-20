@@ -1,8 +1,7 @@
 [![Release](https://jitpack.io/v/levibostian/Teller-Android.svg)](https://jitpack.io/#levibostian/Teller-Android)
 [![Build](https://app.bitrise.io/app/4c0b872bdaf76300/status.svg?token=PYpJBThARi6LvucXS2noVw&branch=development)](https://app.bitrise.io/app/4c0b872bdaf76300)
-[![Coverage](https://codecov.io/gh/levibostian/Teller-Android/branch/development/graph/badge.svg)](https://codecov.io/gh/levibostian/Teller-Android/)
 
-# Intro 
+# Teller
 
 Android library that makes your apps faster. 
 

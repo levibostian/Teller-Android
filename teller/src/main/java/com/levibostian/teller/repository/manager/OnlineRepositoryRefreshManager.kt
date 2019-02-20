@@ -16,8 +16,8 @@ internal interface OnlineRepositoryRefreshManager {
      * Listener to get notified when a refresh call has begun and when it completes. This is different from the Observer returned from [refresh]. [Listener] is mostly intended for [OnlineRepository] to know when a refresh is begun and complete so it can notify observers of fetch status and to save new cache data.
      */
     interface Listener {
-        fun refreshBegin()
-        fun <RefreshResultDataType: Any> refreshComplete(response: OnlineRepository.FetchResponse<RefreshResultDataType>)
+        fun refreshBegin(tag: GetDataRequirementsTag)
+        fun <RefreshResultDataType: Any> refreshComplete(tag: GetDataRequirementsTag, response: OnlineRepository.FetchResponse<RefreshResultDataType>)
     }
 
     /**

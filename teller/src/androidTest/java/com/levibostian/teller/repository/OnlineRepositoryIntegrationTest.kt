@@ -26,6 +26,7 @@ import com.levibostian.teller.rule.MockitoInitRule
 import com.levibostian.teller.util.AssertionUtil.Companion.check
 import com.levibostian.teller.util.TellerTaskExecutor
 import com.levibostian.teller.util.TestUtil.isOnMainThread
+import com.levibostian.teller.util.Wait
 import io.reactivex.Observable
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
@@ -36,6 +37,8 @@ import org.junit.After
 import org.junit.Before
 import org.junit.Rule
 import java.util.*
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 @RunWith(AndroidJUnit4::class)
 class OnlineRepositoryIntegrationTest {
@@ -51,6 +54,14 @@ class OnlineRepositoryIntegrationTest {
     private lateinit var refreshManager: OnlineRepositoryRefreshManager
     private val schedulersProvider = TellerSchedulersProvider()
     private val taskExecutor = TellerTaskExecutor()
+    private val refreshManagerListener = object : OnlineRepositoryRefreshManager.Listener {
+        override fun refreshBegin(tag: GetDataRequirementsTag) {
+            repository.refreshBegin(tag)
+        }
+        override fun <RefreshResultDataType : Any> refreshComplete(tag: GetDataRequirementsTag, response: OnlineRepository.FetchResponse<RefreshResultDataType>) {
+            repository.refreshComplete(tag, response)
+        }
+    }
 
     @get:Rule val mockitoInitMocks = MockitoInitRule(this)
     @get:Rule val clearSharedPreferencesRule = ClearSharedPreferencesRule(sharedPreferences)
@@ -75,7 +86,7 @@ class OnlineRepositoryIntegrationTest {
         refreshManager = OnlineRepositoryRefreshManagerWrapper()
         syncStateManager = TellerOnlineRepositorySyncStateManager(sharedPreferences)
         requirements = OnlineRepositoryStub.GetRequirements("param")
-        repository = OnlineRepositoryStub(syncStateManager, refreshManager, schedulersProvider, taskExecutor)
+        repository = OnlineRepositoryStub(syncStateManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener)
     }
 
     @After
@@ -112,30 +123,40 @@ class OnlineRepositoryIntegrationTest {
 
     @Test
     fun callObserve_triggersFetchFreshCache() {
-        var numberTimesRepositoryAttemptedRefresh = 0
-        repository.fetchFreshData_invoke = { numberTimesRepositoryAttemptedRefresh += 1 }
+        // Must use 2 waits to prevent flaky test. Assert fetch happens when setting requirements first, then run function under test.
+        val firstFetchWait = Wait.times(1)
+        val secondFetchWait = Wait.times(2)
 
-        val fetchFreshData = ReplaySubject.create<OnlineRepository.FetchResponse<String>>()
+        repository.fetchFreshData_invoke = {
+            firstFetchWait.countDown()
+            secondFetchWait.countDown()
+        }
+
         val newCache = "newCache"
-        fetchFreshData.apply {
+        val fetchFreshData = ReplaySubject.create<OnlineRepository.FetchResponse<String>>().apply {
             onNext(OnlineRepository.FetchResponse.success(newCache))
             onComplete()
         }
         repository.fetchFreshData_return = fetchFreshData.singleOrError()
         repository.requirements = requirements
 
+        firstFetchWait.await()
+
         compositeDisposable += repository.observe()
                 .test()
                 .awaitDone()
 
-        assertThat(numberTimesRepositoryAttemptedRefresh).isEqualTo(2)
+        secondFetchWait.await()
     }
 
     @Test
     @UiThreadTest // call on UI thread to assert thread changes.
     fun saveData_calledOnBackgroundThread() {
+        val wait = Wait.times(1)
+
         repository.saveData_invoke = {
             assertThat(isOnMainThread()).isFalse()
+            wait.countDown()
         }
 
         val newCache = "newCache"
@@ -146,14 +167,9 @@ class OnlineRepositoryIntegrationTest {
         repository.fetchFreshData_return = fetchFreshData.singleOrError()
         repository.observeCachedData_return = Observable.create { it.onNext(newCache) }
 
-        val testObserver = repository.observe().test()
-
         repository.requirements = requirements
 
-        // A way to assert that saveData() has been called as we have to observe data after save has been called.
-        testObserver
-                .awaitDone()
-                .dispose()
+        wait.await()
 
         assertThat(repository.saveData_count).isEqualTo(1)
     }
@@ -161,22 +177,20 @@ class OnlineRepositoryIntegrationTest {
     @Test
     // Call on background thread to assert thread changes.
     fun observeCachedData_calledOnUIThread() {
+        val wait = Wait.times(1)
+
         setupDataHasBeenFetchedBefore(dataTooOld = false)
 
         repository.observeCachedData_invoke = {
             assertThat(isOnMainThread()).isTrue()
+            wait.countDown()
         }
 
         repository.observeCachedData_return = Observable.never()
 
-        val testObserver = repository.observe().test()
-
         repository.requirements = requirements
 
-        // A way to assert that saveData() has been called as we have to observe data after save has been called.
-        testObserver
-                .awaitDone()
-                .dispose()
+        wait.await()
 
         assertThat(repository.observeCachedData_count).isEqualTo(1)
     }
@@ -503,7 +517,6 @@ class OnlineRepositoryIntegrationTest {
 
     @Test
     fun successfulRefresh_observeProcess() {
-        val fetchedCache = "new cache"
         val expectedEventsSequence = arrayListOf<OnlineDataState<String>>()
 
         setupDataHasBeenFetchedBefore(dataTooOld = true)
@@ -541,11 +554,9 @@ class OnlineRepositoryIntegrationTest {
                 })
 
         fetchCache.apply {
-            onNext(OnlineRepository.FetchResponse.success(fetchedCache))
+            onNext(OnlineRepository.FetchResponse.success(existingCache)) // returning existing as cannot change what observable in stub is returning.
             onComplete()
         }
-
-        repository.observeCachedData_return = Observable.create { it.onNext(fetchedCache) }
 
         compositeDisposable += testObserver
                 .awaitCount(expectedEventsSequence.size + 2)
@@ -558,7 +569,7 @@ class OnlineRepositoryIntegrationTest {
                                     .successfulFetchingFreshCache(syncStateManager.lastTimeFetchedData(requirements.tag)!!),
                             OnlineDataStateStateMachine
                                     .cacheExists<String>(requirements, syncStateManager.lastTimeFetchedData(requirements.tag)!!).change()
-                                    .cachedData(fetchedCache)
+                                    .cachedData(existingCache)
                     ))
                 })
     }

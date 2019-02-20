@@ -45,7 +45,7 @@ internal object SharedOnlineRepositoryRefreshManager: OnlineRepositoryRefreshMan
             if (repositoryItems == null) {
                 repositoryItems = Repository(ReplaySubject.create<OnlineRepository.RefreshResult>(), WeakReference(repository))
 
-                repository.refreshBegin() // since refresh has already begun, send listener update now.
+                repository.refreshBegin(tag) // since refresh has already begun, send listener update now.
 
                 refreshItem.repositories.add(repositoryItems)
             }
@@ -81,7 +81,7 @@ internal object SharedOnlineRepositoryRefreshManager: OnlineRepositoryRefreshMan
 
         return task.doOnSuccess { response ->
             updateRepositoryListeners(tag) { listener ->
-                listener.refreshComplete(response)
+                listener.refreshComplete(tag, response)
             }
 
             response.failure?.let { fetchFailure ->

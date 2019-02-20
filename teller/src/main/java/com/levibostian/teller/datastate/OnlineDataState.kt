@@ -137,11 +137,7 @@ data class OnlineDataState<CACHE: Any> internal constructor(val noCacheExists: B
     }
 
     override fun toString(): String {
-        return if (stateMachine != null) {
-            stateMachine.toString()
-        } else {
-            "State: none"
-        }
+        return stateMachine?.toString() ?: "State: none"
     }
 
 }
