@@ -40,22 +40,30 @@ typealias GetDataRequirementsTag = String
  *
  * [OnlineRepository] is thread safe. Actions called upon for [OnlineRepository] can be performed on any thread.
  */
-abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineRepository.GetDataRequirements, FETCH_RESPONSE: Any>: OnlineRepositoryRefreshManager.Listener {
+abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineRepository.GetDataRequirements, FETCH_RESPONSE: Any> {
 
     constructor() {
         schedulersProvider = TellerSchedulersProvider()
         syncStateManager = TellerOnlineRepositorySyncStateManager()
         refreshManager = OnlineRepositoryRefreshManagerWrapper()
         taskExecutor = TellerTaskExecutor()
+        refreshManagerListener = RefreshManagerListener()
     }
+
+    /**
+     * Idea taken from [CompositeDisposable]. Use of volatile variable to mark object as no longer used.
+     */
+    @Volatile private var disposed = false
 
     private var observeCacheDisposeBag: CompositeDisposable = CompositeDisposable()
     // Important to never be nil so that we can call `observe` on this class and always be able to listen.
     private var currentStateOfData: OnlineDataStateBehaviorSubject<CACHE> = OnlineDataStateBehaviorSubject()
-    // Single thread executor to act as a "background queue".
-    private val saveCacheExecutor = Executors.newSingleThreadExecutor()
     private val schedulersProvider: SchedulersProvider
     private val taskExecutor: TaskExecutor
+    /**
+     * Use of an object as listener to allow [refreshBegin], [refreshComplete] functions to be private.
+     */
+    private val refreshManagerListener: OnlineRepositoryRefreshManager.Listener
 
     private val syncStateManager: OnlineRepositorySyncStateManager
     private val refreshManager: OnlineRepositoryRefreshManager
@@ -63,11 +71,13 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
     internal constructor(syncStateManager: OnlineRepositorySyncStateManager,
                          refreshManager: OnlineRepositoryRefreshManager,
                          schedulersProvider: SchedulersProvider,
-                         taskExecutor: TaskExecutor) {
+                         taskExecutor: TaskExecutor,
+                         refreshManagerListener: OnlineRepositoryRefreshManager.Listener) {
         this.syncStateManager = syncStateManager
         this.refreshManager = refreshManager
         this.schedulersProvider = schedulersProvider
         this.taskExecutor = taskExecutor
+        this.refreshManagerListener = refreshManagerListener
     }
 
     /**
@@ -83,6 +93,8 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
      * If the user decides to scroll to the next page of data, view a different user profile, or any other reason you need to change to observe a different piece of data, just set [requirements] again.
      *
      * If requirements is set to null, we will stop observing the cache changes and reset the state of data to null.
+     *
+     * @throws RuntimeException If calling after calling [dispose].
      */
     var requirements: GET_DATA_REQUIREMENTS? = null
         // 1. Cancel observing cache so no more reading of cache updates can happen.
@@ -90,8 +102,10 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
         // 3. Set curentStateOfData to something so anyone observing does not think they are still observing old requirements (old data).
 // 4. Start everything up again.
         set(value) {
+            assertNotDisposed()
+
             field?.let { oldValue ->
-                refreshManager.cancelTasksForRepository(oldValue.tag, this)
+                refreshManager.cancelTasksForRepository(oldValue.tag, refreshManagerListener)
                 stopObservingCache()
             }
 
@@ -112,7 +126,6 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
             }
         }
 
-    @Synchronized
     private fun restartObservingCachedData(requirements: GET_DATA_REQUIREMENTS) {
         /**
          * You need to subscribe and observe on the UI thread because popular database solutions such as Realm, SQLite all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.
@@ -120,6 +133,8 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
          * Also, you need to call [observeCachedData] while on the UI thread for cases like Realm where the Realm instance constructed in [observeCachedData] needs to be constructed and used on the same thread.
          */
         taskExecutor.postUI {
+            if (disposed) return@postUI
+
             stopObservingCache()
 
             observeCacheDisposeBag += observeCachedData(requirements)
@@ -147,12 +162,20 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
                 .subscribe()
     }
 
+    private fun assertNotDisposed() {
+        if (disposed) throw RuntimeException("Cannot call after calling `dispose()`")
+    }
+
     /**
      * How to begin observing the state of the data for this [OnlineRepository].
      *
      * Teller will automatically perform a [refresh] if the cached data does not exist or is too old. You will get notified anytime that the state of the data changes or the data itself ever changes.
+     *
+     * @throws RuntimeException If calling after calling [dispose].
      */
     fun observe(): Observable<OnlineDataState<CACHE>> {
+        assertNotDisposed()
+
         if (requirements != null) {
             // Trigger a refresh to help keep data up-to-date.
             performRefresh()
@@ -167,8 +190,11 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
      * Do this in onDestroy() of your Fragment or Activity, for example.
      */
     fun dispose() {
+        if (disposed) return
+        disposed = true
+
         requirements?.let {
-            refreshManager.cancelTasksForRepository(it.tag, this)
+            refreshManager.cancelTasksForRepository(it.tag, refreshManagerListener)
         }
 
         currentStateOfData.subject.onComplete()
@@ -189,39 +215,56 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
      * 2. Keep app data up-to-date at all times through a background job.
      *
      * @throws IllegalStateException If [requirements] have not yet been set for the [OnlineRepository]. [OnlineRepository] cannot refresh it it does not know what to refresh.
+     * @throws RuntimeException If calling after calling [dispose].
      */
     @Throws(IllegalStateException::class)
     fun refresh(force: Boolean): Single<RefreshResult> {
+        assertNotDisposed()
+
         val requirements = this.requirements ?: throw IllegalStateException("You need to set requirements before calling refresh.")
 
         return if (force || !syncStateManager.hasEverFetchedData(requirements.tag) || syncStateManager.isDataTooOld(requirements.tag, maxAgeOfData)) {
-            refreshManager.refresh(fetchFreshData(requirements), requirements.tag, this)
+            refreshManager.refresh(fetchFreshData(requirements), requirements.tag, refreshManagerListener)
         } else {
             Single.just(RefreshResult.skipped(RefreshResult.SkippedReason.DATA_NOT_TOO_OLD))
         }
     }
 
     @Synchronized
-    override fun refreshBegin() {
-        val hasEverFetchedDataBefore = !currentStateOfData.currentState.noCacheExists
+    internal fun refreshBegin(tag: GetDataRequirementsTag) {
+        // User may have changed requirements
+        val requirements = requirements ?: return
+        if (requirements.tag != tag) return
+        // Ignore async callback if disposed
+        if (disposed) return
 
-        if (!hasEverFetchedDataBefore) {
+        val noCacheExists = currentStateOfData.currentState?.noCacheExists ?: return
+
+        if (noCacheExists) {
             currentStateOfData.changeState { it.firstFetch() }
         } else {
             currentStateOfData.changeState { it.fetchingFreshCache() }
         }
     }
 
+    /**
+     * Note: Make sure this is called from a background thread.
+     */
     @Synchronized
-    override fun <RefreshResultDataType: Any> refreshComplete(response: FetchResponse<RefreshResultDataType>) {
+    internal fun <RefreshResultDataType: Any> refreshComplete(tag: GetDataRequirementsTag,
+                                                             response: FetchResponse<RefreshResultDataType>) {
+        // User may have changed requirements
         val requirements = requirements ?: return
+        if (requirements.tag != tag) return
+        // Ignore async callback if disposed
+        if (disposed) return
 
-        val hasEverFetchedDataBefore = !currentStateOfData.currentState.noCacheExists
+        val noCacheExists = currentStateOfData.currentState?.noCacheExists ?: return
 
         val fetchError = response.failure
         if (fetchError != null) {
             // Note: Make sure that you **do not** beginObservingCachedData() if there is a failure and we have never fetched data successfully before. We cannot begin observing cached data until we know for sure a cache actually exists!
-            if (!hasEverFetchedDataBefore) {
+            if (noCacheExists) {
                 currentStateOfData.changeState { it.errorFirstFetch(fetchError) }
             } else {
                 currentStateOfData.changeState { it.failFetchingFreshCache(fetchError) }
@@ -229,16 +272,17 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
         } else {
             val timeFetched = Date()
 
-            if (!hasEverFetchedDataBefore) {
+            if (noCacheExists) {
                 currentStateOfData.changeState { it.successfulFirstFetch(timeFetched) }
             } else {
                 currentStateOfData.changeState { it.successfulFetchingFreshCache(timeFetched) }
             }
 
             @Suppress("UNCHECKED_CAST") val newCache = response.data as FETCH_RESPONSE
-            SaveCacheAsyncTask(WeakReference(this), requirements, timeFetched, syncStateManager).apply {
-                executeOnExecutor(saveCacheExecutor, newCache)
-            }
+            stopObservingCache()
+            saveData(newCache, requirements)
+            syncStateManager.updateAgeOfData(requirements.tag, timeFetched)
+            restartObservingCachedData(requirements)
         }
     }
 
@@ -363,24 +407,16 @@ abstract class OnlineRepository<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineReposit
     }
 
     /**
-     * [saveData] on background thread via [AsyncTask].
+     * Inner class to pass on calls to parent object. As long as this inner class is referred by a [WeakReference], this will be fine and will avoid memory leaks.
      */
-    private class SaveCacheAsyncTask<CACHE: Any, GET_DATA_REQUIREMENTS: OnlineRepository.GetDataRequirements, FETCH_RESPONSE: Any>(
-            val repo: WeakReference<OnlineRepository<CACHE, GET_DATA_REQUIREMENTS, FETCH_RESPONSE>>,
-            val requirements: GET_DATA_REQUIREMENTS,
-            val timeFetched: Date,
-            val syncStateManager: OnlineRepositorySyncStateManager) : AsyncTask<FETCH_RESPONSE, Void, Void>() {
+    inner class RefreshManagerListener: OnlineRepositoryRefreshManager.Listener {
 
-        override fun doInBackground(vararg params: FETCH_RESPONSE): Void? {
-            val newCache: FETCH_RESPONSE = params[0]
+        override fun refreshBegin(tag: GetDataRequirementsTag) {
+            this@OnlineRepository.refreshBegin(tag)
+        }
 
-            repo.get()?.let { repo ->
-                repo.stopObservingCache()
-                repo.saveData(newCache, requirements)
-                syncStateManager.updateAgeOfData(requirements.tag, timeFetched)
-                repo.restartObservingCachedData(requirements)
-            }
-            return null
+        override fun <RefreshResultDataType : Any> refreshComplete(tag: GetDataRequirementsTag, response: FetchResponse<RefreshResultDataType>) {
+            this@OnlineRepository.refreshComplete(tag, response)
         }
     }
 

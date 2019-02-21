@@ -10,6 +10,7 @@ import org.junit.Test
 import com.levibostian.teller.util.AssertionUtil.Companion.check
 import com.levibostian.teller.util.TaskExecutor
 import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.eq
 
 import org.junit.runner.RunWith
 import org.mockito.Mock
@@ -35,6 +36,7 @@ class OnlineRepositoryTest {
     @Mock private lateinit var refreshManager: OnlineRepositoryRefreshManager
     @Mock private lateinit var schedulersProvider: SchedulersProvider
     @Mock private lateinit var taskExecutor: TaskExecutor
+    @Mock private lateinit var refreshManagerListener: OnlineRepositoryRefreshManager.Listener
 
     @Before
     fun setup() {
@@ -47,7 +49,7 @@ class OnlineRepositoryTest {
             (it.getArgument(0) as () -> Unit).invoke()
         }
         requirements = OnlineRepositoryStub.GetRequirements()
-        repository = OnlineRepositoryStub(syncStateManager, refreshManager, schedulersProvider, taskExecutor)
+        repository = OnlineRepositoryStub(syncStateManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener)
     }
 
     @After
@@ -67,7 +69,7 @@ class OnlineRepositoryTest {
     fun refresh_hasNeverFetchedData_expectRefreshCall() {
         val refreshResult = Single.just(OnlineRepository.RefreshResult.success())
         `when`(syncStateManager.hasEverFetchedData(requirements.tag)).thenReturn(false)
-        `when`(refreshManager.refresh(repository.fetchFreshData_return, requirements.tag, repository)).thenReturn(refreshResult)
+        `when`(refreshManager.refresh(repository.fetchFreshData_return, requirements.tag, refreshManagerListener)).thenReturn(refreshResult)
 
         repository.requirements = requirements
 
@@ -85,7 +87,7 @@ class OnlineRepositoryTest {
         `when`(syncStateManager.hasEverFetchedData(requirements.tag)).thenReturn(true)
         `when`(syncStateManager.lastTimeFetchedData(requirements.tag)).thenReturn(Date())
         `when`(syncStateManager.isDataTooOld(requirements.tag, repository.maxAgeOfData)).thenReturn(true)
-        `when`(refreshManager.refresh(repository.fetchFreshData_return, requirements.tag, repository)).thenReturn(refreshResult)
+        `when`(refreshManager.refresh(repository.fetchFreshData_return, requirements.tag, refreshManagerListener)).thenReturn(refreshResult)
 
         repository.requirements = requirements
 
@@ -103,7 +105,7 @@ class OnlineRepositoryTest {
         `when`(syncStateManager.hasEverFetchedData(requirements.tag)).thenReturn(true)
         `when`(syncStateManager.lastTimeFetchedData(requirements.tag)).thenReturn(Date())
         // `when`(syncStateManager.isDataTooOld(requirements.tag, repository.maxAgeOfData)).thenReturn(false)
-        `when`(refreshManager.refresh(repository.fetchFreshData_return, requirements.tag, repository)).thenReturn(refreshResult)
+        `when`(refreshManager.refresh(repository.fetchFreshData_return, requirements.tag, refreshManagerListener)).thenReturn(refreshResult)
 
         repository.requirements = requirements
 

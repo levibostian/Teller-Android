@@ -27,15 +27,16 @@ internal class OnlineDataStateBehaviorSubject<CACHE: Any> {
         set(value) {
             synchronized(this) {
                 field = value
-                subject.onNext(dataState)
+
+                if (!subject.hasComplete()) subject.onNext(dataState)
             }
         }
     val subject: BehaviorSubject<OnlineDataState<CACHE>> = BehaviorSubject.createDefault(dataState)
 
-    var currentState: OnlineDataState<CACHE> = OnlineDataState.none()
+    var currentState: OnlineDataState<CACHE>? = null
         get() {
             return synchronized(this) {
-                subject.value!!
+                subject.value
             }
         }
         private set
