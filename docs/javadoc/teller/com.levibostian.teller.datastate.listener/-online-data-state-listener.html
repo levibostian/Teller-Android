@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="../../style.css">
 </HEAD>
 <BODY>
-<a href="../index.html">teller</a>&nbsp;/&nbsp;<a href="index.html">com.levibostian.teller.datastate.listener</a>&nbsp;/&nbsp;<a href="./-online-data-state-listener.html">OnlineDataStateListener</a><br/>
+<a href="../index.html">teller</a>&nbsp;/&nbsp;<a href="index.html">com.levibostian.teller.cachestate.listener</a>&nbsp;/&nbsp;<a href="./-online-data-state-listener.html">OnlineDataStateListener</a><br/>
 <br/>
 <h1>OnlineDataStateListener</h1>
 <code><span class="keyword">interface </span><span class="identifier">OnlineDataStateListener</span><span class="symbol">&lt;</span><span class="keyword">in</span>&nbsp;<span class="identifier">DATA</span><span class="symbol">&gt;</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-online-data-state-fetching-listener/index.html"><span class="identifier">OnlineDataStateFetchingListener</span></a><span class="symbol">, </span><a href="-online-data-state-no-cache-state-listener/index.html"><span class="identifier">OnlineDataStateNoCacheStateListener</span></a><span class="symbol">, </span><a href="-online-data-state-cache-listener/index.html"><span class="identifier">OnlineDataStateCacheListener</span></a><span class="symbol">&lt;</span><a href="-online-data-state-listener.html#DATA"><span class="identifier">DATA</span></a><span class="symbol">&gt;</span></code>
@@ -17,14 +17,14 @@
 <p><a href="-online-data-state-cache-listener/cache-data.html">cacheData</a></p>
 </td>
 <td>
-<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">cacheData</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.datastate.listener.OnlineDataStateCacheListener$cacheData(com.levibostian.teller.datastate.listener.OnlineDataStateCacheListener.CACHE, java.util.Date)/data">data</span><span class="symbol">:</span>&nbsp;<a href="-online-data-state-cache-listener/index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">, </span><span class="identifier" id="com.levibostian.teller.datastate.listener.OnlineDataStateCacheListener$cacheData(com.levibostian.teller.datastate.listener.OnlineDataStateCacheListener.CACHE, java.util.Date)/fetched">fetched</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/util/Date.html"><span class="identifier">Date</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">cacheData</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.cachestate.listener.OnlineCacheStateCacheListener$cacheData(com.levibostian.teller.cachestate.listener.OnlineCacheStateCacheListener.CACHE, java.util.Date)/data">data</span><span class="symbol">:</span>&nbsp;<a href="-online-data-state-cache-listener/index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">, </span><span class="identifier" id="com.levibostian.teller.cachestate.listener.OnlineCacheStateCacheListener$cacheData(com.levibostian.teller.cachestate.listener.OnlineCacheStateCacheListener.CACHE, java.util.Date)/fetched">fetched</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/util/Date.html"><span class="identifier">Date</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
 </tr>
 <tr>
 <td>
 <p><a href="-online-data-state-cache-listener/cache-empty.html">cacheEmpty</a></p>
 </td>
 <td>
-<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">cacheEmpty</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.datastate.listener.OnlineDataStateCacheListener$cacheEmpty(java.util.Date)/fetched">fetched</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/util/Date.html"><span class="identifier">Date</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">cacheEmpty</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.cachestate.listener.OnlineCacheStateCacheListener$cacheEmpty(java.util.Date)/fetched">fetched</span><span class="symbol">:</span>&nbsp;<a href="https://developer.android.com/reference/java/util/Date.html"><span class="identifier">Date</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
 </tr>
 <tr>
 <td>
@@ -40,8 +40,8 @@
 <p><a href="-online-data-state-fetching-listener/finished-fetching.html">finishedFetching</a></p>
 </td>
 <td>
-<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">finishedFetching</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.datastate.listener.OnlineDataStateFetchingListener$finishedFetching(kotlin.Throwable)/errorDuringFetch">errorDuringFetch</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html"><span class="identifier">Throwable</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
-<p>Fetching of fresh data to put into the cache has been completed successfully or not. If <a href="-online-data-state-fetching-listener/finished-fetching.html#com.levibostian.teller.datastate.listener.OnlineDataStateFetchingListener$finishedFetching(kotlin.Throwable)/errorDuringFetch">errorDuringFetch</a> is not null, then it was a fail if it is null it was successful.</p>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">finishedFetching</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.cachestate.listener.OnlineCacheStateFetchingListener$finishedFetching(kotlin.Throwable)/errorDuringFetch">errorDuringFetch</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html"><span class="identifier">Throwable</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>Fetching of fresh data to put into the cache has been completed successfully or not. If <a href="-online-data-state-fetching-listener/finished-fetching.html#com.levibostian.teller.cachestate.listener.OnlineCacheStateFetchingListener$finishedFetching(kotlin.Throwable)/errorDuringFetch">errorDuringFetch</a> is not null, then it was a fail if it is null it was successful.</p>
 </td>
 </tr>
 <tr>
@@ -49,7 +49,7 @@
 <p><a href="-online-data-state-no-cache-state-listener/finished-first-fetch.html">finishedFirstFetch</a></p>
 </td>
 <td>
-<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">finishedFirstFetch</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.datastate.listener.OnlineDataStateNoCacheStateListener$finishedFirstFetch(kotlin.Throwable)/errorDuringFetch">errorDuringFetch</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html"><span class="identifier">Throwable</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
+<code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">finishedFirstFetch</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.cachestate.listener.OnlineCacheStateNoCacheStateListener$finishedFirstFetch(kotlin.Throwable)/errorDuringFetch">errorDuringFetch</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html"><span class="identifier">Throwable</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code></td>
 </tr>
 <tr>
 <td>

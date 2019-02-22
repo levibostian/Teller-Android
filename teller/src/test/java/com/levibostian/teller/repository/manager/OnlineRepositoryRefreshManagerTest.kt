@@ -1,8 +1,7 @@
 package com.levibostian.teller.repository.manager
 
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
-import com.levibostian.teller.repository.GetDataRequirementsTag
+import com.levibostian.teller.repository.GetCacheRequirementsTag
 import com.levibostian.teller.repository.OnlineRepository
 import io.reactivex.subjects.PublishSubject
 import org.junit.Test
@@ -14,7 +13,6 @@ import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
 import com.nhaarman.mockito_kotlin.*
 import io.reactivex.subjects.ReplaySubject
-import org.junit.Rule
 
 @RunWith(MockitoJUnitRunner::class)
 class OnlineRepositoryRefreshManagerTest {
@@ -22,8 +20,8 @@ class OnlineRepositoryRefreshManagerTest {
     @Mock private lateinit var repo1: OnlineRepositoryRefreshManager.Listener
     @Mock private lateinit var repo2: OnlineRepositoryRefreshManager.Listener
 
-    private val defaultTag: GetDataRequirementsTag = "defaultTag"
-    private val otherTag: GetDataRequirementsTag = "otherTag"
+    private val defaultTag: GetCacheRequirementsTag = "defaultTag"
+    private val otherTag: GetCacheRequirementsTag = "otherTag"
 
     @Test
     fun refresh_twoRepositoriesSameTag_expectRefreshTaskToBeShared() {

@@ -10,32 +10,22 @@ import org.junit.runner.RunWith
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
-import com.levibostian.teller.datastate.LocalDataState
-import com.levibostian.teller.datastate.OnlineDataState
-import com.levibostian.teller.datastate.online.statemachine.OnlineDataStateStateMachine
+import com.levibostian.teller.cachestate.LocalCacheState
 import com.levibostian.teller.extensions.awaitDispose
 import com.levibostian.teller.extensions.awaitDone
 import com.levibostian.teller.extensions.getTellerSharedPreferences
 import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.provider.TellerSchedulersProvider
-import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
-import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManagerWrapper
-import com.levibostian.teller.repository.manager.OnlineRepositorySyncStateManager
-import com.levibostian.teller.repository.manager.TellerOnlineRepositorySyncStateManager
 import com.levibostian.teller.rule.ClearSharedPreferencesRule
 import com.levibostian.teller.rule.MockitoInitRule
 import com.levibostian.teller.util.AssertionUtil.Companion.check
+import com.levibostian.teller.util.TellerTaskExecutor
 import com.levibostian.teller.util.TestUtil.isOnMainThread
-import io.reactivex.Observable
-import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
-import io.reactivex.subjects.PublishSubject
-import io.reactivex.subjects.ReplaySubject
 import org.junit.After
 
 import org.junit.Before
 import org.junit.Rule
-import java.util.*
 
 @RunWith(AndroidJUnit4::class)
 class LocalRepositoryIntegrationTest {
@@ -48,6 +38,7 @@ class LocalRepositoryIntegrationTest {
     private lateinit var compositeDisposable: CompositeDisposable
 
     private val schedulersProvider = TellerSchedulersProvider()
+    private val taskExecutor = TellerTaskExecutor()
 
     @get:Rule val mockitoInitMocks = MockitoInitRule(this)
     @get:Rule val clearSharedPreferencesRule = ClearSharedPreferencesRule(sharedPreferences)
@@ -57,7 +48,7 @@ class LocalRepositoryIntegrationTest {
         compositeDisposable = CompositeDisposable()
 
         requirements = LocalRepositoryStub.GetRequirements()
-        repository = LocalRepositoryStub(sharedPreferences, schedulersProvider)
+        repository = LocalRepositoryStub(sharedPreferences, schedulersProvider, taskExecutor)
     }
 
     @After
@@ -72,7 +63,7 @@ class LocalRepositoryIntegrationTest {
                 .test()
                 .awaitCount(1)
                 .assertValue(check {
-                    assertThat(it).isEqualTo(LocalDataState.none<String>())
+                    assertThat(it).isEqualTo(LocalCacheState.none<String>())
                 })
     }
 
@@ -81,14 +72,14 @@ class LocalRepositoryIntegrationTest {
         val cache = "cache"
         repository.setExistingCache(cache)
 
-        val expectedEventsSequence = arrayListOf<LocalDataState<String>>()
+        val expectedEventsSequence = arrayListOf<LocalCacheState<String>>()
 
         val testObserver = repository.observe().test()
 
         compositeDisposable += testObserver
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
-                    add(LocalDataState.none())
+                    add(LocalCacheState.none())
                 })
 
         repository.requirements = requirements
@@ -97,7 +88,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalDataState.data(cache)
+                            LocalCacheState.data(cache)
                     ))
                 })
     }
@@ -143,7 +134,7 @@ class LocalRepositoryIntegrationTest {
 
     @Test
     fun dispose_assertAllTearDownComplete() {
-        val expectedEventsSequence = arrayListOf<LocalDataState<String>>()
+        val expectedEventsSequence = arrayListOf<LocalCacheState<String>>()
 
         val testObserver = repository.observe().test()
 
@@ -153,8 +144,8 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 2)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalDataState.none(),
-                            LocalDataState.isEmpty()
+                            LocalCacheState.none(),
+                            LocalCacheState.isEmpty()
                     ))
                 })
 
@@ -197,14 +188,14 @@ class LocalRepositoryIntegrationTest {
         val cache = "cache"
         repository.setExistingCache(cache)
 
-        val expectedEventsSequence = arrayListOf<LocalDataState<String>>()
+        val expectedEventsSequence = arrayListOf<LocalCacheState<String>>()
 
         val testObserver = repository.observe().test()
 
         compositeDisposable += testObserver
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
-                    add(LocalDataState.none())
+                    add(LocalCacheState.none())
                 })
 
         repository.requirements = requirements
@@ -213,7 +204,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalDataState.data(cache)
+                            LocalCacheState.data(cache)
                     ))
                 })
 
@@ -223,7 +214,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalDataState.none()
+                            LocalCacheState.none()
                     ))
                 })
     }
@@ -233,14 +224,14 @@ class LocalRepositoryIntegrationTest {
         val cache = "cache"
         repository.setExistingCache(cache)
 
-        val expectedEventsSequence = arrayListOf<LocalDataState<String>>()
+        val expectedEventsSequence = arrayListOf<LocalCacheState<String>>()
 
         val testObserver = repository.observe().test()
 
         compositeDisposable += testObserver
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
-                    add(LocalDataState.none())
+                    add(LocalCacheState.none())
                 })
 
         repository.requirements = requirements
@@ -249,7 +240,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalDataState.data(cache)
+                            LocalCacheState.data(cache)
                     ))
                 })
     }
@@ -259,14 +250,14 @@ class LocalRepositoryIntegrationTest {
         val cache = ""
         repository.setExistingCache(cache)
 
-        val expectedEventsSequence = arrayListOf<LocalDataState<String>>()
+        val expectedEventsSequence = arrayListOf<LocalCacheState<String>>()
 
         val testObserver = repository.observe().test()
 
         compositeDisposable += testObserver
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
-                    add(LocalDataState.none())
+                    add(LocalCacheState.none())
                 })
 
         repository.requirements = requirements
@@ -275,7 +266,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalDataState.isEmpty()
+                            LocalCacheState.isEmpty()
                     ))
                 })
     }
@@ -285,14 +276,14 @@ class LocalRepositoryIntegrationTest {
         val oldCache = "old cache"
         repository.setExistingCache(oldCache)
 
-        val expectedEventsSequence = arrayListOf<LocalDataState<String>>()
+        val expectedEventsSequence = arrayListOf<LocalCacheState<String>>()
 
         val testObserver = repository.observe().test()
 
         compositeDisposable += testObserver
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
-                    add(LocalDataState.none())
+                    add(LocalCacheState.none())
                 })
 
         repository.requirements = requirements
@@ -301,7 +292,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalDataState.data(oldCache)
+                            LocalCacheState.data(oldCache)
                     ))
                 })
 
@@ -312,7 +303,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalDataState.data(newCache)
+                            LocalCacheState.data(newCache)
                     ))
                 })
     }

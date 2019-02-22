@@ -3,7 +3,7 @@ package com.levibostian.tellerexample.viewmodel
 import android.arch.lifecycle.LiveData
 import android.arch.lifecycle.LiveDataReactiveStreams
 import android.arch.lifecycle.ViewModel
-import com.levibostian.teller.datastate.OnlineDataState
+import com.levibostian.teller.cachestate.OnlineCacheState
 import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.repository.ReposRepository
@@ -24,7 +24,7 @@ class ReposViewModel: ViewModel() {
         reposRepository.requirements = ReposRepository.GetReposRequirements(username)
     }
 
-    fun observeRepos(): LiveData<OnlineDataState<List<RepoModel>>> {
+    fun observeRepos(): LiveData<OnlineCacheState<List<RepoModel>>> {
         return LiveDataReactiveStreams.fromPublisher(reposRepository.observe()
                 .toFlowable(BackpressureStrategy.LATEST)
                 .subscribeOn(Schedulers.io())

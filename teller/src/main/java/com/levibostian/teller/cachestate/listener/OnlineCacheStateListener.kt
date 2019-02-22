@@ -1,0 +1,3 @@
+package com.levibostian.teller.cachestate.listener
+
+interface OnlineCacheStateListener<in CACHE>: OnlineCacheStateFetchingListener, OnlineCacheStateNoCacheStateListener, OnlineCacheStateCacheListener<CACHE>

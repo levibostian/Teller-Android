@@ -1,16 +1,14 @@
 package com.levibostian.teller.repository
 
-import android.os.Looper
 import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.provider.SchedulersProvider
 import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
-import com.levibostian.teller.repository.manager.OnlineRepositorySyncStateManager
+import com.levibostian.teller.repository.manager.OnlineRepositoryCacheAgeManager
 import org.junit.Test
 import com.levibostian.teller.util.AssertionUtil.Companion.check
 import com.levibostian.teller.util.TaskExecutor
 import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.eq
 
 import org.junit.runner.RunWith
 import org.mockito.Mock
@@ -32,7 +30,7 @@ class OnlineRepositoryTest {
 
     private lateinit var compositeDisposable: CompositeDisposable
 
-    @Mock private lateinit var syncStateManager: OnlineRepositorySyncStateManager
+    @Mock private lateinit var cacheAgeManager: OnlineRepositoryCacheAgeManager
     @Mock private lateinit var refreshManager: OnlineRepositoryRefreshManager
     @Mock private lateinit var schedulersProvider: SchedulersProvider
     @Mock private lateinit var taskExecutor: TaskExecutor
@@ -49,7 +47,7 @@ class OnlineRepositoryTest {
             (it.getArgument(0) as () -> Unit).invoke()
         }
         requirements = OnlineRepositoryStub.GetRequirements()
-        repository = OnlineRepositoryStub(syncStateManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener)
+        repository = OnlineRepositoryStub(cacheAgeManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener)
     }
 
     @After
@@ -66,10 +64,10 @@ class OnlineRepositoryTest {
     }
 
     @Test
-    fun refresh_hasNeverFetchedData_expectRefreshCall() {
+    fun refresh_hasNeverFetched_expectRefreshCall() {
         val refreshResult = Single.just(OnlineRepository.RefreshResult.success())
-        `when`(syncStateManager.hasEverFetchedData(requirements.tag)).thenReturn(false)
-        `when`(refreshManager.refresh(repository.fetchFreshData_return, requirements.tag, refreshManagerListener)).thenReturn(refreshResult)
+        `when`(cacheAgeManager.hasSuccessfullyFetchedCache(requirements.tag)).thenReturn(false)
+        `when`(refreshManager.refresh(repository.fetchFreshCache_return, requirements.tag, refreshManagerListener)).thenReturn(refreshResult)
 
         repository.requirements = requirements
 
@@ -82,12 +80,12 @@ class OnlineRepositoryTest {
     }
 
     @Test
-    fun refresh_hasFetchedDataTooOld_expectRefreshCall() {
+    fun refresh_fetchedCacheTooOld_expectRefreshCall() {
         val refreshResult = Single.just(OnlineRepository.RefreshResult.success())
-        `when`(syncStateManager.hasEverFetchedData(requirements.tag)).thenReturn(true)
-        `when`(syncStateManager.lastTimeFetchedData(requirements.tag)).thenReturn(Date())
-        `when`(syncStateManager.isDataTooOld(requirements.tag, repository.maxAgeOfData)).thenReturn(true)
-        `when`(refreshManager.refresh(repository.fetchFreshData_return, requirements.tag, refreshManagerListener)).thenReturn(refreshResult)
+        `when`(cacheAgeManager.hasSuccessfullyFetchedCache(requirements.tag)).thenReturn(true)
+        `when`(cacheAgeManager.lastSuccessfulFetch(requirements.tag)).thenReturn(Date())
+        `when`(cacheAgeManager.isCacheTooOld(requirements.tag, repository.maxAgeOfCache)).thenReturn(true)
+        `when`(refreshManager.refresh(repository.fetchFreshCache_return, requirements.tag, refreshManagerListener)).thenReturn(refreshResult)
 
         repository.requirements = requirements
 
@@ -100,12 +98,12 @@ class OnlineRepositoryTest {
     }
 
     @Test
-    fun refresh_hasFetchedDataNotTooOldForceRefresh_expectRefreshCall() {
+    fun refresh_fetchedCacheNotTooOldForceRefresh_expectRefreshCall() {
         val refreshResult = Single.just(OnlineRepository.RefreshResult.success())
-        `when`(syncStateManager.hasEverFetchedData(requirements.tag)).thenReturn(true)
-        `when`(syncStateManager.lastTimeFetchedData(requirements.tag)).thenReturn(Date())
-        // `when`(syncStateManager.isDataTooOld(requirements.tag, repository.maxAgeOfData)).thenReturn(false)
-        `when`(refreshManager.refresh(repository.fetchFreshData_return, requirements.tag, refreshManagerListener)).thenReturn(refreshResult)
+        `when`(cacheAgeManager.hasSuccessfullyFetchedCache(requirements.tag)).thenReturn(true)
+        `when`(cacheAgeManager.lastSuccessfulFetch(requirements.tag)).thenReturn(Date())
+        // `when`(cacheAgeManager.isCacheTooOld(requirements.tag, repository.maxAgeOfCache)).thenReturn(false)
+        `when`(refreshManager.refresh(repository.fetchFreshCache_return, requirements.tag, refreshManagerListener)).thenReturn(refreshResult)
 
         repository.requirements = requirements
 
@@ -118,10 +116,10 @@ class OnlineRepositoryTest {
     }
 
     @Test
-    fun refresh_hasFetchedDataNotTooOldNoForceRefresh_expectSkipRefreshCall() {
-        `when`(syncStateManager.hasEverFetchedData(requirements.tag)).thenReturn(true)
-        `when`(syncStateManager.lastTimeFetchedData(requirements.tag)).thenReturn(Date())
-        `when`(syncStateManager.isDataTooOld(requirements.tag, repository.maxAgeOfData)).thenReturn(false)
+    fun refresh_fetchedCacheNotTooOldNoForceRefresh_expectSkipRefreshCall() {
+        `when`(cacheAgeManager.hasSuccessfullyFetchedCache(requirements.tag)).thenReturn(true)
+        `when`(cacheAgeManager.lastSuccessfulFetch(requirements.tag)).thenReturn(Date())
+        `when`(cacheAgeManager.isCacheTooOld(requirements.tag, repository.maxAgeOfCache)).thenReturn(false)
 
         repository.requirements = requirements
 
@@ -130,7 +128,7 @@ class OnlineRepositoryTest {
                 .await()
                 .assertValue(check {
                     assertThat(it.didSkip()).isTrue()
-                    assertThat(it.skipped).isEqualTo(OnlineRepository.RefreshResult.SkippedReason.DATA_NOT_TOO_OLD)
+                    assertThat(it.skipped).isEqualTo(OnlineRepository.RefreshResult.SkippedReason.CACHE_NOT_TOO_OLD)
                 })
     }
 

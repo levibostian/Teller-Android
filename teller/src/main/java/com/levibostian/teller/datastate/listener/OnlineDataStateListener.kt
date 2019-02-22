@@ -1,3 +1,0 @@
-package com.levibostian.teller.datastate.listener
-
-interface OnlineDataStateListener<in DATA>: OnlineDataStateFetchingListener, OnlineDataStateNoCacheStateListener, OnlineDataStateCacheListener<DATA>
