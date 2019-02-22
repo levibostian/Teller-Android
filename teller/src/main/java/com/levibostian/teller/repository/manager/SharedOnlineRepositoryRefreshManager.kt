@@ -1,6 +1,6 @@
 package com.levibostian.teller.repository.manager
 
-import com.levibostian.teller.repository.GetDataRequirementsTag
+import com.levibostian.teller.repository.GetCacheRequirementsTag
 import com.levibostian.teller.repository.OnlineRepository
 import io.reactivex.Single
 import io.reactivex.disposables.Disposable
@@ -11,28 +11,28 @@ import java.lang.ref.WeakReference
 /**
  * Thread safe, singleton, implementation of [OnlineRepositoryRefreshManager].
  *
- * The reason for using a singleton manager is so that [OnlineRepository.fetchFreshData] calls are shared amongst *all* instances of [OnlineRepository]. This improves the performance of Teller by guaranteeing that only 1 network call is ever being performed for each unique [GetDataRequirementsTag].
+ * The reason for using a singleton manager is so that [OnlineRepository.fetchFreshCache] calls are shared amongst *all* instances of [OnlineRepository]. This improves the performance of Teller by guaranteeing that only 1 network call is ever being performed for each unique [GetCacheRequirementsTag].
  */
 internal object SharedOnlineRepositoryRefreshManager: OnlineRepositoryRefreshManager {
 
-    private var refreshItems: MutableMap<GetDataRequirementsTag, RefreshTaskItem> = mutableMapOf()
+    private var refreshItems: MutableMap<GetCacheRequirementsTag, RefreshTaskItem> = mutableMapOf()
 
     /**
      * Get a [Single] you can observe to get notified on the result of a fetch network call.
      *
      * [task] will begin if another [Single] does not already exist for [tag]. If a [Single] already exists, [task] will be ignored as it's assumed to be a duplicate of the returned [Single] since the [tag] is identical.
      *
-     * Note: No matter what you do with the returned [Single] (set the thread to subscribe on, dispose of Single, etc), the [task] will not be impacted. Because [task] may be shared between 1+ instances of [OnlineRepository], we do not want to cancel [task]. We also want to guarantee that [OnlineRepository.fetchFreshData] is called on a background thread so this manager is in charge of beginning the fetch request.
+     * Note: No matter what you do with the returned [Single] (set the thread to subscribe on, dispose of Single, etc), the [task] will not be impacted. Because [task] may be shared between 1+ instances of [OnlineRepository], we do not want to cancel [task]. We also want to guarantee that [OnlineRepository.fetchFreshCache] is called on a background thread so this manager is in charge of beginning the fetch request.
      *
      * Note: If this function is called multiple times by the same [repository] with same [tag] while a [task] is still not complete, you will receive the same return value.
      *
-     * @param task The actual fetch task from [OnlineRepository.fetchFreshData].
+     * @param task The actual fetch task from [OnlineRepository.fetchFreshCache].
      * @param tag Used to label the [task]. [tag]s can be used multiple times by different [repository] instances.
      * @param repository Stored as a [WeakReference] to reference later to send updates to and to cancel task if desired.
      *
      * @return Observable to get notified with the refresh task result (unless you cancel before then).
      */
-    override fun <RefreshResultDataType : Any> refresh(task: Single<OnlineRepository.FetchResponse<RefreshResultDataType>>, tag: GetDataRequirementsTag, repository: OnlineRepositoryRefreshManager.Listener): Single<OnlineRepository.RefreshResult> {
+    override fun <RefreshResponseType: Any> refresh(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag, repository: OnlineRepositoryRefreshManager.Listener): Single<OnlineRepository.RefreshResult> {
         return synchronized(refreshItems) {
             var refreshItem = refreshItems[tag]
 
@@ -45,7 +45,7 @@ internal object SharedOnlineRepositoryRefreshManager: OnlineRepositoryRefreshMan
             if (repositoryItems == null) {
                 repositoryItems = Repository(ReplaySubject.create<OnlineRepository.RefreshResult>(), WeakReference(repository))
 
-                repository.refreshBegin() // since refresh has already begun, send listener update now.
+                repository.refreshBegin(tag) // since refresh has already begun, send listener update now.
 
                 refreshItem.repositories.add(repositoryItems)
             }
@@ -57,7 +57,7 @@ internal object SharedOnlineRepositoryRefreshManager: OnlineRepositoryRefreshMan
     /**
      * Modify the given fetch task with some observer listeners and start running it.
      */
-    private fun <RefreshResultDataType: Any> startRefreshTask(task: Single<OnlineRepository.FetchResponse<RefreshResultDataType>>, tag: GetDataRequirementsTag): Disposable {
+    private fun <RefreshResponseType: Any> startRefreshTask(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag): Disposable {
         fun doneRefresh(result: OnlineRepository.RefreshResult?, failure: Throwable?) {
             synchronized(refreshItems) {
                 val repositories = refreshItems[tag]?.repositories
@@ -81,7 +81,7 @@ internal object SharedOnlineRepositoryRefreshManager: OnlineRepositoryRefreshMan
 
         return task.doOnSuccess { response ->
             updateRepositoryListeners(tag) { listener ->
-                listener.refreshComplete(response)
+                listener.refreshComplete(tag, response)
             }
 
             response.failure?.let { fetchFailure ->
@@ -94,7 +94,7 @@ internal object SharedOnlineRepositoryRefreshManager: OnlineRepositoryRefreshMan
         }.subscribeOn(Schedulers.io()).subscribe()
     }
 
-    private fun updateRepositoryListeners(tag: GetDataRequirementsTag, update: (listener: OnlineRepositoryRefreshManager.Listener) -> Unit) {
+    private fun updateRepositoryListeners(tag: GetCacheRequirementsTag, update: (listener: OnlineRepositoryRefreshManager.Listener) -> Unit) {
         synchronized(refreshItems) {
             refreshItems[tag]?.repositories?.forEach { repository ->
                 repository.listener.get()?.let { update.invoke(it) }
@@ -103,15 +103,15 @@ internal object SharedOnlineRepositoryRefreshManager: OnlineRepositoryRefreshMan
     }
 
     /**
-     * Useful for when [OnlineRepository.requirements] is changed and the previous [OnlineRepository.fetchFreshData] call (if there was one) should be cancelled as a new [OnlineRepository.fetchFreshData] could be triggered.
+     * Useful for when [OnlineRepository.requirements] is changed and the previous [OnlineRepository.fetchFreshCache] call (if there was one) should be cancelled as a new [OnlineRepository.fetchFreshCache] could be triggered.
      *
      * If the [repository] is not found in the list of added owners for [tag], the request will be ignored.
      *
-     * If there are 0 [OnlineRepositoryRefreshManager.Listener]s after removing the [repository] for the given [tag], the actual fetch call will be cancelled for performance gain. If there is 1+ other [OnlineRepositoryRefreshManager.Listener]s that are still using the fetch request with the given [tag], the actual [OnlineRepository.fetchFreshData] will continue but the given [repository] will not get a notification on updates.
+     * If there are 0 [OnlineRepositoryRefreshManager.Listener]s after removing the [repository] for the given [tag], the actual fetch call will be cancelled for performance gain. If there is 1+ other [OnlineRepositoryRefreshManager.Listener]s that are still using the fetch request with the given [tag], the actual [OnlineRepository.fetchFreshCache] will continue but the given [repository] will not get a notification on updates.
      *
      * The [Single] returned from [refresh] will receive a [OnlineRepository.RefreshResult.SkippedReason.CANCELLED] event on cancel.
      */
-    override fun cancelTasksForRepository(tag: GetDataRequirementsTag, repository: OnlineRepositoryRefreshManager.Listener) {
+    override fun cancelTasksForRepository(tag: GetCacheRequirementsTag, repository: OnlineRepositoryRefreshManager.Listener) {
         synchronized(refreshItems) {
             refreshItems[tag]?.let { refreshItem ->
                 // Must use iterator to avoid ConcurrentModificationException

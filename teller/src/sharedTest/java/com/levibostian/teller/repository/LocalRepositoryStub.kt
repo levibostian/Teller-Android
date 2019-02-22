@@ -3,16 +3,18 @@ package com.levibostian.teller.repository
 import android.content.SharedPreferences
 import com.f2prateek.rx.preferences2.RxSharedPreferences
 import com.levibostian.teller.provider.SchedulersProvider
+import com.levibostian.teller.util.TaskExecutor
 import io.reactivex.Observable
 import io.reactivex.subjects.PublishSubject
 
 internal class LocalRepositoryStub(
         private val sharedPreferences: SharedPreferences,
-        schedulersProvider: SchedulersProvider): LocalRepository<String, LocalRepositoryStub.GetRequirements>(schedulersProvider) {
+        schedulersProvider: SchedulersProvider,
+        taskExecutor: TaskExecutor): LocalRepository<String, LocalRepositoryStub.GetRequirements>(schedulersProvider, taskExecutor) {
 
     private val rxSharedPrefs = RxSharedPreferences.create(sharedPreferences)
 
-    // Used for testing. Persist data to shared prefs immediately to be ready for tests to run.
+    // Used for testing. Persist response to shared prefs immediately to be ready for tests to run.
     fun setExistingCache(cache: String) {
         sharedPreferences.edit().putString(CACHE_KEY, cache).commit()
     }

@@ -5,7 +5,7 @@ Now that you have [created your first Teller Repository](create_repository) and 
 Check out the documents below:
 
 * [Clear Teller data](clear) - Use anytime you delete all of the data in your app. Such as when the user of your app logs out of their account. 
-* [Refresh data in the background](refresh) - To keep your app's data always up-to-date to give your app's users the latest information, run a background job that refreshes your `OnlineRepository`s. 
+* [Refresh cache in the background](refresh) - To keep your app's cache always up-to-date to give your app's users the latest information, run a background job that refreshes your `OnlineRepository`s.
 
 ## What's next? 
 

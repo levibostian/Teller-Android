@@ -8,25 +8,18 @@ import com.levibostian.tellerexample.R
 import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.service.GitHubService
 import com.levibostian.tellerexample.viewmodel.ReposViewModel
-import retrofit2.Retrofit
-import android.arch.persistence.room.Room
 import android.os.Handler
 import android.support.design.widget.Snackbar
 import android.support.v7.widget.LinearLayoutManager
 import android.text.format.DateUtils
 import android.view.View
 import android.widget.TextView
-import com.levibostian.teller.datastate.listener.LocalDataStateListener
-import com.levibostian.teller.datastate.listener.OnlineDataStateListener
+import com.levibostian.teller.cachestate.listener.LocalCacheStateListener
+import com.levibostian.teller.cachestate.listener.OnlineCacheStateListener
 import com.levibostian.tellerexample.adapter.RepoRecyclerViewAdapter
 import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.viewmodel.GitHubUsernameViewModel
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
-import retrofit2.converter.gson.GsonConverterFactory
 import java.util.*
 import android.support.v7.app.AlertDialog
 import com.levibostian.tellerexample.extensions.closeKeyboard
@@ -65,7 +58,7 @@ class MainActivity : AppCompatActivity() {
 
         reposViewModel.observeRepos()
                 .observe(this, Observer { reposState ->
-                    reposState?.deliverAllStates(object : OnlineDataStateListener<List<RepoModel>> {
+                    reposState?.deliverAllStates(object : OnlineCacheStateListener<List<RepoModel>> {
                         override fun noCache() {
                             // great place to show empty state where first fetch fails.
                         }
@@ -89,7 +82,7 @@ class MainActivity : AppCompatActivity() {
                         override fun cacheEmpty(fetched: Date) {
                             showEmptyView()
                         }
-                        override fun cacheData(data: List<RepoModel>, fetched: Date) {
+                        override fun cache(cache: List<RepoModel>, fetched: Date) {
                             showDataView()
 
                             updateLastSyncedRunnable?.let { updateLastSyncedHandler?.removeCallbacks(it) }
@@ -102,7 +95,7 @@ class MainActivity : AppCompatActivity() {
 
                             repos_recyclerview.apply {
                                 layoutManager = LinearLayoutManager(this@MainActivity)
-                                adapter = RepoRecyclerViewAdapter(data)
+                                adapter = RepoRecyclerViewAdapter(cache)
                                 setHasFixedSize(true)
                             }
                         }
@@ -117,7 +110,7 @@ class MainActivity : AppCompatActivity() {
                 })
         gitHubUsernameViewModel.observeUsername()
                 .observe(this, Observer { username ->
-                    username?.deliverState(object : LocalDataStateListener<String> {
+                    username?.deliverState(object : LocalCacheStateListener<String> {
                         override fun isEmpty() {
                             username_edittext.setText("", TextView.BufferType.EDITABLE)
                         }

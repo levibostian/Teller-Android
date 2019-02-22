@@ -2,53 +2,54 @@ package com.levibostian.teller.repository
 
 import com.levibostian.teller.provider.SchedulersProvider
 import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
-import com.levibostian.teller.repository.manager.OnlineRepositorySyncStateManager
-import com.levibostian.teller.type.AgeOfData
+import com.levibostian.teller.repository.manager.OnlineRepositoryCacheAgeManager
+import com.levibostian.teller.type.Age
 import com.levibostian.teller.util.TaskExecutor
 import io.reactivex.Observable
 import io.reactivex.Single
 
-internal class OnlineRepositoryStub(syncStateManager: OnlineRepositorySyncStateManager,
+internal class OnlineRepositoryStub(cacheAgeManager: OnlineRepositoryCacheAgeManager,
                                     refreshManager: OnlineRepositoryRefreshManager,
                                     schedulersProvider: SchedulersProvider,
-                                    taskExecutor: TaskExecutor): OnlineRepository<String, OnlineRepositoryStub.GetRequirements, String>(syncStateManager, refreshManager, schedulersProvider, taskExecutor) {
+                                    taskExecutor: TaskExecutor,
+                                    refreshManagerListener: OnlineRepositoryRefreshManager.Listener): OnlineRepository<String, OnlineRepositoryStub.GetRequirements, String>(cacheAgeManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener) {
 
-    override var maxAgeOfData: AgeOfData = AgeOfData(1, AgeOfData.Unit.HOURS)
+    override var maxAgeOfCache: Age = Age(1, Age.Unit.HOURS)
 
-    var fetchFreshData_return = Single.never<FetchResponse<String>>()
-    var fetchFreshData_invoke: ((GetRequirements) -> Unit)? = null
-    override fun fetchFreshData(requirements: GetRequirements): Single<FetchResponse<String>> {
-        fetchFreshData_invoke?.invoke(requirements)
-        return fetchFreshData_return
+    var fetchFreshCache_return = Single.never<FetchResponse<String>>()
+    var fetchFreshCache_invoke: ((GetRequirements) -> Unit)? = null
+    override fun fetchFreshCache(requirements: GetRequirements): Single<FetchResponse<String>> {
+        fetchFreshCache_invoke?.invoke(requirements)
+        return fetchFreshCache_return
     }
 
-    var saveData_results = arrayListOf<String>()
-    var saveData_invoke: ((String) -> Unit)? = null
-    var saveData_count = 0
-        get() = saveData_results.size
+    var saveCache_results = arrayListOf<String>()
+    var saveCache_invoke: ((String) -> Unit)? = null
+    var saveCache_count = 0
+        get() = saveCache_results.size
         private set
-    override fun saveData(data: String, requirements: GetRequirements) {
-        saveData_invoke?.invoke(data)
-        saveData_results.add(data)
+    override fun saveCache(cache: String, requirements: GetRequirements) {
+        saveCache_results.add(cache)
+        saveCache_invoke?.invoke(cache)
     }
 
-    var observeCachedData_results = arrayListOf<GetRequirements>()
-    var observeCachedData_return = Observable.never<String>()
-    var observeCachedData_invoke: ((GetRequirements) -> Unit)? = null
-    var observeCachedData_count = 0
-        get() = observeCachedData_results.size
+    var observeCache_results = arrayListOf<GetRequirements>()
+    var observeCache_return = Observable.never<String>()
+    var observeCache_invoke: ((GetRequirements) -> Unit)? = null
+    var observeCache_count = 0
+        get() = observeCache_results.size
         private set
-    override fun observeCachedData(requirements: GetRequirements): Observable<String> {
-        observeCachedData_results.add(requirements)
-        observeCachedData_invoke?.invoke(requirements)
-        return observeCachedData_return
+    override fun observeCache(requirements: GetRequirements): Observable<String> {
+        observeCache_results.add(requirements)
+        observeCache_invoke?.invoke(requirements)
+        return observeCache_return
     }
 
-    var isDataEmpty_return = false
-    override fun isDataEmpty(cache: String, requirements: GetRequirements): Boolean = isDataEmpty_return
+    var isCacheEmpty_return = false
+    override fun isCacheEmpty(cache: String, requirements: GetRequirements): Boolean = isCacheEmpty_return
 
-    data class GetRequirements(val param: String = ""): OnlineRepository.GetDataRequirements {
-        override var tag: GetDataRequirementsTag = "Stub param:$param"
+    data class GetRequirements(val param: String = ""): OnlineRepository.GetCacheRequirements {
+        override var tag: GetCacheRequirementsTag = "Stub param:$param"
     }
 
 }

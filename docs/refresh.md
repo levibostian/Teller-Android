@@ -1,6 +1,6 @@
-# Keep Teller data always up-to-date
+# Keep your cache always up-to-date
 
-You want to make sure that the data of your app is always up-to-date. When your users open your app, it's nice that they can jump right into some new content and not need to wait for a fetch to complete. Teller provides a simple method to refresh your `OnlineRepository`s in the background when your app is not running. 
+You want to make sure that the cache of your app is always up-to-date. When your users open your app, it's nice that they can jump right into some new content and not need to wait for a fetch to complete. Teller provides a simple method to refresh your `OnlineRepository`s in the background when your app is not running.
 
 ```kotlin
 val refreshTasks: ArrayList<Single<OnlineRepository.RefreshResult>> = arrayListOf()
@@ -25,8 +25,8 @@ Single.concat(repos)
 Teller `OnlineRepository.refresh()` will check if any of the following scenarios are true and perform a network fetch call and cache save:
 
 1. `force` parameter is true
-2. Cache data for the `OnlineRepository` instance is too old
-3. The `OnlineRepository` has never fetched cache data successfully before
+2. Cache for the `OnlineRepository` instance is too old
+3. The `OnlineRepository` has never fetched cache successfully before
 
 The code above uses `Single.concat()` from RxJava to take a list of `Single` observables and runs each one 1 by 1. 
 
@@ -93,7 +93,7 @@ class RepositorySyncJob: Job() {
 }
 ```
 
-Be sure to check out the code in the `scheduleJob()` function. It is the code that tells `android-job` when to run this background job. The code in the example above states that (1) the device must be connected to the Internet (2) run periodically every 15 minutes (remember, Teller does not refresh your `OnlineRepository` every 15 minutes, it will only refresh when it needs to). Because you can run your background job every 15 minutes, it's very important to make sure that your `OnlineRepository.maxAgeOfData` value is not too low such as every 30 minutes. That may drain the battery of your user's device. 
+Be sure to check out the code in the `scheduleJob()` function. It is the code that tells `android-job` when to run this background job. The code in the example above states that (1) the device must be connected to the Internet (2) run periodically every 15 minutes (remember, Teller does not refresh your `OnlineRepository` every 15 minutes, it will only refresh when it needs to). Because you can run your background job every 15 minutes, it's very important to make sure that your `OnlineRepository.maxAge` value is not too low such as every 30 minutes. That may drain the battery of your user's device.
 
 * Create a `JobCreator` Object as required by `android-job`:
 

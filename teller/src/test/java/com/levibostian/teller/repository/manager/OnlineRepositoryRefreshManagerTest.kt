@@ -1,12 +1,12 @@
 package com.levibostian.teller.repository.manager
 
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
-import com.levibostian.teller.repository.GetDataRequirementsTag
+import com.levibostian.teller.repository.GetCacheRequirementsTag
 import com.levibostian.teller.repository.OnlineRepository
 import io.reactivex.subjects.PublishSubject
 import org.junit.Test
 import com.levibostian.teller.util.AssertionUtil.Companion.check
+import com.levibostian.teller.util.Wait
 
 import org.junit.runner.RunWith
 import org.mockito.Mock
@@ -17,11 +17,11 @@ import io.reactivex.subjects.ReplaySubject
 @RunWith(MockitoJUnitRunner::class)
 class OnlineRepositoryRefreshManagerTest {
 
-    @Mock private lateinit var repo1: OnlineRepository<String, OnlineRepository.GetDataRequirements, String>
-    @Mock private lateinit var repo2: OnlineRepository<String, OnlineRepository.GetDataRequirements, String>
+    @Mock private lateinit var repo1: OnlineRepositoryRefreshManager.Listener
+    @Mock private lateinit var repo2: OnlineRepositoryRefreshManager.Listener
 
-    private val defaultTag: GetDataRequirementsTag = "defaultTag"
-    private val otherTag: GetDataRequirementsTag = "otherTag"
+    private val defaultTag: GetCacheRequirementsTag = "defaultTag"
+    private val otherTag: GetCacheRequirementsTag = "otherTag"
 
     @Test
     fun refresh_twoRepositoriesSameTag_expectRefreshTaskToBeShared() {
@@ -56,13 +56,13 @@ class OnlineRepositoryRefreshManagerTest {
                     assertThat(it.didSucceed()).isTrue()
                 })
 
-        verify(repo1).refreshBegin()
-        verify(repo2).refreshBegin()
+        verify(repo1).refreshBegin(defaultTag)
+        verify(repo2).refreshBegin(defaultTag)
 
         val repo1RefreshCompleteArgumentCaptor = argumentCaptor<OnlineRepository.FetchResponse<String>>()
-        verify(repo1).refreshComplete(repo1RefreshCompleteArgumentCaptor.capture())
+        verify(repo1).refreshComplete(eq(defaultTag), repo1RefreshCompleteArgumentCaptor.capture())
         val repo2RefreshCompleteArgumentCaptor = argumentCaptor<OnlineRepository.FetchResponse<String>>()
-        verify(repo2).refreshComplete(repo2RefreshCompleteArgumentCaptor.capture())
+        verify(repo2).refreshComplete(eq(defaultTag), repo2RefreshCompleteArgumentCaptor.capture())
 
         assertThat(repo1RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Result)
         assertThat(repo2RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Result)
@@ -101,13 +101,13 @@ class OnlineRepositoryRefreshManagerTest {
                     assertThat(it.didFail()).isTrue()
                 })
 
-        verify(repo1).refreshBegin()
-        verify(repo2).refreshBegin()
+        verify(repo1).refreshBegin(defaultTag)
+        verify(repo2).refreshBegin(otherTag)
 
         val repo1RefreshCompleteArgumentCaptor = argumentCaptor<OnlineRepository.FetchResponse<String>>()
-        verify(repo1).refreshComplete(repo1RefreshCompleteArgumentCaptor.capture())
+        verify(repo1).refreshComplete(eq(defaultTag), repo1RefreshCompleteArgumentCaptor.capture())
         val repo2RefreshCompleteArgumentCaptor = argumentCaptor<OnlineRepository.FetchResponse<String>>()
-        verify(repo2).refreshComplete(repo2RefreshCompleteArgumentCaptor.capture())
+        verify(repo2).refreshComplete(eq(otherTag), repo2RefreshCompleteArgumentCaptor.capture())
 
         assertThat(repo1RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Result)
         assertThat(repo2RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task2Result)
@@ -146,24 +146,24 @@ class OnlineRepositoryRefreshManagerTest {
                     assertThat(it.didSucceed()).isTrue()
                 })
 
-        verify(repo1).refreshBegin()
+        verify(repo1).refreshBegin(defaultTag)
 
         val repo1RefreshCompleteArgumentCaptor = argumentCaptor<OnlineRepository.FetchResponse<String>>()
-        verify(repo1).refreshComplete(repo1RefreshCompleteArgumentCaptor.capture())
+        verify(repo1).refreshComplete(eq(defaultTag), repo1RefreshCompleteArgumentCaptor.capture())
 
         assertThat(repo1RefreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Result)
     }
 
     @Test
     fun cancelTasksForRepository_oneRepository_refreshTaskGetsCancelled() {
-        var task1Disposed = false
+        val wait = Wait.times(1)
         val task1 = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
                 .doOnDispose {
-                    task1Disposed = true
+                    wait.countDown()
                 }
         val repo1TestObserver = SharedOnlineRepositoryRefreshManager.refresh(task1.singleOrError(), defaultTag, repo1).test()
 
-        verify(repo1).refreshBegin()
+        verify(repo1).refreshBegin(defaultTag)
 
         SharedOnlineRepositoryRefreshManager.cancelTasksForRepository(defaultTag, repo1)
 
@@ -173,18 +173,18 @@ class OnlineRepositoryRefreshManagerTest {
                     assertThat(it.didSkip()).isTrue()
                 })
 
-        assertThat(task1Disposed).isTrue()
+        wait.await()
 
-        verify(repo1, never()).refreshComplete(any<OnlineRepository.FetchResponse<String>>())
+        verify(repo1, never()).refreshComplete(any(), any<OnlineRepository.FetchResponse<String>>())
     }
 
     @Test
     fun cancelTasksForRepository_twoRepositoriesSameTask_refreshTaskContinuesForTaskThatDidNotCancel() {
-        var task1Disposed = false
+        val wait = Wait.times(1)
         val task1Subject = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
         val task1Single = task1Subject
                 .doOnDispose {
-                    task1Disposed = true
+                    wait.countDown()
                 }.singleOrError()
         val task2 = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
 
@@ -194,13 +194,13 @@ class OnlineRepositoryRefreshManagerTest {
         val repo1TestObserver = SharedOnlineRepositoryRefreshManager.refresh(task1Single, defaultTag, repo1).test()
         val repo2TestObserver = SharedOnlineRepositoryRefreshManager.refresh(task2.singleOrError(), defaultTag, repo2).test()
 
-        verify(repo1).refreshBegin()
-        verify(repo2).refreshBegin()
+        verify(repo1).refreshBegin(defaultTag)
+        verify(repo2).refreshBegin(defaultTag)
 
         SharedOnlineRepositoryRefreshManager.cancelTasksForRepository(defaultTag, repo1)
 
         // Continue running task as repo2 is still observing.
-        assertThat(task1Disposed).isFalse()
+        assertThat(wait.notDone()).isTrue()
 
         task1Subject.apply {
             onNext(task1Response)
@@ -225,19 +225,19 @@ class OnlineRepositoryRefreshManagerTest {
                     assertThat(it.didSucceed()).isTrue()
                 })
 
-        verify(repo1, never()).refreshComplete(any<OnlineRepository.FetchResponse<String>>())
+        verify(repo1, never()).refreshComplete(any(), any<OnlineRepository.FetchResponse<String>>())
         val refreshCompleteArgumentCaptor = argumentCaptor<OnlineRepository.FetchResponse<String>>()
-        verify(repo2).refreshComplete(refreshCompleteArgumentCaptor.capture())
+        verify(repo2).refreshComplete(any(), refreshCompleteArgumentCaptor.capture())
         assertThat(refreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Response)
     }
 
     @Test
-    fun cancelTasksForRepository_repoDidNotStartRefresh_ignoreRequest() {
-        var task1Disposed = false
+    fun cancelTasksForRepository_otherRepoThatDidntCallRefresh_ignoreCancelRequest() {
+        val wait = Wait.times(1)
         val task1Subject = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
         val task1Single = task1Subject
                 .doOnDispose {
-                    task1Disposed = true
+                    wait.countDown()
                 }.singleOrError()
 
         val task1Response = OnlineRepository.FetchResponse.success("task1")
@@ -247,8 +247,8 @@ class OnlineRepositoryRefreshManagerTest {
         // Call cancel with same tag, but repo that never started a refresh call.
         SharedOnlineRepositoryRefreshManager.cancelTasksForRepository(defaultTag, repo2)
 
-        // Continue running task as repo2 is still observing.
-        assertThat(task1Disposed).isFalse()
+        // Continue running task as repo1 is still observing refresh task that was started.
+        assertThat(wait.notDone()).isTrue()
 
         task1Subject.apply {
             onNext(task1Response)
@@ -256,14 +256,14 @@ class OnlineRepositoryRefreshManagerTest {
         }
 
         repo1TestObserver
-                .await()
+                .awaitCount(1)
                 .assertValue(check {
                     assertThat(it.didSucceed()).isTrue()
                     assertThat(it.didSkip()).isFalse()
                 })
 
         val refreshCompleteArgumentCaptor = argumentCaptor<OnlineRepository.FetchResponse<String>>()
-        verify(repo1).refreshComplete(refreshCompleteArgumentCaptor.capture())
+        verify(repo1).refreshComplete(any(), refreshCompleteArgumentCaptor.capture())
         assertThat(refreshCompleteArgumentCaptor.firstValue).isEqualTo(task1Response)
     }
 

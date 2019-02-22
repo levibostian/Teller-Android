@@ -1,6 +1,6 @@
 # Observe a Repository 
 
-After you [create a Teller Repository](create_repository), all you need to do is show your cache data in the UI of your app. Teller takes care of everything else for you! How nice is that?
+After you [create a Teller Repository](create_repository), all you need to do is show your cache in the UI of your app. Teller takes care of everything else for you! How nice is that?
 
 ### What's next?
 

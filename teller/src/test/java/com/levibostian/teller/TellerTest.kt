@@ -2,12 +2,7 @@ package com.levibostian.teller
 
 import android.content.Context
 import android.content.SharedPreferences
-import com.google.common.truth.Truth
-import com.levibostian.teller.repository.GetDataRequirementsTag
-import com.levibostian.teller.repository.OnlineRepository
-import io.reactivex.subjects.PublishSubject
 import org.junit.Test
-import com.levibostian.teller.util.AssertionUtil.Companion.check
 import com.levibostian.teller.util.ConstantsUtil
 
 import org.junit.runner.RunWith
