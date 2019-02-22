@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="../../../style.css">
 </HEAD>
 <BODY>
-<a href="../../index.html">teller</a>&nbsp;/&nbsp;<a href="../index.html">com.levibostian.teller.datastate</a>&nbsp;/&nbsp;<a href="./index.html">OnlineDataState</a><br/>
+<a href="../../index.html">teller</a>&nbsp;/&nbsp;<a href="../index.html">com.levibostian.teller.cachestate</a>&nbsp;/&nbsp;<a href="./index.html">OnlineDataState</a><br/>
 <br/>
 <h1>OnlineDataState</h1>
 <code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">OnlineDataState</span><span class="symbol">&lt;</span><span class="identifier">CACHE</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">&gt;</span></code>
@@ -99,7 +99,7 @@ Data in apps are in 1 of 3 different types of state:</p>
 <p><a href="deliver-all-states.html">deliverAllStates</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">deliverAllStates</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.datastate.OnlineDataState$deliverAllStates(com.levibostian.teller.datastate.listener.OnlineDataStateListener((com.levibostian.teller.datastate.OnlineDataState.CACHE)))/listener">listener</span><span class="symbol">:</span>&nbsp;<a href="../../com.levibostian.teller.datastate.listener/-online-data-state-listener.html"><span class="identifier">OnlineDataStateListener</span></a><span class="symbol">&lt;</span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<code><span class="keyword">fun </span><span class="identifier">deliverAllStates</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.cachestate.OnlineCacheState$deliverAllStates(com.levibostian.teller.cachestate.listener.OnlineCacheStateListener((com.levibostian.teller.cachestate.OnlineCacheState.CACHE)))/listener">listener</span><span class="symbol">:</span>&nbsp;<a href="../../com.levibostian.teller.datastate.listener/-online-data-state-listener.html"><span class="identifier">OnlineDataStateListener</span></a><span class="symbol">&lt;</span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
 <p>Receive the full status of the data.</p>
 </td>
 </tr>
@@ -108,7 +108,7 @@ Data in apps are in 1 of 3 different types of state:</p>
 <p><a href="deliver-cache-state.html">deliverCacheState</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">deliverCacheState</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.datastate.OnlineDataState$deliverCacheState(com.levibostian.teller.datastate.listener.OnlineDataStateCacheListener((com.levibostian.teller.datastate.OnlineDataState.CACHE)))/listener">listener</span><span class="symbol">:</span>&nbsp;<a href="../../com.levibostian.teller.datastate.listener/-online-data-state-cache-listener/index.html"><span class="identifier">OnlineDataStateCacheListener</span></a><span class="symbol">&lt;</span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<code><span class="keyword">fun </span><span class="identifier">deliverCacheState</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.cachestate.OnlineCacheState$deliverCacheState(com.levibostian.teller.cachestate.listener.OnlineCacheStateCacheListener((com.levibostian.teller.cachestate.OnlineCacheState.CACHE)))/listener">listener</span><span class="symbol">:</span>&nbsp;<a href="../../com.levibostian.teller.datastate.listener/-online-data-state-cache-listener/index.html"><span class="identifier">OnlineDataStateCacheListener</span></a><span class="symbol">&lt;</span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
 <p>This is usually used in the UI of an app to display the cached data to a user.</p>
 </td>
 </tr>
@@ -117,7 +117,7 @@ Data in apps are in 1 of 3 different types of state:</p>
 <p><a href="deliver-fetching-fresh-cache-state.html">deliverFetchingFreshCacheState</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">deliverFetchingFreshCacheState</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.datastate.OnlineDataState$deliverFetchingFreshCacheState(com.levibostian.teller.datastate.listener.OnlineDataStateFetchingListener)/listener">listener</span><span class="symbol">:</span>&nbsp;<a href="../../com.levibostian.teller.datastate.listener/-online-data-state-fetching-listener/index.html"><span class="identifier">OnlineDataStateFetchingListener</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<code><span class="keyword">fun </span><span class="identifier">deliverFetchingFreshCacheState</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.cachestate.OnlineCacheState$deliverFetchingFreshCacheState(com.levibostian.teller.cachestate.listener.OnlineCacheStateFetchingListener)/listener">listener</span><span class="symbol">:</span>&nbsp;<a href="../../com.levibostian.teller.datastate.listener/-online-data-state-fetching-listener/index.html"><span class="identifier">OnlineDataStateFetchingListener</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
 <p>This is usually used in the UI of an app to display the status of loading the data type for the first time to a user.</p>
 </td>
 </tr>
@@ -126,7 +126,7 @@ Data in apps are in 1 of 3 different types of state:</p>
 <p><a href="deliver-no-cache-state.html">deliverNoCacheState</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">deliverNoCacheState</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.datastate.OnlineDataState$deliverNoCacheState(com.levibostian.teller.datastate.listener.OnlineDataStateNoCacheStateListener)/listener">listener</span><span class="symbol">:</span>&nbsp;<a href="../../com.levibostian.teller.datastate.listener/-online-data-state-no-cache-state-listener/index.html"><span class="identifier">OnlineDataStateNoCacheStateListener</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<code><span class="keyword">fun </span><span class="identifier">deliverNoCacheState</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.cachestate.OnlineCacheState$deliverNoCacheState(com.levibostian.teller.cachestate.listener.OnlineCacheStateNoCacheStateListener)/listener">listener</span><span class="symbol">:</span>&nbsp;<a href="../../com.levibostian.teller.datastate.listener/-online-data-state-no-cache-state-listener/index.html"><span class="identifier">OnlineDataStateNoCacheStateListener</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
 <p>This is usually used in the UI of an app to display that the cached data on the device is empty to a user.</p>
 </td>
 </tr>
@@ -135,7 +135,7 @@ Data in apps are in 1 of 3 different types of state:</p>
 <p><a href="equals.html">equals</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">equals</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.datastate.OnlineDataState$equals(kotlin.Any)/other">other</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+<code><span class="keyword">fun </span><span class="identifier">equals</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.cachestate.OnlineCacheState$equals(kotlin.Any)/other">other</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">?</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
 </tr>
 <tr>
 <td>

@@ -37,7 +37,7 @@ You will notice that `GitHubUsernameGetCacheRequirements` does not have any para
 class GitHubUsernameRepository(): LocalRepository<String, GitHubUsernameRepository.GitHubUsernameGetCacheRequirements>() {
 
     /** 
-     * Save cache data to the local Android device.
+     * Save cache to the local Android device.
      * Note: This function is guaranteed to be called on a background thread. 
      */ 
     override fun saveCache(cache: String, requirements: GitHubUsernameGetCacheRequirements) {        
@@ -46,20 +46,20 @@ class GitHubUsernameRepository(): LocalRepository<String, GitHubUsernameReposito
     }
     
     /**
-     * Return a RxJava2 `Observable` that continuously queries the locally cached data and notifies any observers of changes. 
+     * Return a RxJava2 `Observable` that continuously queries the locally cache and notifies any observers of changes.
      * Note: This function is guaranteed to be called on the main UI thread.      
      *
      * Do *not* send `null` in the `Observable` returned from this function. This is a rule set by RxJava and it will throw an exception. 
-     * If your cache data is in an "empty" state, either (1) return an empty value (Example: an empty String, "") or (2) create a POJO with an optional inside of it. 
+     * If your cache is in an "empty" state, either (1) return an empty value (Example: an empty String, "") or (2) create a POJO with an optional inside of it.
      */ 
     override fun observeCache(requirements: GitHubUsernameGetCacheRequirements): Observable<String> {        
     }
 
     /**
-     * Help Teller determine is your cached data is "empty" or not. 
+     * Help Teller determine is your cache is "empty" or not.
      * Note: This function is guaranteed to be called on the same thread as `observeCache()`. 
      *
-     * In our example, an empty String (""), is what we qualify as empty. If you have a POJO, List, or any other data type, you return back if the `cache` parameter is empty or not. 
+     * In our example, an empty String (""), is what we qualify as empty. If you have a POJO, List, or any other type, you return back if the `cache` parameter is empty or not.
      */
     override fun isCacheEmpty(cache: String, requirements: GitHubUsernameGetCacheRequirements): Boolean = cache.isBlank()
 
@@ -78,27 +78,27 @@ class GitHubUsernameRepository(private val context: Context): LocalRepository<St
     private val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
     /**
-     * Use the `LocalRepository` as a regular repository. Add more functions to it to read, edit, delete the GitHub username data type.
+     * Use the `LocalRepository` as a regular repository. Add more functions to it to read, edit, delete the GitHub username.
      */
     var currentUsernameSaved: String? = null
         get() = sharedPreferences.getString(githubUsernameSharedPrefsKey, null)
         private set
 
     /**
-     * Save cache data to the local Android device.
+     * Save cache to the local Android device.
      * Note: This function is guaranteed to be called on a background thread.
      */
     override fun saveCache(cache: String, requirements: GitHubUsernameGetCacheRequirements) {
-        // In this case, we are using SharedPreferences to save our data.
+        // In this case, we are using SharedPreferences to save our cache.
         PreferenceManager.getDefaultSharedPreferences(context).edit().putString(githubUsernameSharedPrefsKey, cache).apply()
     }
 
     /**
-     * Return a RxJava2 `Observable` that continuously queries the locally cached data and notifies any observers of changes.
+     * Return a RxJava2 `Observable` that continuously queries the local cache and notifies any observers of changes.
      * Note: This function is guaranteed to be called on the main UI thread.
      *
      * Do *not* send `null` in the `Observable` returned from this function. This is a rule set by RxJava and it will throw an exception.
-     * If your cache data is in an "empty" state, either (1) return an empty value (Example: an empty String, "") or (2) create a POJO with an optional inside of it.
+     * If your cache is in an "empty" state, either (1) return an empty value (Example: an empty String, "") or (2) create a POJO with an optional inside of it.
      */
     override fun observeCache(requirements: GitHubUsernameGetCacheRequirements): Observable<String> {
         // Here, we are using the RxSharedPreferences library to Observe the SharedPreferences
@@ -110,10 +110,10 @@ class GitHubUsernameRepository(private val context: Context): LocalRepository<St
     }
 
     /**
-     * Help Teller determine is your cached data is "empty" or not.
+     * Help Teller determine is your cache is "empty" or not.
      * Note: This function is guaranteed to be called on the same thread as `observeCache()`.
      *
-     * In our example, an empty String (""), is what we qualify as empty. If you have a POJO, List, or any other data type, you return back if the `cache` parameter is empty or not.
+     * In our example, an empty String (""), is what we qualify as empty. If you have a POJO, List, or any other type, you return back if the `cache` parameter is empty or not.
      */
     override fun isCacheEmpty(cache: String, requirements: GitHubUsernameGetCacheRequirements): Boolean = cache.isBlank()
 
@@ -122,16 +122,16 @@ class GitHubUsernameRepository(private val context: Context): LocalRepository<St
 }
 ```
 
-## Saving new cache data
+## Saving new cache
 
-When your app user gives you new cache data that you want to save to the local Android device, it is up to you to notify Teller of this new cache data. 
+When your app user gives you new cache that you want to save to the local Android device, it is up to you to notify Teller of this new cache.
 
-One convenient way to do this is to call the `LocalRepository.newCache()` function on your `LocalRepository` subclass. Teller will take care of saving this new cache data on a background thread and restart observing of cached data all for you. 
+One convenient way to do this is to call the `LocalRepository.newCache()` function on your `LocalRepository` subclass. Teller will take care of saving this new cache on a background thread and restart observing of the cache all for you.
 
-However, feel free to save the data yourself if you need to do something special. Make sure that the `Observable` returned from `observeCache()` will update the observers of the new cache data. 
+However, feel free to save the cache yourself if you need to do something special. Make sure that the `Observable` returned from `observeCache()` will update the observers of the new cache.
 
 ### What's next? 
 
-All you need to do now is display the cached data in the UI of your app. Teller takes care of everything else for you! 
+All you need to do now is display the cache in the UI of your app. Teller takes care of everything else for you!
 
 Let's learn how to [observe your newly created `LocalRepository` in the UI](observe_localrepository) of your app!

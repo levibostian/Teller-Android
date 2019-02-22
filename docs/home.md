@@ -5,7 +5,7 @@
 
 Android library that makes your apps faster. 
 
-Teller facilitates the downloading, saving, and reading of the cached data of your app. Keep your user's data fresh and remove those annoying loading screens!
+Teller facilitates the downloading, saving, and reading of the cached data of your app. Keep your user's cache fresh and remove those annoying loading screens!
 
 [Read the official announcement of Teller](https://levibostian.com/blog/manage-cached-data-teller/) to learn more about what it does and why to use it.
 
@@ -16,17 +16,17 @@ iOS developer? Check out the [iOS version of Teller](https://github.com/levibost
 The data used in your mobile app: user profiles, a collection of photos, list of friends, etc. *all have state*. Your data is in 1 of many different states:
 
 * Being fetched for the first time (if it comes from an async network call).
-* Data has been fetched before.
-* Data has been fetched before, but is empty.
-* Data has been fetched before but it's too old. It should be updated to show the user fresh data in the app. 
+* Cache has been fetched before.
+* Cache has been fetched before, but is empty.
+* Cache has been fetched before but it's too old. It should be updated to show the user fresh cache in the app.
 
-Determining what state your data is in, keeping it up-to-date, and displaying this information to the user in the UI is a big pain. That is where Teller comes in. All you need to do is show Teller how your app's cached data is saved, queried, and fetched and Teller facilities everything else for you. 
+Determining what state your cache is in, keeping it up-to-date, and displaying this information to the user in the UI is a big pain. That is where Teller comes in. All you need to do is show Teller how your app's cache is saved, queried, and fetched and Teller facilities everything else for you.
 
-Teller will **query your cached data, parse the cache to determine it's state, fetch fresh data if the cache is too old, and deliver the results to listeners** so you can update the UI to your users.
+Teller will **query your cache, parse the cache to determine it's state, fetch fresh cache if it's too old, and deliver the results to listeners** so you can update the UI to your users.
 
 ## Are you building an offline-first mobile app?
 
-Teller is designed for developers building offline-first mobile apps. If you want to build fast apps without loading screens, check out another great Android library, [Wendy-Android](https://github.com/levibostian/wendy-android) (there is an [iOS version too](https://github.com/levibostian/wendy-ios)). Wendy is designed to sync your device's cached data with a remote API. Think of it like this: **Teller is really good at GET calls for your network API, Wendy is really good at PUT, POST, DELETE network API calls. Teller pulls data, Wendy pushes data.**
+Teller is designed for developers building offline-first mobile apps. If you want to build fast apps without loading screens, check out another great Android library, [Wendy-Android](https://github.com/levibostian/wendy-android) (there is an [iOS version too](https://github.com/levibostian/wendy-ios)). Wendy is designed to sync your device's cache with a remote API. Think of it like this: **Teller is really good at GET calls for your network API, Wendy is really good at PUT, POST, DELETE network API calls. Teller pulls data, Wendy pushes data.**
 
 ## Why use Teller?
 
@@ -37,7 +37,7 @@ The use of a [cache](https://en.wikipedia.org/wiki/Cache_(computing)) in your An
 * Allow your users to complete tasks in your app, faster. 
 * Teller has performance improvements built-in to save your user's battery life. 
 
-As app developers, we all understand that the fetching, saving, loading, *and maintaining* of cache data is a pain. When something is a pain to do, we often ignore that task and move on with building our app. 
+As app developers, we all understand that the fetching, saving, loading, *and maintaining* of cache is a pain. When something is a pain to do, we often ignore that task and move on with building our app.
 
 However, with Teller this pain goes away. By using Teller you will get the benefits of using a cache while **not having to maintain that cache**. 
 
@@ -55,7 +55,7 @@ What are you waiting for? Let's [install](install) Teller!
 
 This library comes with an example app. You may open it in Android Studio to test it out and see how the code works with the library. The example app uses an `OnlineRepository` as well as a `LocalRepository`. 
 
-Enter a GitHub username in the `EditText` in the app and watch how the app fetches a list of repos for the user, saves them to a cache, and fetches fresh if the data is too old.
+Enter a GitHub username in the `EditText` in the app and watch how the app fetches a list of repos for the user, saves them to a cache, and fetches fresh if the cache is too old.
 
 ## Author
 

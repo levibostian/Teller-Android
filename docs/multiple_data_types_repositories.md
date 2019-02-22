@@ -1,10 +1,10 @@
-# Support multiple data types in a Teller Repository 
+# Support multiple cache data types in a Teller Repository
 
 Let's say that you have an API endpoint to get a list of your friends on a social network app. You also have an API endpoint to get a list of your friend requests. 
 
 The 2 API endpoints have very similar requests and responses. Wouldn't it be great if we didn't have to create an `OnlineRepository` subclass for `FriendsOnlineRepository` and another for `FriendRequestsOnlineRepository` and we could instead combine the 2 data type into 1 `FriendsAndRequestsOnlineRepository`? Well, you can! 
 
-The secret is our use of the `OnlineRepository.GetDataRequirements` Object. Because you have full control over this Object and because that Object is passed into all of the abstract functions of `OnlineRepository` subclass, we can handle multiple data types in 1 `OnlineRepository` subclass! 
+The secret is our use of the `OnlineRepository.GetCacheRequirements` Object. Because you have full control over this Object and because that Object is passed into all of the abstract functions of `OnlineRepository` subclass, we can handle multiple data types in 1 `OnlineRepository` subclass!
 
 Here is some example code on how to do this: 
 
@@ -12,35 +12,35 @@ Here is some example code on how to do this:
 class FriendsAndRequestsOnlineRepository(private val service: RetrofitService,
                                          private val db: AppDatabase): OnlineRepository<FriendsOrRequests, ReposRepository.GetReposRequirements, FriendsOrRequests>() {
 
-    override var maxAgeOfData: AgeOfData = AgeOfData(7, AgeOfData.Unit.DAYS)
+    override var maxAgeOfCache: Age = Age(7, Age.Unit.DAYS)
 
-    override fun fetchFreshData(requirements: GetReposRequirements): Single<FetchResponse<FriendsOrRequests>> {
-        return when (requirements.dataType) {
+    override fun fetchFreshCache(requirements: GetReposRequirements): Single<FetchResponse<FriendsOrRequests>> {
+        return when (requirements.type) {
             Type.FRIEND -> service.getFriends().map { response -> ... }
             Type.FRIEND_REQUEST -> service.getFriendRequests().map { response -> ... }
         }        
     }
 
-    override fun saveData(data: FriendsOrRequests, requirements: GetReposRequirements) {
-        when (requirements.dataType) {
-            Type.FRIEND -> db.dao().insertFriends(data.friends)
-            Type.FRIEND_REQUEST -> db.dao().insertFriendRequests(data.requests)
+    override fun saveCache(cache: FriendsOrRequests, requirements: GetReposRequirements) {
+        when (requirements.type) {
+            Type.FRIEND -> db.dao().insertFriends(cache.friends)
+            Type.FRIEND_REQUEST -> db.dao().insertFriendRequests(cache.requests)
         }         
     }
 
-    override fun observeCachedData(requirements: GetReposRequirements): Observable<FriendsOrRequests> {
-        return when (requirements.dataType) {
+    override fun observeCache(requirements: GetReposRequirements): Observable<FriendsOrRequests> {
+        return when (requirements.type) {
             Type.FRIEND -> db.reposDao().observeFriends().toObservable().map { friends -> FriendsOrRequests(friends, null) }
             Type.FRIEND_REQUEST -> db.reposDao().observeFriendRequests().toObservable().map { requests -> FriendsOrRequests(null, requests) }
         }        
     }
 
-    override fun isDataEmpty(cache: FriendsOrRequests, requirements: GetReposRequirements): Boolean = cache.friends?.isEmpty() ?: cache.requests?.isEmpty()
+    override fun isCacheEmpty(cache: FriendsOrRequests, requirements: GetReposRequirements): Boolean = cache.friends?.isEmpty() ?: cache.requests?.isEmpty()
 
-    class GetFriendsOrRequestsRequirements(val dataType: Type) : GetDataRequirements {
+    class GetFriendsOrRequestsRequirements(val type: Type) : GetCacheRequirements {
         override var tag: String = ""
             get() {
-                return when (dataType) {
+                return when (type) {
                     Type.FRIEND -> "Friends list"
                     Type.FRIEND_REQUEST -> "Friend requests list"
                 }
@@ -57,7 +57,7 @@ class FriendsAndRequestsOnlineRepository(private val service: RetrofitService,
 }
 ```
 
-Now, in your app, depending on what you set for `FriendsAndRequestsOnlineRepository`'s `requirements` property will depend on what data is loaded. 
+Now, in your app, depending on what you set for `FriendsAndRequestsOnlineRepository`'s `requirements` property will depend on what cache is loaded.
 
 ```kotlin
 val friendsRepository = FriendsAndRequestsOnlineRepository(service, database).apply {

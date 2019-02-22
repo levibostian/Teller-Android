@@ -8,7 +8,7 @@
 <a href="../../../index.html">teller</a>&nbsp;/&nbsp;<a href="../../index.html">com.levibostian.teller.repository</a>&nbsp;/&nbsp;<a href="../index.html">OnlineRepository</a>&nbsp;/&nbsp;<a href="index.html">GetDataRequirements</a>&nbsp;/&nbsp;<a href="./tag.html">tag</a><br/>
 <br/>
 <h1>tag</h1>
-<a name="com.levibostian.teller.repository.OnlineRepository.GetDataRequirements$tag"></a>
+<a name="com.levibostian.teller.repository.OnlineRepository.GetCacheRequirements$tag"></a>
 <code><span class="keyword">abstract</span> <span class="keyword">var </span><span class="identifier">tag</span><span class="symbol">: </span><a href="../../-get-data-requirements-tag.html"><span class="identifier">GetDataRequirementsTag</span></a></code>
 <p>Unique tag that drives the behavior of a <a href="../index.html">OnlineRepository</a>. The tag needs to describe (1) the type of data being stored (example: friend, friend request, song, user profile, etc) and (2) identity the fetch call to obtain this data. Example: "FriendRequests_page1" for paging, "UserProfile_user2332" for a query param. Teller uses this <a href="./tag.html">tag</a> to determine how old some particular cache data is. If it's too old, new data will be fetched.</p>
 <h3>Property</h3>

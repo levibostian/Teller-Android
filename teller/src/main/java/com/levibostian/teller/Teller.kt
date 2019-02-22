@@ -46,9 +46,9 @@ class Teller internal constructor(private val context: Context) {
     }
 
     /**
-     * Deletes all Teller data. Nice to use if the user of your app logs out or during development purposes.
+     * Deletes all Teller data. Nice to use if the user of your app logs out, or delete Teller data during development of your app for testing.
      *
-     * This function does not delete any of your cached data. That is up to you to do. This simply removes all memory of ever caching data so the next time you use a Teller repository, a fetch will be performed.
+     * This function does not delete any of your cache. That is up to you to do. This simply removes all records of ever fetching a cache so the next time you use a Teller repository, a fetch will be performed.
      */
     fun clear() {
         deleteAllData()
