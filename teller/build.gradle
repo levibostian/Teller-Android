@@ -109,11 +109,17 @@ task sourcesJar(type: Jar) {
     from android.sourceSets.main.java.sourceFiles
 }
 
-task classesJar(type: Jar) {
-    from "$buildDir/intermediates/classes/release"
+task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
+    outputFormat = 'javadoc'
+    outputDirectory = "$buildDir/javadoc"
+}
+
+task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
+    classifier = 'javadoc'
+    from "$buildDir/javadoc"
 }
 
 artifacts {
-    archives classesJar
     archives sourcesJar
+    archives javadocJar
 }
