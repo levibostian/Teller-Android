@@ -20,5 +20,6 @@
   - [Build Teller](contribute_build.md)
   - [What should I work on?](first_issues.md)
   - [Stable release plan](stable_release_plan.md)
+  - [Dev cycle](dev_cycle.md)
 
 - [Credits](credits.md)

@@ -2,6 +2,27 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 apply plugin: 'org.jetbrains.dokka-android'
 
+apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'com.jfrog.bintray'
+
+ext {
+    bintrayRepo = 'Teller-Android'
+    bintrayName = 'com.levibostian.teller-android'
+
+    publishedGroupId = 'com.levibostian.teller'
+    libraryName = 'Teller-Android'
+    artifact = 'teller-android'
+
+    libraryDescription = 'Android library that makes your apps faster. Teller facilitates the downloading, saving, and reading of the cached data of your app. Keep your user\'s data fresh and remove those annoying loading screens!'
+
+    siteUrl = 'https://levibostian.github.io/Teller-Android/'
+    gitUrl = 'https://github.com/levibostian/Teller-Android.git'
+
+    libraryVersion = '0.1.0-alpha'
+
+    allLicenses = ["MIT"]
+}
+
 android {
     compileSdkVersion 28
     buildToolsVersion "28.0.3"
@@ -10,7 +31,7 @@ android {
         minSdkVersion 16
         targetSdkVersion 28
         versionCode 1
-        versionName "0.1.0-alpha"
+        versionName libraryVersion
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
@@ -123,3 +144,5 @@ artifacts {
     archives sourcesJar
     archives javadocJar
 }
+
+apply from: 'publish.gradle'
