@@ -157,7 +157,7 @@ class OnlineRepositoryRefreshManagerTest {
     @Test
     fun cancelTasksForRepository_oneRepository_refreshTaskGetsCancelled() {
         val wait = Wait.times(1)
-        val task1 = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
+        val task1 = ReplaySubject.create<OnlineRepository.FetchResponse<String>>()
                 .doOnDispose {
                     wait.countDown()
                 }
@@ -181,12 +181,12 @@ class OnlineRepositoryRefreshManagerTest {
     @Test
     fun cancelTasksForRepository_twoRepositoriesSameTask_refreshTaskContinuesForTaskThatDidNotCancel() {
         val wait = Wait.times(1)
-        val task1Subject = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
+        val task1Subject = ReplaySubject.create<OnlineRepository.FetchResponse<String>>()
         val task1Single = task1Subject
                 .doOnDispose {
                     wait.countDown()
                 }.singleOrError()
-        val task2 = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
+        val task2 = ReplaySubject.create<OnlineRepository.FetchResponse<String>>()
 
         val task1Response = OnlineRepository.FetchResponse.success("task1")
         val task2Response = OnlineRepository.FetchResponse.success("task2")
@@ -234,7 +234,7 @@ class OnlineRepositoryRefreshManagerTest {
     @Test
     fun cancelTasksForRepository_otherRepoThatDidntCallRefresh_ignoreCancelRequest() {
         val wait = Wait.times(1)
-        val task1Subject = PublishSubject.create<OnlineRepository.FetchResponse<String>>()
+        val task1Subject = ReplaySubject.create<OnlineRepository.FetchResponse<String>>()
         val task1Single = task1Subject
                 .doOnDispose {
                     wait.countDown()
