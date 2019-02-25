@@ -52,7 +52,7 @@ Here are some more benefits of Teller:
 * Paging *just works*
 * Full test suite, full documentation
 
-What are you waiting for? Let's [install](install) Teller! 
+What are you waiting for? Let's [install](https://levibostian.github.io/Teller-Android/#/install) Teller! 
 
 # Documentation 
 
