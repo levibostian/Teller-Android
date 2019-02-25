@@ -1,25 +1,12 @@
 # Install
 
-* First, you need to add Teller as a Gradle dependency to your project. 
-
-Add this to your root build.gradle at the end of repositories:
+* First, you need to add Teller as a Gradle dependency to your project:
 
 ```
-allprojects {
-	repositories {
-		...
-		maven { url 'https://jitpack.io' }
-	}
-}
+implementation 'com.levibostian.teller:teller-android:version-goes-here'
 ```
 
-Then, install the Teller module:
-
-```
-implementation 'com.github.levibostian:teller-android:version-goes-here'
-```
-
-Replace `version-goes-here` with the latest release version at this time: [![Release](https://jitpack.io/v/levibostian/Teller-Android.svg)](https://jitpack.io/#levibostian/Teller-Android)
+Replace `version-goes-here` with the latest release version at this time: [![Download](https://api.bintray.com/packages/levibostian/Teller-Android/com.levibostian.teller-android/images/download.svg)](https://bintray.com/levibostian/Teller-Android/com.levibostian.teller-android/_latestVersion)
 
 * Lastly, initialize Teller in your app's `Application` class so it can startup. 
 
