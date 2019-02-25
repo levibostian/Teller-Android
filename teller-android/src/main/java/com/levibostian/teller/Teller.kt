@@ -9,7 +9,7 @@ import com.levibostian.teller.repository.OnlineRepository
 import com.levibostian.teller.util.ConstantsUtil
 import io.reactivex.Observable
 
-class Teller internal constructor(private val context: Context) {
+class Teller internal constructor(context: Context) {
 
     companion object {
         private var instance: Teller? = null

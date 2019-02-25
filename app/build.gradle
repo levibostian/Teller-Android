@@ -38,7 +38,7 @@ dependencies {
     implementation "com.android.support:appcompat-v7:$support_lib_version"
     implementation "com.android.support:design:$support_lib_version"
     implementation "com.android.support:recyclerview-v7:$support_lib_version"
-    implementation project(':teller')
+    implementation project(':teller-android')
     implementation "android.arch.lifecycle:extensions:$lifecycle_version"
     kapt "android.arch.lifecycle:compiler:$lifecycle_version"
     implementation "android.arch.lifecycle:reactivestreams:$lifecycle_version"

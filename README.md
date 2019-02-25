@@ -1,5 +1,6 @@
-[![Release](https://jitpack.io/v/levibostian/Teller-Android.svg)](https://jitpack.io/#levibostian/Teller-Android)
+[![Download](https://api.bintray.com/packages/levibostian/Teller-Android/com.levibostian.teller-android/images/download.svg) ](https://bintray.com/levibostian/Teller-Android/com.levibostian.teller-android/_latestVersion)
 [![Build](https://app.bitrise.io/app/4c0b872bdaf76300/status.svg?token=PYpJBThARi6LvucXS2noVw&branch=development)](https://app.bitrise.io/app/4c0b872bdaf76300)
+[![GitHub license](https://img.shields.io/github/license/levibostian/Teller-Android.svg)](https://github.com/levibostian/Teller-Android/blob/master/LICENSE)
 
 # Teller
 
@@ -51,7 +52,7 @@ Here are some more benefits of Teller:
 * Paging *just works*
 * Full test suite, full documentation
 
-What are you waiting for? Let's [install](install) Teller! 
+What are you waiting for? Let's [install](https://levibostian.github.io/Teller-Android/#/install) Teller! 
 
 # Documentation 
 
