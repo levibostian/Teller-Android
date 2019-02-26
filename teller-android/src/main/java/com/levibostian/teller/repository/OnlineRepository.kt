@@ -286,7 +286,7 @@ abstract class OnlineRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: OnlineReposi
      *
      * **Called on a background thread.**
      */
-    protected abstract fun fetchFreshCache(requirements: GET_CACHE_REQUIREMENTS): Single<FetchResponse<FETCH_RESPONSE>>
+    abstract fun fetchFreshCache(requirements: GET_CACHE_REQUIREMENTS): Single<FetchResponse<FETCH_RESPONSE>>
 
     /**
      * Save the new cache [cache] to whatever storage method [OnlineRepository] chooses.
@@ -325,6 +325,7 @@ abstract class OnlineRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: OnlineReposi
      */
     class FetchResponse<FETCH_RESPONSE: Any> private constructor(val response: FETCH_RESPONSE? = null,
                                                                  val failure: Throwable? = null) {
+        // Public for devs to test Teller
         companion object {
             @JvmStatic
             fun <FETCH_RESPONSE: Any> success(response: FETCH_RESPONSE): FetchResponse<FETCH_RESPONSE> {
@@ -349,7 +350,7 @@ abstract class OnlineRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: OnlineReposi
                                             val failedError: Throwable? = null,
                                             val skipped: SkippedReason? = null) {
 
-        internal companion object {
+        companion object {
             fun success(): RefreshResult = RefreshResult(successful = true)
 
             fun failure(error: Throwable): RefreshResult = RefreshResult(failedError = error)
@@ -397,7 +398,7 @@ abstract class OnlineRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: OnlineReposi
     /**
      * Inner class to pass on calls to parent object. As long as this inner class is referred by a [WeakReference], this will be fine and will avoid memory leaks.
      */
-    inner class RefreshManagerListener: OnlineRepositoryRefreshManager.Listener {
+    private inner class RefreshManagerListener: OnlineRepositoryRefreshManager.Listener {
 
         override fun refreshBegin(tag: GetCacheRequirementsTag) {
             this@OnlineRepository.refreshBegin(tag)

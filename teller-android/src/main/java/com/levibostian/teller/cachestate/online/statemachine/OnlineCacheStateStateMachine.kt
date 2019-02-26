@@ -12,12 +12,12 @@ The file is designed to begin with an empty state at the constructor. Then via a
 
 OnlineDataStateMachine is meant to be immutable. It represents that state machine of an instance of OnlineCacheState (which is also immutable).
  */
-internal class OnlineCacheStateStateMachine<CACHE: Any> private constructor(private val requirements: OnlineRepository.GetCacheRequirements,
+class OnlineCacheStateStateMachine<CACHE: Any> private constructor(private val requirements: OnlineRepository.GetCacheRequirements,
                                                                             private val noCacheStateMachine: NoCacheStateMachine?,
                                                                             private val cacheExistsStateMachine: CacheStateMachine<CACHE>?,
                                                                             private val fetchingFreshCacheStateMachine: FetchingFreshCacheStateMachine?) {
 
-    companion object {
+    internal companion object {
         fun <CACHE: Any> noCacheExists(requirements: OnlineRepository.GetCacheRequirements): OnlineCacheState<CACHE> {
             val onlineDataStateMachine = OnlineCacheStateStateMachine<CACHE>(requirements, NoCacheStateMachine.noCacheExists(), null, null)
 

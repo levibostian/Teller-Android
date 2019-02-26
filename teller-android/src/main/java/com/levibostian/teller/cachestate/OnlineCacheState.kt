@@ -29,7 +29,8 @@ data class OnlineCacheState<CACHE: Any> internal constructor(val noCacheExists: 
                                                              val errorDuringFetch: Throwable?,
                                                              val justCompletedSuccessfullyFetchingFreshData: Boolean) {
 
-    internal companion object {
+    // Public so devs can use for testing Teller.
+    companion object {
         /**
          * This constructor is meant to be more of a placeholder. It's having "no state".
          */
@@ -47,12 +48,26 @@ data class OnlineCacheState<CACHE: Any> internal constructor(val noCacheExists: 
                     errorDuringFetch = null,
                     justCompletedSuccessfullyFetchingFreshData = false)
         }
+
+        /**
+         * Starting node for [OnlineCacheState] when no cache exists.
+         *
+         * @see change To modify the state of the [OnlineCacheState] instance.
+         */
+        fun <CACHE: Any> noCacheExists(requirements: OnlineRepository.GetCacheRequirements): OnlineCacheState<CACHE> = OnlineCacheStateStateMachine.noCacheExists(requirements)
+
+        /**
+         * Starting node for [OnlineCacheState] when cache exists.
+         *
+         * @see change To modify the state of the [OnlineCacheState] instance.
+         */
+        fun <CACHE: Any> cacheExists(requirements: OnlineRepository.GetCacheRequirements, lastTimeFetched: Date): OnlineCacheState<CACHE> = OnlineCacheStateStateMachine.cacheExists(requirements, lastTimeFetched)
     }
 
     /**
      * Used to change the state of response.
      */
-    internal fun change(): OnlineCacheStateStateMachine<CACHE> {
+    fun change(): OnlineCacheStateStateMachine<CACHE> {
         return stateMachine!!
     }
 
