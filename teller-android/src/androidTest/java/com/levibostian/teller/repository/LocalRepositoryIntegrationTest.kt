@@ -88,7 +88,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalCacheState.data(cache)
+                            LocalCacheState.cache(requirements, cache)
                     ))
                 })
     }
@@ -145,7 +145,7 @@ class LocalRepositoryIntegrationTest {
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
                             LocalCacheState.none(),
-                            LocalCacheState.isEmpty()
+                            LocalCacheState.isEmpty(requirements)
                     ))
                 })
 
@@ -204,7 +204,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalCacheState.data(cache)
+                            LocalCacheState.cache(requirements, cache)
                     ))
                 })
 
@@ -240,7 +240,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalCacheState.data(cache)
+                            LocalCacheState.cache(requirements, cache)
                     ))
                 })
     }
@@ -266,7 +266,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalCacheState.isEmpty()
+                            LocalCacheState.isEmpty(requirements)
                     ))
                 })
     }
@@ -292,7 +292,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalCacheState.data(oldCache)
+                            LocalCacheState.cache(requirements, oldCache)
                     ))
                 })
 
@@ -303,7 +303,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalCacheState.data(newCache)
+                            LocalCacheState.cache(requirements, newCache)
                     ))
                 })
     }

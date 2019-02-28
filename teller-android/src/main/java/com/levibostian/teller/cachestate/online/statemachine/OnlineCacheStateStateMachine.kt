@@ -4,20 +4,24 @@ import com.levibostian.teller.cachestate.OnlineCacheState
 import com.levibostian.teller.repository.OnlineRepository
 import java.util.*
 
-
 /**
-Finite state machine for the state of response that is fetched from an online location.
-This file is used internally to keep track and enforce the changing of states that online response can go through.
-The file is designed to begin with an empty state at the constructor. Then via a list of functions, change the state of response. If a function throws an error, it is an illegal traversal through the state machine. If you get an OnlineCacheState instance back from a function, you have successfully changed the state of response.
-
-OnlineDataStateMachine is meant to be immutable. It represents that state machine of an instance of OnlineCacheState (which is also immutable).
+ * Finite state machine for [OnlineCacheState].
+ *
+ * This object is used internally to keep track and enforce the changing of states that an online cache can go through.
+ *
+ * The object is designed to begin with an empty state at the constructor. Then via a list of functions, change the state of response. If a function throws an error, it is an illegal traversal through the state machine. If you get an [OnlineCacheState] instance back from a function, you have successfully changed the state of response.
+ *
+ * Requirements of [OnlineCacheStateStateMachine]:
+ * 1. Should be anal about traveling from node to node. Example: This should be invalid code: `StateMachine.cacheExists().successfulFetch()`. You need to prove that you refreshed first, then successfully finished fetching: `StateMachine.cacheExists().fetching().successfulFetch()`.
+ * 2. Immutable. Each instance represents [OnlineCacheState] (which is also an immutable object).
+ * 3. Allows you to travel from it's state (node of state machine) to another state the cache has moved to (another node of the state machine).
  */
-class OnlineCacheStateStateMachine<CACHE: Any> private constructor(private val requirements: OnlineRepository.GetCacheRequirements,
+internal class OnlineCacheStateStateMachine<CACHE: Any> private constructor(private val requirements: OnlineRepository.GetCacheRequirements,
                                                                             private val noCacheStateMachine: NoCacheStateMachine?,
                                                                             private val cacheExistsStateMachine: CacheStateMachine<CACHE>?,
                                                                             private val fetchingFreshCacheStateMachine: FetchingFreshCacheStateMachine?) {
 
-    internal companion object {
+    companion object {
         fun <CACHE: Any> noCacheExists(requirements: OnlineRepository.GetCacheRequirements): OnlineCacheState<CACHE> {
             val onlineDataStateMachine = OnlineCacheStateStateMachine<CACHE>(requirements, NoCacheStateMachine.noCacheExists(), null, null)
 

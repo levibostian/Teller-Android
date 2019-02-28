@@ -6,6 +6,7 @@ import com.levibostian.teller.cachestate.listener.OnlineCacheStateFetchingListen
 import com.levibostian.teller.cachestate.listener.OnlineCacheStateNoCacheStateListener
 import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
 import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.testing.cachestate.OnlineCacheStateTesting
 import java.util.*
 
 /**
@@ -16,7 +17,7 @@ Data in apps are in 1 of 3 different types of state:
 2. Data has been cached in the app and is either empty or not.
 3. A cache exists, and we are fetching fresh response to update the cache.
  */
-data class OnlineCacheState<CACHE: Any> internal constructor(val noCacheExists: Boolean,
+open class OnlineCacheState<CACHE: Any> internal constructor(val noCacheExists: Boolean,
                                                              val fetchingForFirstTime: Boolean,
                                                              val cacheData: CACHE?,
                                                              val lastTimeFetched: Date?,
@@ -29,8 +30,7 @@ data class OnlineCacheState<CACHE: Any> internal constructor(val noCacheExists: 
                                                              val errorDuringFetch: Throwable?,
                                                              val justCompletedSuccessfullyFetchingFreshData: Boolean) {
 
-    // Public so devs can use for testing Teller.
-    companion object {
+    internal companion object {
         /**
          * This constructor is meant to be more of a placeholder. It's having "no state".
          */
@@ -48,26 +48,19 @@ data class OnlineCacheState<CACHE: Any> internal constructor(val noCacheExists: 
                     errorDuringFetch = null,
                     justCompletedSuccessfullyFetchingFreshData = false)
         }
-
-        /**
-         * Starting node for [OnlineCacheState] when no cache exists.
-         *
-         * @see change To modify the state of the [OnlineCacheState] instance.
-         */
-        fun <CACHE: Any> noCacheExists(requirements: OnlineRepository.GetCacheRequirements): OnlineCacheState<CACHE> = OnlineCacheStateStateMachine.noCacheExists(requirements)
-
-        /**
-         * Starting node for [OnlineCacheState] when cache exists.
-         *
-         * @see change To modify the state of the [OnlineCacheState] instance.
-         */
-        fun <CACHE: Any> cacheExists(requirements: OnlineRepository.GetCacheRequirements, lastTimeFetched: Date): OnlineCacheState<CACHE> = OnlineCacheStateStateMachine.cacheExists(requirements, lastTimeFetched)
     }
+
+    /**
+     * Used for testing purposes to create instances of [OnlineCacheState].
+     *
+     * @see OnlineCacheStateTesting
+     */
+    object Testing
 
     /**
      * Used to change the state of response.
      */
-    fun change(): OnlineCacheStateStateMachine<CACHE> {
+    internal fun change(): OnlineCacheStateStateMachine<CACHE> {
         return stateMachine!!
     }
 

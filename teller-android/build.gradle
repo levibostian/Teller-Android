@@ -3,32 +3,18 @@ apply plugin: 'kotlin-android'
 apply plugin: 'org.jetbrains.dokka-android'
 
 ext {
-    bintrayRepo = 'Teller-Android'
-    bintrayName = 'com.levibostian.teller-android'
-
-    publishedGroupId = 'com.levibostian.teller'
-    libraryName = 'Teller-Android'
     artifact = 'teller-android'
-
-    libraryDescription = 'Android library that makes your apps faster. Teller facilitates the downloading, saving, and reading of the cached data of your app. Keep your user\'s data fresh and remove those annoying loading screens!'
-
-    siteUrl = 'https://levibostian.github.io/Teller-Android/'
-    gitUrl = 'https://github.com/levibostian/Teller-Android.git'
-
-    libraryVersion = '0.1.0-alpha'
-
-    allLicenses = ["MIT"]
 }
 
 android {
     compileSdkVersion 28
-    buildToolsVersion "28.0.3"
+    buildToolsVersion build_tools_version
 
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 28
         versionCode 1
-        versionName libraryVersion
+        versionName teller_version
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         multiDexEnabled true
@@ -52,19 +38,13 @@ android {
     }
 }
 
-dokka {
-    outputFormat = 'html'
-    outputDirectory = "docs/javadoc"
-    moduleName = 'teller'
-}
-
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.0'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.6'
 
     // Multidex support - required when minSdk < 21
-    debugImplementation 'com.android.support:multidex:1.0.3'
+    debugImplementation 'androidx.multidex:multidex:2.0.1'
 
     // JUnit
     testImplementation 'junit:junit:4.12'
@@ -109,11 +89,8 @@ dependencies {
     def espressoVersion = "3.1.0"
     androidTestImplementation "androidx.test.espresso:espresso-core:$espressoVersion"
     androidTestImplementation "androidx.test.espresso:espresso-contrib:$espressoVersion"
-
     // androidTestImplementation "androidx.test.espresso:espresso-intents:$espressoVersion"
-
     // androidTestImplementation "androidx.test.espresso:espresso-accessibility:$espressoVersion"
-
     // androidTestImplementation "androidx.test.espresso:espresso-web:$espressoVersion"
     androidTestImplementation "androidx.test.espresso.idling:idling-concurrent:$espressoVersion"
     androidTestImplementation "androidx.test.espresso:espresso-idling-resource:$espressoVersion"
@@ -127,4 +104,10 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
     outputDirectory = "$buildDir/javadoc"
 }
 
-apply from: 'publish.gradle'
+dokka {
+    outputFormat = 'html'
+    outputDirectory = "docs/javadoc"
+    moduleName = 'teller-android'
+}
+
+apply from: rootProject.file('gradle/publish.gradle')

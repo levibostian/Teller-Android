@@ -1,16 +1,12 @@
 package com.levibostian.tellerexample.activity
 
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
-import android.support.v7.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import android.os.Bundle
 import com.levibostian.tellerexample.R
 import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.service.GitHubService
 import com.levibostian.tellerexample.viewmodel.ReposViewModel
 import android.os.Handler
-import android.support.design.widget.Snackbar
-import android.support.v7.widget.LinearLayoutManager
 import android.text.format.DateUtils
 import android.view.View
 import android.widget.TextView
@@ -21,10 +17,14 @@ import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.viewmodel.GitHubUsernameViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
-import android.support.v7.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.levibostian.tellerexample.extensions.closeKeyboard
+import com.levibostian.tellerexample.service.provider.AppSchedulersProvider
 import com.levibostian.tellerexample.util.DependencyUtil
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -53,7 +53,7 @@ class MainActivity : AppCompatActivity() {
 
         reposViewModel = ViewModelProviders.of(this).get(ReposViewModel::class.java)
         gitHubUsernameViewModel = ViewModelProviders.of(this).get(GitHubUsernameViewModel::class.java)
-        reposViewModel.init(service, db)
+        reposViewModel.init(service, db, AppSchedulersProvider())
         gitHubUsernameViewModel.init(this)
 
         reposViewModel.observeRepos()
@@ -114,9 +114,9 @@ class MainActivity : AppCompatActivity() {
                         override fun isEmpty() {
                             username_edittext.setText("", TextView.BufferType.EDITABLE)
                         }
-                        override fun data(data: String) {
-                            username_edittext.setText(data, TextView.BufferType.EDITABLE)
-                            reposViewModel.setUsername(data)
+                        override fun cache(cache: String) {
+                            username_edittext.setText(cache, TextView.BufferType.EDITABLE)
+                            reposViewModel.setUsername(cache)
                         }
                     })
                 })

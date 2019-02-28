@@ -18,7 +18,7 @@ import io.reactivex.subjects.BehaviorSubject
  *
  * This class is meant to work with [LocalRepository] because it has all the states cache can have, including loading and fetching of fresh cache.
  */
-internal class LocalCacheStateCompoundBehaviorSubject<CACHE: Any> {
+internal class LocalCacheStateBehaviorSubject<CACHE: Any> {
 
     private var cacheState: LocalCacheState<CACHE> = LocalCacheState.none()
         set(value) {
@@ -29,10 +29,10 @@ internal class LocalCacheStateCompoundBehaviorSubject<CACHE: Any> {
         }
     val subject: BehaviorSubject<LocalCacheState<CACHE>> = BehaviorSubject.createDefault(cacheState)
 
-    var currentState: LocalCacheState<CACHE> = LocalCacheState.none()
+    var currentState: LocalCacheState<CACHE>? = null
         get() {
             return synchronized(this) {
-                subject.value!!
+                subject.value
             }
         }
         private set
@@ -44,15 +44,15 @@ internal class LocalCacheStateCompoundBehaviorSubject<CACHE: Any> {
     /**
      * The status of cache is empty (optionally fetching new fresh cache as well).
      */
-    fun onNextEmpty() {
-        changeDataState(LocalCacheState.isEmpty())
+    fun onNextEmpty(requirements: LocalRepository.GetCacheRequirements) {
+        changeDataState(LocalCacheState.isEmpty(requirements))
     }
 
     /**
      * The status of cache is cache (optionally fetching new fresh cache as well).
      */
-    fun onNextCache(data: CACHE) {
-        changeDataState(LocalCacheState.data(data))
+    fun onNextCache(requirements: LocalRepository.GetCacheRequirements, data: CACHE) {
+        changeDataState(LocalCacheState.cache(requirements, data))
     }
 
     private fun changeDataState(newValue: LocalCacheState<CACHE>) {

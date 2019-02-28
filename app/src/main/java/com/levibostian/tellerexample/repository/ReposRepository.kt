@@ -83,6 +83,7 @@ class ReposRepository(private val service: GitHubService,
      */
     override fun isCacheEmpty(cache: List<RepoModel>, requirements: GetReposRequirements): Boolean = cache.isEmpty()
 
+    //@OpenForTesting
     class GetReposRequirements(val githubUsername: String): GetCacheRequirements {
         override var tag = "Repos for user:$githubUsername"
     }

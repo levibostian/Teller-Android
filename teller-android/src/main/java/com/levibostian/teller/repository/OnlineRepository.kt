@@ -325,7 +325,7 @@ abstract class OnlineRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: OnlineReposi
      */
     class FetchResponse<FETCH_RESPONSE: Any> private constructor(val response: FETCH_RESPONSE? = null,
                                                                  val failure: Throwable? = null) {
-        // Public for devs to test Teller
+
         companion object {
             @JvmStatic
             fun <FETCH_RESPONSE: Any> success(response: FETCH_RESPONSE): FetchResponse<FETCH_RESPONSE> {
@@ -350,7 +350,14 @@ abstract class OnlineRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: OnlineReposi
                                             val failedError: Throwable? = null,
                                             val skipped: SkippedReason? = null) {
 
-        companion object {
+        /**
+         * Used for testing purposes to create instances of [OnlineCacheState].
+         *
+         * @see OnlineCacheStateTesting
+         */
+        object Testing
+
+        internal companion object {
             fun success(): RefreshResult = RefreshResult(successful = true)
 
             fun failure(error: Throwable): RefreshResult = RefreshResult(failedError = error)

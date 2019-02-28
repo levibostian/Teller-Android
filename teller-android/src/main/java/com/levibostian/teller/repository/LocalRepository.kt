@@ -5,7 +5,7 @@ import com.levibostian.teller.cachestate.LocalCacheState
 import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.provider.SchedulersProvider
 import com.levibostian.teller.provider.TellerSchedulersProvider
-import com.levibostian.teller.subject.LocalCacheStateCompoundBehaviorSubject
+import com.levibostian.teller.subject.LocalCacheStateBehaviorSubject
 import com.levibostian.teller.util.TaskExecutor
 import com.levibostian.teller.util.TellerTaskExecutor
 import io.reactivex.Observable
@@ -41,7 +41,7 @@ abstract class LocalRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: LocalReposito
      */
     @Volatile private var disposed = false
 
-    private var currentStateOfCache: LocalCacheStateCompoundBehaviorSubject<CACHE> = LocalCacheStateCompoundBehaviorSubject()
+    private var currentStateOfCache: LocalCacheStateBehaviorSubject<CACHE> = LocalCacheStateBehaviorSubject()
     private var observeCacheDisposeBag: CompositeDisposable = CompositeDisposable()
     // Single thread executor to act as a "background queue".
     private val saveCacheExecutor = Executors.newSingleThreadExecutor()
@@ -77,9 +77,9 @@ abstract class LocalRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: LocalReposito
                     .observeOn(schedulersProvider.main())
                     .subscribe { cache ->
                         if (isCacheEmpty(cache, requirements)) {
-                            currentStateOfCache.onNextEmpty()
+                            currentStateOfCache.onNextEmpty(requirements)
                         } else {
-                            currentStateOfCache.onNextCache(cache)
+                            currentStateOfCache.onNextCache(requirements, cache)
                         }
                     }
         }

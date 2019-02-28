@@ -1,8 +1,8 @@
 package com.levibostian.tellerexample.util
 
 import android.app.Application
-import android.arch.persistence.room.Room
 import android.content.Context
+import androidx.room.Room
 import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.service.GitHubService
 import io.reactivex.schedulers.Schedulers
