@@ -4,6 +4,7 @@ import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.cachestate.OnlineCacheState
 import com.levibostian.teller.cachestate.listener.OnlineCacheStateCacheListener
 import com.levibostian.teller.cachestate.listener.OnlineCacheStateFetchingListener
+import com.levibostian.teller.cachestate.listener.OnlineCacheStateListener
 import com.levibostian.teller.cachestate.listener.OnlineCacheStateNoCacheStateListener
 import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
 import com.levibostian.teller.repository.OnlineRepository
@@ -23,6 +24,7 @@ class OnlineCacheStateTest {
     @Mock private lateinit var cacheStateListener: OnlineCacheStateCacheListener<String>
     @Mock private lateinit var noCacheStateListener: OnlineCacheStateNoCacheStateListener
     @Mock private lateinit var fetchingFreshCacheListener: OnlineCacheStateFetchingListener
+    @Mock private lateinit var allStatesListener: OnlineCacheStateListener<String>
 
     @Test
     fun none_setsCorrectProperties() {
@@ -39,6 +41,15 @@ class OnlineCacheStateTest {
         assertThat(cacheState.justCompletedSuccessfulFirstFetch).isFalse()
         assertThat(cacheState.errorDuringFetch).isNull()
         assertThat(cacheState.justCompletedSuccessfullyFetchingFreshData).isFalse()
+    }
+
+    @Test
+    fun `none() - deliverAllStates() - No listener calls`() {
+        cacheState = OnlineCacheState.none()
+
+        cacheState.deliverAllStates(allStatesListener)
+
+        verifyZeroInteractions(allStatesListener)
     }
 
     @Test

@@ -56,10 +56,24 @@ class MainActivity : AppCompatActivity() {
         reposViewModel.init(service, db, AppSchedulersProvider())
         gitHubUsernameViewModel.init(this)
 
+        repos_refresh_layout.apply {
+            setOnRefreshListener {
+                repos_refresh_layout.isRefreshing = true
+
+                reposViewModel.refresh()
+                        .subscribe { _ ->
+                            repos_refresh_layout.isRefreshing = false
+                        }
+            }
+
+            isEnabled = false
+        }
+
         reposViewModel.observeRepos()
                 .observe(this, Observer { reposState ->
                     reposState?.deliverAllStates(object : OnlineCacheStateListener<List<RepoModel>> {
                         override fun noCache() {
+                            repos_refresh_layout.isEnabled = false
                             // great place to show empty state where first fetch fails.
                         }
                         override fun finishedFirstFetch(errorDuringFetch: Throwable?) {
@@ -80,9 +94,13 @@ class MainActivity : AppCompatActivity() {
                             showLoadingView()
                         }
                         override fun cacheEmpty(fetched: Date) {
+                            repos_refresh_layout.isEnabled = true
+
                             showEmptyView()
                         }
                         override fun cache(cache: List<RepoModel>, fetched: Date) {
+                            repos_refresh_layout.isEnabled = true
+
                             showDataView()
 
                             updateLastSyncedRunnable?.let { updateLastSyncedHandler?.removeCallbacks(it) }

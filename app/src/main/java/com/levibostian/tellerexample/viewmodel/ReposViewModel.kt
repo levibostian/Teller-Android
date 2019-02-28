@@ -4,12 +4,14 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.ViewModel
 import com.levibostian.teller.cachestate.OnlineCacheState
+import com.levibostian.teller.repository.OnlineRepository
 import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.repository.ReposRepository
 import com.levibostian.tellerexample.service.GitHubService
 import com.levibostian.tellerexample.service.provider.SchedulersProvider
 import io.reactivex.BackpressureStrategy
+import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 
@@ -40,6 +42,10 @@ class ReposViewModel: ViewModel() {
 
     fun dispose() {
         reposRepository.dispose()
+    }
+
+    fun refresh(): Single<OnlineRepository.RefreshResult> {
+        return reposRepository.refresh(force = true)
     }
 
 }

@@ -59,9 +59,11 @@ open class OnlineCacheState<CACHE: Any> internal constructor(val noCacheExists: 
 
     /**
      * Used to change the state of response.
+     *
+     * @throws RuntimeException If state machine is null. Which means the state of [OnlineCacheState] is none.
      */
     internal fun change(): OnlineCacheStateStateMachine<CACHE> {
-        return stateMachine!!
+        return stateMachine ?: throw RuntimeException("State machine is null. Cannot change state when there is no state machine!")
     }
 
     /**
@@ -93,11 +95,13 @@ open class OnlineCacheState<CACHE: Any> internal constructor(val noCacheExists: 
      */
     fun deliverCacheState(listener: OnlineCacheStateCacheListener<CACHE>) {
         if (!noCacheExists) {
-            val data = cacheData
-            if (data != null) {
-                listener.cache(data, lastTimeFetched!!)
-            } else {
-                listener.cacheEmpty(lastTimeFetched!!)
+            // state of OnlineCacheState could be none() which triggers this code.
+            lastTimeFetched?.let { lastTimeFetched ->
+                if (cacheData != null) {
+                    listener.cache(cacheData, lastTimeFetched)
+                } else {
+                    listener.cacheEmpty(lastTimeFetched)
+                }
             }
         }
     }

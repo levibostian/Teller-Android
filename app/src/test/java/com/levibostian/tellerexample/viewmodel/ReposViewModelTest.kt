@@ -4,12 +4,15 @@ import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.cachestate.OnlineCacheState
+import com.levibostian.teller.repository.OnlineRepository
 import com.levibostian.teller.testing.extensions.cache
+import com.levibostian.teller.testing.extensions.success
 import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.repository.ReposRepository
 import com.levibostian.tellerexample.service.provider.SchedulersProvider
 import com.nhaarman.mockito_kotlin.*
 import io.reactivex.Observable
+import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
 import org.junit.Before
 import org.junit.Rule
@@ -66,6 +69,21 @@ class ReposViewModelTest {
         verify(reposObserver).onChanged(reposCache)
         verify(schedulers).io()
         verify(schedulers).mainThread()
+    }
+
+    @Test
+    fun `refresh() - Refreshes from repository`() {
+        val refreshResult = OnlineRepository.RefreshResult.Testing.success()
+
+        `when`(reposRepository.refresh(force = true)).thenReturn(Single.just(refreshResult))
+
+        viewModel.refresh()
+                .test()
+                .await()
+                .assertComplete()
+                .assertValues(refreshResult)
+
+        verify(reposRepository).refresh(force = true)
     }
 
     @Test
