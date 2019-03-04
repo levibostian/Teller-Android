@@ -1,0 +1,17 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>OnlineRepository.observeCache - teller</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">teller</a>&nbsp;/&nbsp;<a href="../index.html">com.levibostian.teller.repository</a>&nbsp;/&nbsp;<a href="index.html">OnlineRepository</a>&nbsp;/&nbsp;<a href="./observe-cache.html">observeCache</a><br/>
+<br/>
+<h1>observeCache</h1>
+<a name="com.levibostian.teller.repository.OnlineRepository$observeCache(com.levibostian.teller.repository.OnlineRepository.GET_CACHE_REQUIREMENTS)"></a>
+<code><span class="keyword">protected</span> <span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">observeCache</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.OnlineRepository$observeCache(com.levibostian.teller.repository.OnlineRepository.GET_CACHE_REQUIREMENTS)/requirements">requirements</span><span class="symbol">:</span>&nbsp;<a href="index.html#GET_CACHE_REQUIREMENTS"><span class="identifier">GET_CACHE_REQUIREMENTS</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Observable</span><span class="symbol">&lt;</span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">&gt;</span></code>
+<p>Get existing cache saved on the device if it exists. If no cache exists, return an empty response set in the Observable and return true in <a href="is-cache-empty.html">isCacheEmpty</a>. <strong>Do not</strong> return nil or an Observable with nil as a value as this will cause an exception.</p>
+<p>This function is only called after cache has been fetched successfully from <a href="fetch-fresh-cache.html">fetchFreshCache</a>.</p>
+<p><strong>Called on main UI thread.</strong></p>
+</BODY>
+</HTML>

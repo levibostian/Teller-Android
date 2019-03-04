@@ -8,11 +8,13 @@ import com.levibostian.teller.type.Age
 import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.service.GitHubService
+import com.levibostian.tellerexample.service.provider.SchedulersProvider
 import io.reactivex.Observable
 import io.reactivex.Single
 
 class ReposRepository(private val service: GitHubService,
-                      private val db: AppDatabase): OnlineRepository<List<RepoModel>, ReposRepository.GetReposRequirements, List<RepoModel>>() {
+                      private val db: AppDatabase,
+                      private val schedulersProvider: SchedulersProvider): OnlineRepository<List<RepoModel>, ReposRepository.GetReposRequirements, List<RepoModel>>() {
 
     /**
      * Tells Teller how old cache can be before it's determined "too old" and new cache is fetched automatically by calling `fetchFreshCache()`.
@@ -72,7 +74,9 @@ class ReposRepository(private val service: GitHubService,
      * If your cache response is in an "empty" state, either (1) return an empty value (Example: an empty String, "") or (2) create a POJO with an optional inside of it.
      */
     override fun observeCache(requirements: GetReposRequirements): Observable<List<RepoModel>> {
-        return db.reposDao().observeReposForUser(requirements.githubUsername).toObservable()
+        return db.reposDao().observeReposForUser(requirements.githubUsername)
+                .subscribeOn(schedulersProvider.io())
+                .observeOn(schedulersProvider.mainThread())
     }
 
     /**

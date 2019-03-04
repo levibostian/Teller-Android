@@ -6,6 +6,7 @@ import com.levibostian.teller.cachestate.listener.OnlineCacheStateFetchingListen
 import com.levibostian.teller.cachestate.listener.OnlineCacheStateNoCacheStateListener
 import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
 import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.repository.OnlineRepositoryCache
 import com.levibostian.teller.testing.cachestate.OnlineCacheStateTesting
 import java.util.*
 
@@ -17,24 +18,24 @@ Data in apps are in 1 of 3 different types of state:
 2. Data has been cached in the app and is either empty or not.
 3. A cache exists, and we are fetching fresh response to update the cache.
  */
-open class OnlineCacheState<CACHE: Any> internal constructor(val noCacheExists: Boolean,
-                                                             val fetchingForFirstTime: Boolean,
-                                                             val cacheData: CACHE?,
-                                                             val lastTimeFetched: Date?,
-                                                             val isFetchingFreshData: Boolean,
-                                                             val requirements: OnlineRepository.GetCacheRequirements?,
-                                                             internal val stateMachine: OnlineCacheStateStateMachine<CACHE>?,
+open class OnlineCacheState<CACHE: OnlineRepositoryCache> internal constructor(val noCacheExists: Boolean,
+                                                                               val fetchingForFirstTime: Boolean,
+                                                                               val cacheData: CACHE?,
+                                                                               val lastTimeFetched: Date?,
+                                                                               val isFetchingFreshData: Boolean,
+                                                                               val requirements: OnlineRepository.GetCacheRequirements?,
+                                                                               internal val stateMachine: OnlineCacheStateStateMachine<CACHE>?,
         // To prevent the end user getting spammed like crazy with UI messages of the same error or same status of response, the following properties should be set once in the constructor and then for future state calls, negate them.
-                                                             val errorDuringFirstFetch: Throwable?,
-                                                             val justCompletedSuccessfulFirstFetch: Boolean,
-                                                             val errorDuringFetch: Throwable?,
-                                                             val justCompletedSuccessfullyFetchingFreshData: Boolean) {
+                                                                               val errorDuringFirstFetch: Throwable?,
+                                                                               val justCompletedSuccessfulFirstFetch: Boolean,
+                                                                               val errorDuringFetch: Throwable?,
+                                                                               val justCompletedSuccessfullyFetchingFreshData: Boolean) {
 
     internal companion object {
         /**
          * This constructor is meant to be more of a placeholder. It's having "no state".
          */
-        fun <CACHE: Any> none(): OnlineCacheState<CACHE> {
+        fun <CACHE: OnlineRepositoryCache> none(): OnlineCacheState<CACHE> {
             return OnlineCacheState(
                     noCacheExists = false,
                     fetchingForFirstTime = false,

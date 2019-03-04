@@ -9,8 +9,11 @@
 <br/>
 <h1>observe</h1>
 <a name="com.levibostian.teller.repository.OnlineRepository$observe()"></a>
-<code><span class="keyword">fun </span><span class="identifier">observe</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Observable</span><span class="symbol">&lt;</span><a href="../../com.levibostian.teller.datastate/-online-data-state/index.html"><span class="identifier">OnlineDataState</span></a><span class="symbol">&lt;</span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span></code>
-<p>How to begin observing the state of the data for this <a href="index.html">OnlineRepository</a>.</p>
-<p>Teller will automatically perform a <a href="refresh.html">refresh</a> if the cached data does not exist or is too old. You will get notified anytime that the state of the data changes or the data itself ever changes.</p>
+<code><span class="keyword">fun </span><span class="identifier">observe</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Observable</span><span class="symbol">&lt;</span><a href="../../com.levibostian.teller.cachestate/-online-cache-state/index.html"><span class="identifier">OnlineCacheState</span></a><span class="symbol">&lt;</span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span></code>
+<p>How to begin observing the state of the cache for this <a href="index.html">OnlineRepository</a>.</p>
+<p>Teller will automatically perform a <a href="refresh.html">refresh</a> if the cache does not exist or is too old. You will get notified anytime that the state of the cache changes.</p>
+<h3>Exceptions</h3>
+<p><a name="RuntimeException"></a>
+<code>RuntimeException</code> - If calling after calling <a href="dispose.html">dispose</a>.</p>
 </BODY>
 </HTML>

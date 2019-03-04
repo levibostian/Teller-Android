@@ -1,0 +1,18 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>OnlineRepository.GetCacheRequirements.tag - teller</title>
+<link rel="stylesheet" href="../../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../../index.html">teller</a>&nbsp;/&nbsp;<a href="../../index.html">com.levibostian.teller.repository</a>&nbsp;/&nbsp;<a href="../index.html">OnlineRepository</a>&nbsp;/&nbsp;<a href="index.html">GetCacheRequirements</a>&nbsp;/&nbsp;<a href="./tag.html">tag</a><br/>
+<br/>
+<h1>tag</h1>
+<a name="com.levibostian.teller.repository.OnlineRepository.GetCacheRequirements$tag"></a>
+<code><span class="keyword">abstract</span> <span class="keyword">var </span><span class="identifier">tag</span><span class="symbol">: </span><a href="../../-get-cache-requirements-tag.html"><span class="identifier">GetCacheRequirementsTag</span></a></code>
+<p>Unique tag that drives the behavior of a <a href="../index.html">OnlineRepository</a>. The tag needs to describe (1) the type of cache being stored (example: friend, friend request, song, user profile, etc) and (2) identity the fetch call to obtain this cache. Example: "FriendRequests_page1" for paging, "UserProfile_user2332" for a query param. Teller uses this <a href="./tag.html">tag</a> to determine how old some particular cache is. If it's too old, new cache will be fetched.</p>
+<h3>Property</h3>
+<p><a name="tag"></a>
+<code>tag</code> - Unique tag that drives the behavior of a <a href="../index.html">OnlineRepository</a>. The tag needs to describe (1) the type of cache being stored (example: friend, friend request, song, user profile, etc) and (2) identity the fetch call to obtain this cache. Example: "FriendRequests_page1" for paging, "UserProfile_user2332" for a query param. Teller uses this <a href="./tag.html">tag</a> to determine how old some particular cache is. If it's too old, new cache will be fetched.</p>
+</BODY>
+</HTML>

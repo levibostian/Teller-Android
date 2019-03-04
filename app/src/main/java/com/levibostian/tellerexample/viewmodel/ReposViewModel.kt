@@ -26,7 +26,7 @@ class ReposViewModel: ViewModel() {
     }
 
     fun init(service: GitHubService, db: AppDatabase, schedulersProvider: SchedulersProvider) {
-        init(ReposRepository(service, db), schedulersProvider)
+        init(ReposRepository(service, db, schedulersProvider), schedulersProvider)
     }
 
     fun setUsername(username: String) {

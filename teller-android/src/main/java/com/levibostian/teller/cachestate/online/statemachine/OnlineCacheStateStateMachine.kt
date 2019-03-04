@@ -2,6 +2,7 @@ package com.levibostian.teller.cachestate.online.statemachine
 
 import com.levibostian.teller.cachestate.OnlineCacheState
 import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.repository.OnlineRepositoryCache
 import java.util.*
 
 /**
@@ -16,13 +17,13 @@ import java.util.*
  * 2. Immutable. Each instance represents [OnlineCacheState] (which is also an immutable object).
  * 3. Allows you to travel from it's state (node of state machine) to another state the cache has moved to (another node of the state machine).
  */
-internal class OnlineCacheStateStateMachine<CACHE: Any> private constructor(private val requirements: OnlineRepository.GetCacheRequirements,
+internal class OnlineCacheStateStateMachine<CACHE: OnlineRepositoryCache> private constructor(private val requirements: OnlineRepository.GetCacheRequirements,
                                                                             private val noCacheStateMachine: NoCacheStateMachine?,
                                                                             private val cacheExistsStateMachine: CacheStateMachine<CACHE>?,
                                                                             private val fetchingFreshCacheStateMachine: FetchingFreshCacheStateMachine?) {
 
     companion object {
-        fun <CACHE: Any> noCacheExists(requirements: OnlineRepository.GetCacheRequirements): OnlineCacheState<CACHE> {
+        fun <CACHE: OnlineRepositoryCache> noCacheExists(requirements: OnlineRepository.GetCacheRequirements): OnlineCacheState<CACHE> {
             val onlineDataStateMachine = OnlineCacheStateStateMachine<CACHE>(requirements, NoCacheStateMachine.noCacheExists(), null, null)
 
             return OnlineCacheState(
@@ -39,7 +40,7 @@ internal class OnlineCacheStateStateMachine<CACHE: Any> private constructor(priv
                     justCompletedSuccessfullyFetchingFreshData = false)
         }
 
-        fun <CACHE: Any> cacheExists(requirements: OnlineRepository.GetCacheRequirements, lastTimeFetched: Date): OnlineCacheState<CACHE> {
+        fun <CACHE: OnlineRepositoryCache> cacheExists(requirements: OnlineRepository.GetCacheRequirements, lastTimeFetched: Date): OnlineCacheState<CACHE> {
             val cacheExistsStateMachine = CacheStateMachine.cacheEmpty<CACHE>() // Empty is a placeholder for now but it indicates that a cache does exist for future calls to the state machine.
             val fetchingFreshCacheStateMachine = FetchingFreshCacheStateMachine.notFetching(lastTimeFetched)
             val onlineDataStateMachine = OnlineCacheStateStateMachine(requirements, null, cacheExistsStateMachine, fetchingFreshCacheStateMachine)

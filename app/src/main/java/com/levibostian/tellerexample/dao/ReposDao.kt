@@ -13,7 +13,7 @@ import io.reactivex.Observable
 interface ReposDao {
 
     @Query("SELECT * FROM repo WHERE repo_owner_name = :name")
-    fun observeReposForUser(name: String): Flowable<List<RepoModel>>
+    fun observeReposForUser(name: String): Observable<List<RepoModel>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun insertRepos(repos: List<RepoModel>)

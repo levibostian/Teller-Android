@@ -1,22 +1,13 @@
 package com.levibostian.teller.testing.repository
 
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
-import com.levibostian.teller.cachestate.LocalCacheState
-import com.levibostian.teller.cachestate.OnlineCacheState
-import com.levibostian.teller.cachestate.listener.LocalCacheStateListener
-import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
-import com.levibostian.teller.repository.GetCacheRequirementsTag
 import com.levibostian.teller.repository.OnlineRepository
-import com.levibostian.teller.testing.extensions.*
+import com.levibostian.teller.testing.extensions.failure
+import com.levibostian.teller.testing.extensions.skipped
+import com.levibostian.teller.testing.extensions.success
 import org.junit.Test
-
 import org.junit.runner.RunWith
-import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
-import com.nhaarman.mockito_kotlin.*
-import java.util.*
-import kotlin.test.assertEquals
 
 @RunWith(MockitoJUnitRunner::class)
 class OnlineRepositoryRefreshResultTestingTest {

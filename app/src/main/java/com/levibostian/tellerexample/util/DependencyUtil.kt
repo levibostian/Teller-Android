@@ -2,7 +2,11 @@ package com.levibostian.tellerexample.util
 
 import android.app.Application
 import android.content.Context
+import android.content.SharedPreferences
+import android.preference.PreferenceManager
 import androidx.room.Room
+import com.f2prateek.rx.preferences2.RxSharedPreferences
+import com.levibostian.teller.Teller
 import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.service.GitHubService
 import io.reactivex.schedulers.Schedulers
@@ -19,6 +23,10 @@ class DependencyUtil {
             return Room.databaseBuilder(context, AppDatabase::class.java, "teller-example").build()
         }
 
+        fun testDbInstance(context: Context): AppDatabase {
+            return Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
+        }
+
         fun serviceInstance(): GitHubService {
             val httpLoggingInterceptor = HttpLoggingInterceptor()
             httpLoggingInterceptor.level = HttpLoggingInterceptor.Level.BODY
@@ -32,6 +40,23 @@ class DependencyUtil {
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
                     .create(GitHubService::class.java)
+        }
+
+        fun rxSharedPreferences(context: Context): RxSharedPreferences {
+            return RxSharedPreferences.create(sharedPreferences(context))
+        }
+
+        fun sharedPreferences(context: Context): SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+
+        fun teller(): Teller {
+            return Teller.shared
+        }
+
+        fun dataDestroyerUtil(context: Context): DataDestroyerUtil {
+            return DataDestroyerUtil(
+                    teller(),
+                    dbInstance(context),
+                    sharedPreferences(context))
         }
     }
 

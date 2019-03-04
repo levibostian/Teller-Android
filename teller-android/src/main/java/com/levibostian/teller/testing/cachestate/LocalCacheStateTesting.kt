@@ -10,11 +10,13 @@ import java.util.*
 /**
  * Convenient utility to generate instances of [LocalCacheState] used for testing purposes.
  *
+ * You can use this class directly, or, use the recommended extension functions in the [LocalCacheState.Testing] object.
+ *
  * Intentions of [LocalCacheStateTesting]:
  * 1. Be able to initialize an instance of [LocalCacheState] with 1 line of code.
  * 2. Immutable. Represent a snapshot of [LocalCacheState] without the ability to edit it.
  */
-class LocalCacheStateTesting {
+class LocalCacheStateTesting private constructor() {
 
     companion object {
         fun <CACHE: Any> none(): LocalCacheState<CACHE> {

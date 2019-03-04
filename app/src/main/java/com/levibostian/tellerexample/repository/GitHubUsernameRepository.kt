@@ -8,14 +8,15 @@ import com.levibostian.teller.repository.LocalRepository
 import io.reactivex.Completable
 import io.reactivex.Observable
 import android.content.SharedPreferences
+import com.levibostian.tellerexample.util.DependencyUtil
 import io.reactivex.Scheduler
 import io.reactivex.schedulers.Schedulers
 
 class GitHubUsernameRepository(private val context: Context): LocalRepository<String, GitHubUsernameRepository.GitHubUsernameGetCacheRequirements>() {
 
     private val githubUsernameSharedPrefsKey = "${this::class.java.simpleName}_githubUsername_key"
-    private val rxSharedPreferences: RxSharedPreferences = RxSharedPreferences.create(PreferenceManager.getDefaultSharedPreferences(context))
-    private val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    private val rxSharedPreferences: RxSharedPreferences = DependencyUtil.rxSharedPreferences(context)
+    private val sharedPreferences: SharedPreferences = DependencyUtil.sharedPreferences(context)
 
     /**
      * Use the `LocalRepository` as a regular repository. Add more functions to it to read, edit, delete the GitHub username cache.

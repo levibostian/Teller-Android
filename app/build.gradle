@@ -74,6 +74,7 @@ dependencies {
     // OkHttp
     def okHttpVersion = "3.10.0"
     implementation "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
+    androidTestImplementation "com.squareup.okhttp3:mockwebserver:$okHttpVersion"
 
     // GSON
     implementation 'com.google.code.gson:gson:2.8.4'

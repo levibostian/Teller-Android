@@ -107,7 +107,7 @@ task dokkaJavadoc(type: org.jetbrains.dokka.gradle.DokkaTask) {
 dokka {
     outputFormat = 'html'
     outputDirectory = "docs/javadoc"
-    moduleName = 'teller-android'
+    moduleName = 'teller'
 }
 
 apply from: rootProject.file('gradle/publish.gradle')

@@ -3,22 +3,21 @@ package com.levibostian.teller.repository
 import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.provider.SchedulersProvider
-import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
 import com.levibostian.teller.repository.manager.OnlineRepositoryCacheAgeManager
-import org.junit.Test
+import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
 import com.levibostian.teller.util.AssertionUtil.Companion.check
 import com.levibostian.teller.util.TaskExecutor
 import com.nhaarman.mockito_kotlin.any
-
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
-import org.junit.Before
-import org.mockito.Mockito.`when`
 import io.reactivex.schedulers.Schedulers
 import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito.`when`
+import org.mockito.junit.MockitoJUnitRunner
 import java.util.*
 import kotlin.test.assertFailsWith
 

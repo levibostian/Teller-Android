@@ -11,9 +11,9 @@
 <code><span class="keyword">abstract</span> <span class="keyword">class </span><span class="identifier">LocalRepository</span><span class="symbol">&lt;</span><span class="identifier">CACHE</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">, </span><span class="identifier">GET_CACHE_REQUIREMENTS</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="-get-cache-requirements.html"><span class="identifier">GetCacheRequirements</span></a><span class="symbol">&gt;</span></code>
 <p>Teller repository that manages cache that is obtained and stored on the local device.</p>
 <p>Using <a href="./index.html">LocalRepository</a> is quite simple:</p>
-<ol><li>Subclass <a href="./index.html">LocalRepository</a> for each of your cache data types</li>
-<li>Call <a href="observe.html">observe</a> to begin observing the current state of the cached data.</li>
-<li>Set <a href="requirements.html">requirements</a> with an object used to querying cached data. Set <a href="requirements.html">requirements</a> object as many times as you wish and have <a href="observe.html">observe</a> receive all of the changes.</li>
+<ol><li>Subclass <a href="./index.html">LocalRepository</a> for each of your cache response types</li>
+<li>Call <a href="observe.html">observe</a> to begin observing the current state of the cached response.</li>
+<li>Set <a href="requirements.html">requirements</a> with an object used to querying cached response. Set <a href="requirements.html">requirements</a> object as many times as you wish and have <a href="observe.html">observe</a> receive all of the changes.</li>
 </ol>
 <p><a href="./index.html">LocalRepository</a> is thread safe. Actions called upon for <a href="./index.html">LocalRepository</a> can be performed on any thread.</p>
 <h3>Types</h3>
@@ -61,7 +61,7 @@
 </td>
 <td>
 <code><span class="keyword">fun </span><span class="identifier">dispose</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
-<p>Dispose of the <a href="./index.html">LocalRepository</a> to shut down observing of cached data.</p>
+<p>Dispose of the <a href="./index.html">LocalRepository</a> to shut down observing of cached response.</p>
 </td>
 </tr>
 <tr>
@@ -70,7 +70,7 @@
 </td>
 <td>
 <code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">isCacheEmpty</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.LocalRepository$isCacheEmpty(com.levibostian.teller.repository.LocalRepository.CACHE, com.levibostian.teller.repository.LocalRepository.GET_CACHE_REQUIREMENTS)/cache">cache</span><span class="symbol">:</span>&nbsp;<a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">, </span><span class="identifier" id="com.levibostian.teller.repository.LocalRepository$isCacheEmpty(com.levibostian.teller.repository.LocalRepository.CACHE, com.levibostian.teller.repository.LocalRepository.GET_CACHE_REQUIREMENTS)/requirements">requirements</span><span class="symbol">:</span>&nbsp;<a href="index.html#GET_CACHE_REQUIREMENTS"><span class="identifier">GET_CACHE_REQUIREMENTS</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code>
-<p>Determines if cache is empty or not. This is used internally by Teller to determine if the cache from <a href="observe-cache.html">observeCache</a> is empty or not to then pass to <a href="../../com.levibostian.teller.datastate/-local-data-state/deliver-state.html">LocalDataState.deliverState</a> with the state of the cache.</p>
+<p>Determines if cache is empty or not. This is used internally by Teller to determine if the cache from <a href="observe-cache.html">observeCache</a> is empty or not to then pass to <a href="../../com.levibostian.teller.cachestate/-local-cache-state/deliver-state.html">LocalCacheState.deliverState</a> with the state of the cache.</p>
 </td>
 </tr>
 <tr>
@@ -79,7 +79,7 @@
 </td>
 <td>
 <code><span class="keyword">fun </span><span class="identifier">newCache</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.LocalRepository$newCache(com.levibostian.teller.repository.LocalRepository.CACHE, com.levibostian.teller.repository.LocalRepository.GET_CACHE_REQUIREMENTS)/cache">cache</span><span class="symbol">:</span>&nbsp;<a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">, </span><span class="identifier" id="com.levibostian.teller.repository.LocalRepository$newCache(com.levibostian.teller.repository.LocalRepository.CACHE, com.levibostian.teller.repository.LocalRepository.GET_CACHE_REQUIREMENTS)/requirements">requirements</span><span class="symbol">:</span>&nbsp;<a href="index.html#GET_CACHE_REQUIREMENTS"><span class="identifier">GET_CACHE_REQUIREMENTS</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
-<p>Save new cache data.</p>
+<p>Save new cache response.</p>
 </td>
 </tr>
 <tr>
@@ -87,8 +87,8 @@
 <p><a href="observe.html">observe</a></p>
 </td>
 <td>
-<code><span class="keyword">fun </span><span class="identifier">observe</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Observable</span><span class="symbol">&lt;</span><a href="../../com.levibostian.teller.datastate/-local-data-state/index.html"><span class="identifier">LocalDataState</span></a><span class="symbol">&lt;</span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span></code>
-<p>Get an observable that gets the current state of data and all future states.</p>
+<code><span class="keyword">fun </span><span class="identifier">observe</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Observable</span><span class="symbol">&lt;</span><a href="../../com.levibostian.teller.cachestate/-local-cache-state/index.html"><span class="identifier">LocalCacheState</span></a><span class="symbol">&lt;</span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">&gt;</span><span class="symbol">&gt;</span></code>
+<p>Get an observable that gets the current state of response and all future states.</p>
 </td>
 </tr>
 <tr>
@@ -97,7 +97,7 @@
 </td>
 <td>
 <code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">observeCache</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.LocalRepository$observeCache(com.levibostian.teller.repository.LocalRepository.GET_CACHE_REQUIREMENTS)/requirements">requirements</span><span class="symbol">:</span>&nbsp;<a href="index.html#GET_CACHE_REQUIREMENTS"><span class="identifier">GET_CACHE_REQUIREMENTS</span></a><span class="symbol">)</span><span class="symbol">: </span><span class="identifier">Observable</span><span class="symbol">&lt;</span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">&gt;</span></code>
-<p>This function should be setup to trigger anytime there is a data change. So if you were to call <a href="save-cache.html">saveCache</a>, anyone observing the <a href="#">Observable</a> returned here will get notified of a new update.</p>
+<p>This function should be setup to trigger anytime there is a response change. So if you were to call <a href="save-cache.html">saveCache</a>, anyone observing the <a href="#">Observable</a> returned here will get notified of a new update.</p>
 </td>
 </tr>
 <tr>
@@ -106,7 +106,7 @@
 </td>
 <td>
 <code><span class="keyword">abstract</span> <span class="keyword">fun </span><span class="identifier">saveCache</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.LocalRepository$saveCache(com.levibostian.teller.repository.LocalRepository.CACHE, com.levibostian.teller.repository.LocalRepository.GET_CACHE_REQUIREMENTS)/cache">cache</span><span class="symbol">:</span>&nbsp;<a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">, </span><span class="identifier" id="com.levibostian.teller.repository.LocalRepository$saveCache(com.levibostian.teller.repository.LocalRepository.CACHE, com.levibostian.teller.repository.LocalRepository.GET_CACHE_REQUIREMENTS)/requirements">requirements</span><span class="symbol">:</span>&nbsp;<a href="index.html#GET_CACHE_REQUIREMENTS"><span class="identifier">GET_CACHE_REQUIREMENTS</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
-<p>Save new cache data to whatever storage method Repository chooses.</p>
+<p>Save new cache response to whatever storage method Repository chooses.</p>
 </td>
 </tr>
 </tbody>

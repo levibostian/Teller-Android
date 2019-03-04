@@ -3,29 +3,32 @@ package com.levibostian.teller.testing.cachestate
 import com.levibostian.teller.cachestate.OnlineCacheState
 import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
 import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.repository.OnlineRepositoryCache
 import java.util.*
 
 /**
  * Convenient utility to generate instances of [OnlineCacheState] used for testing purposes.
  *
+ * You can use this class directly, or, use the recommended extension functions in the [OnlineCacheState.Testing] object.
+ *
  * Intentions of [OnlineCacheStateTesting]:
  * 1. Be able to initialize an instance of [OnlineCacheState] with 1 line of code.
  * 2. Immutable. Represent a snapshot of [OnlineCacheState] without the ability to edit it.
  */
-class OnlineCacheStateTesting {
+class OnlineCacheStateTesting private constructor() {
 
     companion object {
-        fun <CACHE: Any> none(): OnlineCacheState<CACHE> {
+        fun <CACHE: OnlineRepositoryCache> none(): OnlineCacheState<CACHE> {
             return OnlineCacheState.none()
         }
 
-        fun <CACHE: Any> noCache(requirements: OnlineRepository.GetCacheRequirements,
-                                 more: (NoCacheExists.() -> Unit)? = null): OnlineCacheState<CACHE> {
-            val noCacheExists = NoCacheExists()
+        fun <CACHE: OnlineRepositoryCache> noCache(requirements: OnlineRepository.GetCacheRequirements,
+                                 more: (NoCacheExistsDsl.() -> Unit)? = null): OnlineCacheState<CACHE> {
+            val noCacheExists = NoCacheExistsDsl()
             more?.let { noCacheExists.it() }
 
             /**
-             * We are using the [OnlineCacheStateStateMachine] here to (1) prevent duplicate constructor code that is a pain to maintain and (2)
+             * We are using the [OnlineCacheStateStateMachine] here to (1) prevent duplicate constructor code that is a pain to maintain and (2) we are starting with the assumption that no cache exists and editing the state from there if the DSL asks for it.
              */
             var stateMachine = OnlineCacheStateStateMachine.noCacheExists<CACHE>(requirements)
 
@@ -48,10 +51,10 @@ class OnlineCacheStateTesting {
             return stateMachine
         }
 
-        fun <CACHE: Any> cache(requirements: OnlineRepository.GetCacheRequirements,
+        fun <CACHE: OnlineRepositoryCache> cache(requirements: OnlineRepository.GetCacheRequirements,
                                lastTimeFetched: Date,
-                               more: (CacheExists<CACHE>.() -> Unit)? = null): OnlineCacheState<CACHE> {
-            val cacheExists = CacheExists<CACHE>(lastTimeFetched)
+                               more: (CacheExistsDsl<CACHE>.() -> Unit)? = null): OnlineCacheState<CACHE> {
+            val cacheExists = CacheExistsDsl<CACHE>(lastTimeFetched)
             more?.let { cacheExists.it() }
 
             var stateMachine = OnlineCacheStateStateMachine.cacheExists<CACHE>(requirements, lastTimeFetched)
@@ -77,8 +80,8 @@ class OnlineCacheStateTesting {
         }
     }
 
-    @OnlineCacheStateEntryPoint
-    class NoCacheExists {
+    @OnlineCacheStateTestingDsl
+    class NoCacheExistsDsl {
         var props = Props()
 
         fun fetchingFirstTime() {
@@ -105,8 +108,8 @@ class OnlineCacheStateTesting {
                          val timeFetched: Date? = null)
     }
 
-    @OnlineCacheStateEntryPoint
-    class CacheExists<CACHE: Any>(lastFetched: Date) {
+    @OnlineCacheStateTestingDsl
+    class CacheExistsDsl<CACHE: OnlineRepositoryCache>(lastFetched: Date) {
         var props = Props<CACHE>(
                 timeFetched = lastFetched
         )
@@ -139,11 +142,11 @@ class OnlineCacheStateTesting {
             )
         }
 
-        data class Props<CACHE: Any>(val cache: CACHE? = null,
-                                     val fetching: Boolean = false,
-                                     val errorDuringFetch: Throwable? = null,
-                                     val successfulFetch: Boolean = false,
-                                     val timeFetched: Date? = null)
+        data class Props<CACHE: OnlineRepositoryCache>(val cache: CACHE? = null,
+                                                       val fetching: Boolean = false,
+                                                       val errorDuringFetch: Throwable? = null,
+                                                       val successfulFetch: Boolean = false,
+                                                       val timeFetched: Date? = null)
     }
 
 }

@@ -2,15 +2,14 @@ package com.levibostian.teller
 
 import android.content.Context
 import android.content.SharedPreferences
-import org.junit.Test
 import com.levibostian.teller.util.ConstantsUtil
-
+import com.nhaarman.mockito_kotlin.verify
+import org.junit.Before
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
-import com.nhaarman.mockito_kotlin.*
-import org.junit.Before
 import org.mockito.Mockito.`when`
+import org.mockito.junit.MockitoJUnitRunner
 
 @RunWith(MockitoJUnitRunner::class)
 class TellerTest {

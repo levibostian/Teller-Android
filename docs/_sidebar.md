@@ -15,6 +15,12 @@
   - [Paging](paging.md)
   - [Multiple data types](multiple_data_types_repositories.md)
 
+- [Testing](testing)
+
+  - [Mocking Teller](testing_mocking_teller)
+  - [Test Repository subclasses](testing_repository_subclasses)
+  - [Instrumentation tests](testing_instrumentation_tests)
+
 - [Contribute](contribute.md)
 
   - [Build Teller](contribute_build.md)

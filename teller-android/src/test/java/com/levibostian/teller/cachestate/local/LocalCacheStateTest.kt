@@ -4,12 +4,13 @@ import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.cachestate.LocalCacheState
 import com.levibostian.teller.cachestate.listener.LocalCacheStateListener
 import com.levibostian.teller.repository.LocalRepository
+import com.nhaarman.mockito_kotlin.anyOrNull
+import com.nhaarman.mockito_kotlin.never
+import com.nhaarman.mockito_kotlin.verify
 import org.junit.Test
-
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
-import com.nhaarman.mockito_kotlin.*
 
 @RunWith(MockitoJUnitRunner::class)
 class LocalCacheStateTest {

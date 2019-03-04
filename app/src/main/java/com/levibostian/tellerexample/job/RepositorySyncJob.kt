@@ -6,6 +6,7 @@ import com.evernote.android.job.JobRequest
 import com.levibostian.teller.repository.OnlineRepository
 import com.levibostian.tellerexample.MainApplication
 import com.levibostian.tellerexample.repository.GitHubUsernameRepository
+import com.levibostian.tellerexample.service.provider.AppSchedulersProvider
 import com.levibostian.tellerexample.util.DependencyUtil
 import io.reactivex.Single
 import io.reactivex.schedulers.Schedulers
@@ -32,7 +33,7 @@ class RepositorySyncJob: Job() {
 
         val latestUsername = GitHubUsernameRepository(MainApplication.appContext).currentUsernameSaved
         if (latestUsername != null) repos.add(
-                ReposRepository(DependencyUtil.serviceInstance(), DependencyUtil.dbInstance(MainApplication.appContext)).apply {
+                ReposRepository(DependencyUtil.serviceInstance(), DependencyUtil.dbInstance(MainApplication.appContext), AppSchedulersProvider()).apply {
                     requirements = ReposRepository.GetReposRequirements(latestUsername)
                 }.refresh(false)
         )

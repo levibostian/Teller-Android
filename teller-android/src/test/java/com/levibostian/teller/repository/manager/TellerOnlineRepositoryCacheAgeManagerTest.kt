@@ -5,9 +5,8 @@ import android.content.SharedPreferences
 import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.type.Age
 import com.nhaarman.mockito_kotlin.verify
-import org.junit.Test
-
 import org.junit.Before
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.*

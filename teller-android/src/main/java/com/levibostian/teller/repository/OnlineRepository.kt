@@ -9,6 +9,7 @@ import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManagerW
 import com.levibostian.teller.repository.manager.OnlineRepositoryCacheAgeManager
 import com.levibostian.teller.repository.manager.TellerOnlineRepositoryCacheAgeManager
 import com.levibostian.teller.subject.OnlineCacheStateBehaviorSubject
+import com.levibostian.teller.testing.repository.OnlineRepositoryRefreshResultTesting
 import com.levibostian.teller.type.Age
 import com.levibostian.teller.util.TaskExecutor
 import com.levibostian.teller.util.TellerTaskExecutor
@@ -19,6 +20,9 @@ import java.lang.ref.WeakReference
 import java.util.*
 
 typealias GetCacheRequirementsTag = String
+
+typealias OnlineRepositoryCache = Any
+typealias OnlineRepositoryFetchResponse = Any
 
 /**
  * Teller repository that manages a cache that is obtained from a network fetch request.
@@ -31,7 +35,7 @@ typealias GetCacheRequirementsTag = String
  *
  * [OnlineRepository] is thread safe. Actions called upon for [OnlineRepository] can be performed on any thread.
  */
-abstract class OnlineRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: OnlineRepository.GetCacheRequirements, FETCH_RESPONSE: Any> {
+abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREMENTS: OnlineRepository.GetCacheRequirements, FETCH_RESPONSE: OnlineRepositoryFetchResponse> {
 
     constructor() {
         schedulersProvider = TellerSchedulersProvider()
@@ -70,6 +74,13 @@ abstract class OnlineRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: OnlineReposi
         this.taskExecutor = taskExecutor
         this.refreshManagerListener = refreshManagerListener
     }
+
+    /**
+     * Used for testing purposes to initialize the state of a [OnlineRepository] subclass instance.
+     *
+     * @see OnlineRepositoryRefreshResultTesting
+     */
+    object Testing
 
     /**
      * Used to set how old cache can be on the device before it is considered too old and new cache should be fetched.
@@ -296,6 +307,13 @@ abstract class OnlineRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: OnlineReposi
     protected abstract fun saveCache(cache: FETCH_RESPONSE, requirements: GET_CACHE_REQUIREMENTS)
 
     /**
+     * Used to allow [saveCache] is available internally *and* protected.
+     */
+    internal fun saveCacheSyncCurrentThread(cache: FETCH_RESPONSE, requirements: GET_CACHE_REQUIREMENTS) {
+        this.saveCache(cache, requirements)
+    }
+
+    /**
      * Get existing cache saved on the device if it exists. If no cache exists, return an empty response set in the Observable and return true in [isCacheEmpty]. **Do not** return nil or an Observable with nil as a value as this will cause an exception.
      *
      * This function is only called after cache has been fetched successfully from [fetchFreshCache].
@@ -323,17 +341,17 @@ abstract class OnlineRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: OnlineReposi
     /**
      * When a [OnlineRepository.fetchFreshCache] task is performed, Teller needs to know if the fetch request is considered to be a success or a failure.
      */
-    class FetchResponse<FETCH_RESPONSE: Any> private constructor(val response: FETCH_RESPONSE? = null,
+    class FetchResponse<FETCH_RESPONSE: OnlineRepositoryFetchResponse> private constructor(val response: FETCH_RESPONSE? = null,
                                                                  val failure: Throwable? = null) {
 
         companion object {
             @JvmStatic
-            fun <FETCH_RESPONSE: Any> success(response: FETCH_RESPONSE): FetchResponse<FETCH_RESPONSE> {
+            fun <FETCH_RESPONSE: OnlineRepositoryFetchResponse> success(response: FETCH_RESPONSE): FetchResponse<FETCH_RESPONSE> {
                 return FetchResponse(response = response)
             }
 
             @JvmStatic
-            fun <FETCH_RESPONSE: Any> fail(throwable: Throwable): FetchResponse<FETCH_RESPONSE> {
+            fun <FETCH_RESPONSE: OnlineRepositoryFetchResponse> fail(throwable: Throwable): FetchResponse<FETCH_RESPONSE> {
                 return FetchResponse(failure = throwable)
             }
         }
@@ -353,7 +371,7 @@ abstract class OnlineRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: OnlineReposi
         /**
          * Used for testing purposes to create instances of [OnlineCacheState].
          *
-         * @see OnlineCacheStateTesting
+         * @see OnlineRepositoryRefreshResultTesting
          */
         object Testing
 
@@ -411,7 +429,7 @@ abstract class OnlineRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: OnlineReposi
             this@OnlineRepository.refreshBegin(tag)
         }
 
-        override fun <RefreshResponseType: Any> refreshComplete(tag: GetCacheRequirementsTag, response: FetchResponse<RefreshResponseType>) {
+        override fun <RefreshResponseType: OnlineRepositoryFetchResponse> refreshComplete(tag: GetCacheRequirementsTag, response: FetchResponse<RefreshResponseType>) {
             @Suppress("UNCHECKED_CAST") val fetchResponse = response as FetchResponse<FETCH_RESPONSE>
             this@OnlineRepository.refreshComplete(tag, fetchResponse)
         }

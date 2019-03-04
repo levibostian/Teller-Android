@@ -3,16 +3,14 @@ package com.levibostian.teller.repository.manager
 import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.repository.GetCacheRequirementsTag
 import com.levibostian.teller.repository.OnlineRepository
-import io.reactivex.subjects.PublishSubject
-import org.junit.Test
 import com.levibostian.teller.util.AssertionUtil.Companion.check
 import com.levibostian.teller.util.Wait
-
+import com.nhaarman.mockito_kotlin.*
+import io.reactivex.subjects.ReplaySubject
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
-import com.nhaarman.mockito_kotlin.*
-import io.reactivex.subjects.ReplaySubject
 
 @RunWith(MockitoJUnitRunner::class)
 class OnlineRepositoryRefreshManagerTest {

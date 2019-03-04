@@ -2,6 +2,7 @@ package com.levibostian.teller.repository.manager
 
 import com.levibostian.teller.repository.GetCacheRequirementsTag
 import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.repository.OnlineRepositoryFetchResponse
 import io.reactivex.Single
 
 /**
@@ -17,7 +18,7 @@ internal interface OnlineRepositoryRefreshManager {
      */
     interface Listener {
         fun refreshBegin(tag: GetCacheRequirementsTag)
-        fun <RefreshResponseType: Any> refreshComplete(tag: GetCacheRequirementsTag, response: OnlineRepository.FetchResponse<RefreshResponseType>)
+        fun <RefreshResponseType: OnlineRepositoryFetchResponse> refreshComplete(tag: GetCacheRequirementsTag, response: OnlineRepository.FetchResponse<RefreshResponseType>)
     }
 
     /**
@@ -25,7 +26,7 @@ internal interface OnlineRepositoryRefreshManager {
      *
      * Manager decides how refresh is operated. If that means starting a new refresh call each time function is called, sharing the refresh calls with other objects, it is up to the manager.
      */
-    fun <RefreshResponseType: Any> refresh(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag, repository: Listener): Single<OnlineRepository.RefreshResult>
+    fun <RefreshResponseType: OnlineRepositoryFetchResponse> refresh(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag, repository: Listener): Single<OnlineRepository.RefreshResult>
 
     /**
      * A listener no longer cares about a refresh call. Perhaps the user wants to refresh cache with different requirements?

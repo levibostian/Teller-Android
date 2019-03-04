@@ -1,14 +1,16 @@
 package com.levibostian.teller.cachestate.online.statemachine
 
+import com.levibostian.teller.repository.OnlineRepositoryCache
+
 
 /**
  * Immutable state machine for the phase of response's lifecycle when cached response exists.
  */
-internal class CacheStateMachine<CACHE: Any> private constructor(val state: State, val cache: CACHE?) {
+internal class CacheStateMachine<CACHE: OnlineRepositoryCache> private constructor(val state: State, val cache: CACHE?) {
 
     companion object {
-        fun <CACHE: Any> cacheEmpty(): CacheStateMachine<CACHE> = CacheStateMachine(State.CACHE_EMPTY, null)
-        fun <CACHE: Any> cacheExists(cache: CACHE): CacheStateMachine<CACHE> = CacheStateMachine(State.CACHE_NOT_EMPTY, cache)
+        fun <CACHE: OnlineRepositoryCache> cacheEmpty(): CacheStateMachine<CACHE> = CacheStateMachine(State.CACHE_EMPTY, null)
+        fun <CACHE: OnlineRepositoryCache> cacheExists(cache: CACHE): CacheStateMachine<CACHE> = CacheStateMachine(State.CACHE_NOT_EMPTY, cache)
     }
 
     internal enum class State {

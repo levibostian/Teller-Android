@@ -56,7 +56,7 @@ class OnlineRepositoryIntegrationTest {
         override fun refreshBegin(tag: GetCacheRequirementsTag) {
             repository.refreshBegin(tag)
         }
-        override fun <RefreshResponseType: Any> refreshComplete(tag: GetCacheRequirementsTag, response: OnlineRepository.FetchResponse<RefreshResponseType>) {
+        override fun <RefreshResponseType: OnlineRepositoryFetchResponse> refreshComplete(tag: GetCacheRequirementsTag, response: OnlineRepository.FetchResponse<RefreshResponseType>) {
             repository.refreshComplete(tag, response as OnlineRepository.FetchResponse<String>)
         }
     }

@@ -8,8 +8,12 @@ import com.levibostian.tellerexample.service.GitHubService
 import com.levibostian.tellerexample.viewmodel.ReposViewModel
 import android.os.Handler
 import android.text.format.DateUtils
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import com.levibostian.teller.cachestate.listener.LocalCacheStateListener
 import com.levibostian.teller.cachestate.listener.OnlineCacheStateListener
 import com.levibostian.tellerexample.adapter.RepoRecyclerViewAdapter
@@ -24,6 +28,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.google.android.material.snackbar.Snackbar
 import com.levibostian.tellerexample.extensions.closeKeyboard
 import com.levibostian.tellerexample.service.provider.AppSchedulersProvider
+import com.levibostian.tellerexample.util.DataDestroyerUtil
 import com.levibostian.tellerexample.util.DependencyUtil
 
 class MainActivity : AppCompatActivity() {
@@ -32,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gitHubUsernameViewModel: GitHubUsernameViewModel
     private lateinit var service: GitHubService
     private lateinit var db: AppDatabase
+    private lateinit var dataDestroyerUtil: DataDestroyerUtil
 
     private var updateLastSyncedHandler: Handler? = null
     private var updateLastSyncedRunnable: Runnable? = null
@@ -47,9 +53,31 @@ class MainActivity : AppCompatActivity() {
         initialize()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        MenuInflater(this).inflate(R.menu.menu_main_activity, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when (item?.itemId) {
+            R.id.restart -> {
+                dataDestroyerUtil.deleteAllData {
+                    Toast.makeText(application, R.string.data_deleted, Toast.LENGTH_LONG).show()
+
+                    val restartActivityIntent = intent
+                    finish()
+                    startActivity(restartActivityIntent)
+                }
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun initialize() {
         service = DependencyUtil.serviceInstance()
         db = DependencyUtil.dbInstance(application)
+        dataDestroyerUtil = DependencyUtil.dataDestroyerUtil(application)
 
         reposViewModel = ViewModelProviders.of(this).get(ReposViewModel::class.java)
         gitHubUsernameViewModel = ViewModelProviders.of(this).get(GitHubUsernameViewModel::class.java)

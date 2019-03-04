@@ -8,12 +8,11 @@ import com.levibostian.teller.cachestate.listener.OnlineCacheStateListener
 import com.levibostian.teller.cachestate.listener.OnlineCacheStateNoCacheStateListener
 import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
 import com.levibostian.teller.repository.OnlineRepository
+import com.nhaarman.mockito_kotlin.*
 import org.junit.Test
-
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
-import com.nhaarman.mockito_kotlin.*
 import java.util.*
 
 @RunWith(MockitoJUnitRunner::class)

@@ -15,9 +15,9 @@ class Teller internal constructor(context: Context) {
         private var instance: Teller? = null
 
         @JvmStatic
-        fun init(application: Application) {
+        fun init(context: Context) {
             if (instance == null) {
-                instance = Teller(application)
+                instance = Teller(context)
                 instance!!.init()
             }
         }
