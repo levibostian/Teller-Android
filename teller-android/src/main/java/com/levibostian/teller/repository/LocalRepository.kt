@@ -13,6 +13,8 @@ import io.reactivex.disposables.CompositeDisposable
 import java.lang.ref.WeakReference
 import java.util.concurrent.Executors
 
+typealias LocalRepositoryCache = Any
+
 /**
  * Teller repository that manages cache that is obtained and stored on the local device.
  *
@@ -23,7 +25,7 @@ import java.util.concurrent.Executors
  *
  * [LocalRepository] is thread safe. Actions called upon for [LocalRepository] can be performed on any thread.
  */
-abstract class LocalRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: LocalRepository.GetCacheRequirements> {
+abstract class LocalRepository<CACHE: LocalRepositoryCache, GET_CACHE_REQUIREMENTS: LocalRepository.GetCacheRequirements> {
 
     constructor() {
         schedulersProvider = TellerSchedulersProvider()
@@ -167,7 +169,7 @@ abstract class LocalRepository<CACHE: Any, GET_CACHE_REQUIREMENTS: LocalReposito
     /**
      * [saveCache] on background thread via [AsyncTask].
      */
-    private class SaveCacheAsyncTask<CACHE: Any, GET_CACHE_REQUIREMENTS: LocalRepository.GetCacheRequirements>(
+    private class SaveCacheAsyncTask<CACHE: LocalRepositoryCache, GET_CACHE_REQUIREMENTS: LocalRepository.GetCacheRequirements>(
             val repo: WeakReference<LocalRepository<CACHE, GET_CACHE_REQUIREMENTS>>,
             val requirements: GET_CACHE_REQUIREMENTS) : AsyncTask<CACHE, Void, Void>() {
 

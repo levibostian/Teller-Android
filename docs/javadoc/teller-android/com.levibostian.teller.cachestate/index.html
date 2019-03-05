@@ -1,0 +1,37 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>com.levibostian.teller.cachestate - teller-android</title>
+<link rel="stylesheet" href="../../style.css">
+</HEAD>
+<BODY>
+<a href="../index.html">teller-android</a>&nbsp;/&nbsp;<a href="./index.html">com.levibostian.teller.cachestate</a><br/>
+<br/>
+<h2>Package com.levibostian.teller.cachestate</h2>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-local-cache-state/index.html">LocalCacheState</a></p>
+</td>
+<td>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">LocalCacheState</span><span class="symbol">&lt;</span><span class="identifier">CACHE</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">&gt;</span></code>
+<p>Local response (response obtained from the user or device, no network fetch call) in apps are in 1 of 2 different types of state:</p>
+</td>
+</tr>
+<tr>
+<td>
+<p><a href="-online-cache-state/index.html">OnlineCacheState</a></p>
+</td>
+<td>
+<code><span class="keyword">open</span> <span class="keyword">class </span><span class="identifier">OnlineCacheState</span><span class="symbol">&lt;</span><span class="identifier">CACHE</span><span class="symbol">&gt;</span></code>
+<p>Holds the current state of response that is obtained via a network call. This response structure is meant to be passed out of Teller and to the application using Teller so it can parse it and display the response representation in the app.
+The online response state is <em>not</em> manipulated here. It is only stored.
+Data in apps are in 1 of 3 different types of state:</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

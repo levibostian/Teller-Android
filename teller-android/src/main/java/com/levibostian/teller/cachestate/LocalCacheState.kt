@@ -2,6 +2,7 @@ package com.levibostian.teller.cachestate
 
 import com.levibostian.teller.cachestate.listener.LocalCacheStateListener
 import com.levibostian.teller.repository.LocalRepository
+import com.levibostian.teller.repository.LocalRepositoryCache
 import com.levibostian.teller.subject.LocalCacheStateBehaviorSubject
 import com.levibostian.teller.testing.cachestate.LocalCacheStateTesting
 
@@ -16,7 +17,7 @@ import com.levibostian.teller.testing.cachestate.LocalCacheStateTesting
  * This class is used in companion with [LocalRepository] and [LocalCacheStateBehaviorSubject] to maintain the state of [cacheData] to deliver to someone observing.
  *
  */
-data class LocalCacheState<CACHE: Any> internal constructor(val isEmpty: Boolean,
+data class LocalCacheState<CACHE: LocalRepositoryCache> internal constructor(val isEmpty: Boolean,
                                                             val cacheData: CACHE?,
                                                             val requirements: LocalRepository.GetCacheRequirements?) {
 
@@ -35,7 +36,7 @@ data class LocalCacheState<CACHE: Any> internal constructor(val isEmpty: Boolean
          *
          * @see OnlineCacheState.none
          */
-        fun <CACHE: Any> none(): LocalCacheState<CACHE> {
+        fun <CACHE: LocalRepositoryCache> none(): LocalCacheState<CACHE> {
             return LocalCacheState(
                     isEmpty = false,
                     cacheData = null,
@@ -45,7 +46,7 @@ data class LocalCacheState<CACHE: Any> internal constructor(val isEmpty: Boolean
         /**
          * Unique from [OnlineCacheState] where a state machine replaces this. There is no reason to use a state machine at this time for [LocalCacheState] as there is never any traversal of nodes (cache data changing state). You either start here, or start in another initial state.
          */
-        fun <CACHE: Any> isEmpty(requirements: LocalRepository.GetCacheRequirements): LocalCacheState<CACHE> {
+        fun <CACHE: LocalRepositoryCache> isEmpty(requirements: LocalRepository.GetCacheRequirements): LocalCacheState<CACHE> {
             return LocalCacheState(
                     isEmpty = true,
                     cacheData = null,
@@ -55,7 +56,7 @@ data class LocalCacheState<CACHE: Any> internal constructor(val isEmpty: Boolean
         /**
          * Unique from [OnlineCacheState] where a state machine replaces this. There is no reason to use a state machine at this time for [LocalCacheState] as there is never any traversal of nodes (cache data changing state). You either start here, or start in another initial state.
          */
-        fun <CACHE: Any> cache(requirements: LocalRepository.GetCacheRequirements,
+        fun <CACHE: LocalRepositoryCache> cache(requirements: LocalRepository.GetCacheRequirements,
                                cache: CACHE): LocalCacheState<CACHE> {
             return LocalCacheState(
                     isEmpty = false,

@@ -20,9 +20,9 @@ Check out [the example app](https://github.com/levibostian/Teller-Android/tree/m
 
 ## Mock `Teller.shared.__()` commands
 
-If you would like to mock [Teller.kt](https://levibostian.github.io/Teller-Android/javadoc/teller/com.levibostian.teller/-teller/index.html) functions such as `Teller.shared.clear()`, it's quite simple. 
+If you would like to mock [Teller.kt](https://levibostian.github.io/Teller-Android/javadoc/teller-android/com.levibostian.teller/-teller/index.html) functions such as `Teller.shared.clear()`, it's quite simple. 
 
-*TL;DR view some example code in the example app for mocking [`Teller.shared` commands](https://github.com/levibostian/teller-android/blob/development/app/src/test/java/com/levibostian/tellerexample/util/DataDestroyerUtilTest.kt).*
+?> TL;DR view some example code in the example app for mocking [`Teller.shared` commands](https://github.com/levibostian/teller-android/blob/development/app/src/test/java/com/levibostian/tellerexample/util/DataDestroyerUtilTest.kt).
 
 Mockito cannot mock static functions so mocking `Teller.shared.clear()` directly is not possible. However, you can replace `Teller.shared` with a `Teller` instance that gets injected into the object you are testing. 
 
@@ -62,7 +62,7 @@ verify(teller).clear()
 
 If you would like to mock a `LocalRepository` or `OnlineRepository` subclass of yours, this is quite easy to do. Check out the instructions below for how to mock an `OnlineRepository` instance as the same directions can easily be applied to `LocalRepository` as well. 
 
-*TL;DR view some example code in the example app for mocking [an `OnlineRepository`](https://github.com/levibostian/teller-android/blob/development/app/src/test/java/com/levibostian/tellerexample/viewmodel/ReposViewModelTest.kt) or [a `LocalRepository`](https://github.com/levibostian/teller-android/blob/development/app/src/test/java/com/levibostian/tellerexample/viewmodel/GitHubUsernameViewModelTest.kt) subclass.*
+?> TL;DR view some example code in the example app for mocking [an `OnlineRepository`](https://github.com/levibostian/teller-android/blob/development/app/src/test/java/com/levibostian/tellerexample/viewmodel/ReposViewModelTest.kt) or [a `LocalRepository`](https://github.com/levibostian/teller-android/blob/development/app/src/test/java/com/levibostian/tellerexample/viewmodel/GitHubUsernameViewModelTest.kt) subclass.
 
 * Create a mocked instance of your repository instance:
 
@@ -95,8 +95,8 @@ Notice `OnlineCacheState.Testing`. This object is for you to generate immutable 
 
 To use the `Testing` objects, you will call one of the static functions on the `Testing` class to initialize an instance and then use the lambda parameter that exposes a [Kotlin DSL](https://kotlinlang.org/docs/reference/type-safe-builders.html) as a method to build the instance. 
 
-Here is a list of testing objects available for you to use:
+Here is a list of testing objects available for you to use. 
 
-[OnlineCacheState.Testing](/javadoc/teller/com.levibostian.teller.cachestate/-online-cache-state/-testing.html)
-[OnlineRepository.RefreshResult.Testing](/javadoc/teller/com.levibostian.teller.repository/-online-repository/-refresh-result/-testing.html)
-[LocalCacheState.Testing](/javadoc/teller/com.levibostian.teller.cachestate/-local-cache-state/-testing.html)
+`OnlineCacheState.Testing` [javadoc](/javadoc/teller-android/com.levibostian.teller.cachestate/-online-cache-state/-testing.html)
+`OnlineRepository.RefreshResult.Testing` [javadoc](/javadoc/teller-android/com.levibostian.teller.repository/-online-repository/-refresh-result/-testing.html)
+`LocalCacheState.Testing` [javadoc](/javadoc/teller-android/com.levibostian.teller.cachestate/-local-cache-state/-testing.html)

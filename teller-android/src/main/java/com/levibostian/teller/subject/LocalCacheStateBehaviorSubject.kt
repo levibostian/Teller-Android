@@ -2,6 +2,7 @@ package com.levibostian.teller.subject
 
 import com.levibostian.teller.cachestate.LocalCacheState
 import com.levibostian.teller.repository.LocalRepository
+import com.levibostian.teller.repository.LocalRepositoryCache
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 
@@ -18,7 +19,7 @@ import io.reactivex.subjects.BehaviorSubject
  *
  * This class is meant to work with [LocalRepository] because it has all the states cache can have, including loading and fetching of fresh cache.
  */
-internal class LocalCacheStateBehaviorSubject<CACHE: Any> {
+internal class LocalCacheStateBehaviorSubject<CACHE: LocalRepositoryCache> {
 
     private var cacheState: LocalCacheState<CACHE> = LocalCacheState.none()
         set(value) {

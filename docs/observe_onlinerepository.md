@@ -68,7 +68,7 @@ reposRepository.observe()
 
 How easy is that? Teller tells you if the cache has been fetched before, if it's currently fetching, how old the cache is, and more! All you need to take care of is populating the UI of your app now depending on the state of the cache!
 
-`deliverAllStates()` has *a lot* of callback functions available. It can be a little much. Check out [the Javadoc](/javadoc/teller/com.levibostian.teller.cachestate/-online-cache-state/index.html) to learn about all of the `deliver_` functions available to you.
+`deliverAllStates()` has *a lot* of callback functions available. It can be a little much. Check out [the Javadoc](/javadoc/teller-android/com.levibostian.teller.cachestate/-online-cache-state/index.html) to learn about all of the `deliver_` functions available to you.
 
 ?> It is important to inform your users how old their cache is. Please, **use the `fetched` property to your advantage**! Tell the user in the UI that their cache is "Last updated 25 hours ago", "Last updated 2 minutes ago". Android provides some handy utility functions to print a human readable date to your users. Check out [DateUtils](https://developer.android.com/reference/android/text/format/DateUtils) where you will find functions you can use such as: `DateUtils.getRelativeTimeSpanString(fetched.time, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS))`
 

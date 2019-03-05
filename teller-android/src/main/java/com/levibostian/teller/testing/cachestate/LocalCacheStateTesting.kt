@@ -4,6 +4,7 @@ import com.levibostian.teller.cachestate.LocalCacheState
 import com.levibostian.teller.cachestate.OnlineCacheState
 import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
 import com.levibostian.teller.repository.LocalRepository
+import com.levibostian.teller.repository.LocalRepositoryCache
 import com.levibostian.teller.repository.OnlineRepository
 import java.util.*
 
@@ -19,15 +20,15 @@ import java.util.*
 class LocalCacheStateTesting private constructor() {
 
     companion object {
-        fun <CACHE: Any> none(): LocalCacheState<CACHE> {
+        fun <CACHE: LocalRepositoryCache> none(): LocalCacheState<CACHE> {
             return LocalCacheState.none()
         }
 
-        fun <CACHE: Any> isEmpty(requirements: LocalRepository.GetCacheRequirements): LocalCacheState<CACHE> {
+        fun <CACHE: LocalRepositoryCache> isEmpty(requirements: LocalRepository.GetCacheRequirements): LocalCacheState<CACHE> {
             return LocalCacheState.isEmpty(requirements)
         }
 
-        fun <CACHE: Any> cache(requirements: LocalRepository.GetCacheRequirements,
+        fun <CACHE: LocalRepositoryCache> cache(requirements: LocalRepository.GetCacheRequirements,
                                cache: CACHE): LocalCacheState<CACHE> {
             return LocalCacheState.cache(requirements, cache)
         }
