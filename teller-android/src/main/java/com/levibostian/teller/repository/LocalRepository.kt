@@ -1,7 +1,9 @@
 package com.levibostian.teller.repository
 
 import android.os.AsyncTask
+import com.levibostian.teller.Teller
 import com.levibostian.teller.cachestate.LocalCacheState
+import com.levibostian.teller.error.TellerLimitedFunctionalityException
 import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.provider.SchedulersProvider
 import com.levibostian.teller.provider.TellerSchedulersProvider
@@ -28,14 +30,23 @@ typealias LocalRepositoryCache = Any
 abstract class LocalRepository<CACHE: LocalRepositoryCache, GET_CACHE_REQUIREMENTS: LocalRepository.GetCacheRequirements> {
 
     constructor() {
-        schedulersProvider = TellerSchedulersProvider()
-        taskExecutor = TellerTaskExecutor()
+        if (!Teller.shared.unitTesting) init()
+    }
+
+    private fun init(
+            schedulersProvider: SchedulersProvider = TellerSchedulersProvider(),
+            taskExecutor: TaskExecutor = TellerTaskExecutor(),
+            teller: Teller = Teller.shared
+    ) {
+        this.schedulersProvider = schedulersProvider
+        this.taskExecutor = taskExecutor
+        this.teller = teller
     }
 
     internal constructor(schedulersProvider: SchedulersProvider,
-                         taskExecutor: TaskExecutor) {
-        this.schedulersProvider = schedulersProvider
-        this.taskExecutor = taskExecutor
+                         taskExecutor: TaskExecutor,
+                         teller: Teller) {
+        init(schedulersProvider, taskExecutor, teller)
     }
 
     /**
@@ -48,11 +59,25 @@ abstract class LocalRepository<CACHE: LocalRepositoryCache, GET_CACHE_REQUIREMEN
     // Single thread executor to act as a "background queue".
     private val saveCacheExecutor = Executors.newSingleThreadExecutor()
 
-    private val schedulersProvider: SchedulersProvider
-    private val taskExecutor: TaskExecutor
+    private lateinit var schedulersProvider: SchedulersProvider
+    private lateinit var taskExecutor: TaskExecutor
+    private lateinit var teller: Teller
 
+    /**
+     * Requirements needed to be able to load cache from the device.
+     *
+     * When this property is set, the [LocalRepository] instance will begin to observe the cache by loading the cache from the device.
+     *
+     * If the user decides to scroll to the bottom of a list, view a different user profile, or any other reason you need to change to observe a different piece of cache, just set [requirements] again.
+     *
+     * If requirements is set to null, we will stop observing the cache changes and reset the state of cache to none.
+     *
+     * @throws RuntimeException If calling after calling [dispose].
+     * @throws TellerLimitedFunctionalityException If calling when initializing Teller via [Teller.initUnitTesting].
+     */
     var requirements: GET_CACHE_REQUIREMENTS? = null
         set(value) {
+            teller.assertNotLimitedFunctionality()
             assertNotDisposed()
             field = value
 
@@ -91,8 +116,11 @@ abstract class LocalRepository<CACHE: LocalRepositoryCache, GET_CACHE_REQUIREMEN
      * Dispose of the [LocalRepository] to shut down observing of cached response.
      *
      * Do this in onDestroy() of your Fragment or Activity, for example.
+     *
+     * @throws TellerLimitedFunctionalityException If calling when initializing Teller via [Teller.initUnitTesting].
      */
     fun dispose() {
+        teller.assertNotLimitedFunctionality()
         if (disposed) return
         disposed = true
 
@@ -116,9 +144,11 @@ abstract class LocalRepository<CACHE: LocalRepositoryCache, GET_CACHE_REQUIREMEN
      * This function will trigger a save to a background thread. To be notified on the new cache response, use [observe] to observe the state of response after it has been updated.
      *
      * @throws RuntimeException If calling after calling [dispose].
+     * @throws TellerLimitedFunctionalityException If calling when initializing Teller via [Teller.initUnitTesting].
      */
     @Synchronized
     fun newCache(cache: CACHE, requirements: GET_CACHE_REQUIREMENTS) {
+        teller.assertNotLimitedFunctionality()
         assertNotDisposed()
 
         SaveCacheAsyncTask(WeakReference(this), requirements).apply {
@@ -130,8 +160,10 @@ abstract class LocalRepository<CACHE: LocalRepositoryCache, GET_CACHE_REQUIREMEN
      * Get an observable that gets the current state of response and all future states.
      *
      * @throws RuntimeException If calling after calling [dispose].
+     * @throws TellerLimitedFunctionalityException If calling when initializing Teller via [Teller.initUnitTesting].
      */
     fun observe(): Observable<LocalCacheState<CACHE>> {
+        teller.assertNotLimitedFunctionality()
         assertNotDisposed()
 
         return currentStateOfCache.asObservable()

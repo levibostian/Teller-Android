@@ -4,7 +4,7 @@ The Teller `Repository` is where the magic happens. `Repository`s are where you 
 
 The first step you need to take is decide what type of Teller `Repository` you need to create:
 
-...TL;DR...if you need to perform a network call to obtain your cache, create a [OnlineRepository](create_onlinerepository). Else, create a [LocalRepository](create_localrepository).
+?> TL;DR If you need to perform a network call to obtain your cache, create a [OnlineRepository](create_onlinerepository). Else, create a [LocalRepository](create_localrepository).
 
 * [LocalRepository](create_localrepository) is very simple as it does not require a network call to fetch cache for your app. The cache is simply obtained locally on the device and saved to the device. An example of a `LocalRepository` might be to store a history of search terms your user has typed into the search bar of your app.
 

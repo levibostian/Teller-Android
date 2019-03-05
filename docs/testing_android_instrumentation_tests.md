@@ -1,6 +1,8 @@
 # Write Android instrumentation tests with Teller
 
-When using a Teller `LocalRepository` or `OnlineRepository` in an Android instrumentation test, you may want to setup your environment a bit for each test. 
+Are you writing Android instrumentation tests using Android test runner or Robolectric in your app? Great! 
+
+!> Teller functionality with Robolectric is currently untested. The example app for Teller is equipped with Android instrumentation testing at this time. It *should* work, but if you have problems, [create an issue](https://github.com/levibostian/teller-android/issues/new). 
 
 If you want to...
 
@@ -13,9 +15,9 @@ Or anything else you wish to test, the following steps should get you on your wa
 
 ?> TL;DR view some example code in the example app for [an Android instrumentation test](https://github.com/levibostian/teller-android/blob/development/app/src/androidTest/java/com/levibostian/tellerexample/integration/ReposIntegrationTest.kt).
 
-* Make sure to clear Teller's internal data and initialize it before each test. 
+* First, you must initialize Teller for testing, and you must make sure to clear Teller's data before each test for a clean slate before each test. 
 
-Create a JUnit test rule that initializes and clears Teller before each test: 
+To make this extra easy, it's recommended to create a JUnit test rule that initializes and clears Teller before each test: 
 
 ```kotlin
 import androidx.test.platform.app.InstrumentationRegistry
@@ -26,7 +28,8 @@ class TellerInitRule: ExternalResource() {
 
     override fun before() {
         InstrumentationRegistry.getInstrumentation().targetContext.applicationContext.let { application ->
-            Teller.init(application)
+            val sharedPrefs = application.getSharedPreferences("teller-testing", Context.MODE_PRIVATE)
+            Teller.initTesting(sharedPrefs)
             Teller.shared.clear()
         }
     }

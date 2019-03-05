@@ -10,6 +10,7 @@ import org.junit.runner.RunWith
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.levibostian.teller.Teller
 import com.levibostian.teller.cachestate.LocalCacheState
 import com.levibostian.teller.extensions.awaitDispose
 import com.levibostian.teller.extensions.awaitDone
@@ -39,6 +40,7 @@ class LocalRepositoryIntegrationTest {
 
     private val schedulersProvider = TellerSchedulersProvider()
     private val taskExecutor = TellerTaskExecutor()
+    private val teller = Teller.getTestingInstance(sharedPreferences)
 
     @get:Rule val mockitoInitMocks = MockitoInitRule(this)
     @get:Rule val clearSharedPreferencesRule = ClearSharedPreferencesRule(sharedPreferences)
@@ -48,7 +50,7 @@ class LocalRepositoryIntegrationTest {
         compositeDisposable = CompositeDisposable()
 
         requirements = LocalRepositoryStub.GetRequirements()
-        repository = LocalRepositoryStub(sharedPreferences, schedulersProvider, taskExecutor)
+        repository = LocalRepositoryStub(sharedPreferences, schedulersProvider, taskExecutor, teller)
     }
 
     @After

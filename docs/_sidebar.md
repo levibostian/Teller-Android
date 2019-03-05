@@ -17,9 +17,9 @@
 
 - [Testing](testing)
 
-  - [Mocking Teller](testing_mocking_teller)
+  - [Unit testing](testing_unit_testing)  
+  - [Instrumentation testing](testing_android_instrumentation_tests)
   - [Test Repository subclasses](testing_repository_subclasses)
-  - [Android Instrumentation](testing_android_instrumentation_tests)
 
 - [Contribute](contribute.md)
 

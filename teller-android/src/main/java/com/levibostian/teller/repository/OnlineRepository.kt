@@ -1,6 +1,8 @@
 package com.levibostian.teller.repository
 
+import com.levibostian.teller.Teller
 import com.levibostian.teller.cachestate.OnlineCacheState
+import com.levibostian.teller.error.TellerLimitedFunctionalityException
 import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.provider.SchedulersProvider
 import com.levibostian.teller.provider.TellerSchedulersProvider
@@ -38,11 +40,23 @@ typealias OnlineRepositoryFetchResponse = Any
 abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREMENTS: OnlineRepository.GetCacheRequirements, FETCH_RESPONSE: OnlineRepositoryFetchResponse> {
 
     constructor() {
-        schedulersProvider = TellerSchedulersProvider()
-        cacheAgeManager = TellerOnlineRepositoryCacheAgeManager()
-        refreshManager = OnlineRepositoryRefreshManagerWrapper()
-        taskExecutor = TellerTaskExecutor()
-        refreshManagerListener = RefreshManagerListener()
+        if (!Teller.shared.unitTesting) init()
+    }
+
+    private fun init(
+            schedulersProvider: SchedulersProvider = TellerSchedulersProvider(),
+            cacheAgeManager: OnlineRepositoryCacheAgeManager = TellerOnlineRepositoryCacheAgeManager(),
+            refreshManager: OnlineRepositoryRefreshManager = OnlineRepositoryRefreshManagerWrapper(),
+            taskExecutor: TaskExecutor = TellerTaskExecutor(),
+            refreshManagerListener: OnlineRepositoryRefreshManager.Listener = RefreshManagerListener(),
+            teller: Teller = Teller.shared
+    ) {
+        this.schedulersProvider = schedulersProvider
+        this.cacheAgeManager = cacheAgeManager
+        this.refreshManager = refreshManager
+        this.taskExecutor = taskExecutor
+        this.refreshManagerListener = refreshManagerListener
+        this.teller = teller
     }
 
     /**
@@ -53,26 +67,24 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
     private var observeCacheDisposeBag: CompositeDisposable = CompositeDisposable()
     // Important to never be nil so that we can call `observe` on this class and always be able to listen.
     private var currentStateOfCache: OnlineCacheStateBehaviorSubject<CACHE> = OnlineCacheStateBehaviorSubject()
-    private val schedulersProvider: SchedulersProvider
-    private val taskExecutor: TaskExecutor
+    private lateinit var schedulersProvider: SchedulersProvider
+    private lateinit var taskExecutor: TaskExecutor
     /**
      * Use of an object as listener to allow [refreshBegin], [refreshComplete] functions to be private.
      */
-    private val refreshManagerListener: OnlineRepositoryRefreshManager.Listener
+    private lateinit var refreshManagerListener: OnlineRepositoryRefreshManager.Listener
 
-    private val cacheAgeManager: OnlineRepositoryCacheAgeManager
-    private val refreshManager: OnlineRepositoryRefreshManager
+    private lateinit var cacheAgeManager: OnlineRepositoryCacheAgeManager
+    private lateinit var refreshManager: OnlineRepositoryRefreshManager
+    private lateinit var teller: Teller
 
-    internal constructor(cacheAgeManager: OnlineRepositoryCacheAgeManager,
+    internal constructor(schedulersProvider: SchedulersProvider,
+                         cacheAgeManager: OnlineRepositoryCacheAgeManager,
                          refreshManager: OnlineRepositoryRefreshManager,
-                         schedulersProvider: SchedulersProvider,
                          taskExecutor: TaskExecutor,
-                         refreshManagerListener: OnlineRepositoryRefreshManager.Listener) {
-        this.cacheAgeManager = cacheAgeManager
-        this.refreshManager = refreshManager
-        this.schedulersProvider = schedulersProvider
-        this.taskExecutor = taskExecutor
-        this.refreshManagerListener = refreshManagerListener
+                         refreshManagerListener: OnlineRepositoryRefreshManager.Listener,
+                         teller: Teller) {
+        init(schedulersProvider, cacheAgeManager, refreshManager, taskExecutor, refreshManagerListener, teller)
     }
 
     /**
@@ -97,6 +109,7 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
      * If requirements is set to null, we will stop observing the cache changes and reset the state of cache to none.
      *
      * @throws RuntimeException If calling after calling [dispose].
+     * @throws TellerLimitedFunctionalityException If calling when initializing Teller via [Teller.initUnitTesting].
      */
     var requirements: GET_CACHE_REQUIREMENTS? = null
         // 1. Cancel observing cache so no more reading of cache updates can happen.
@@ -104,6 +117,7 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
         // 3. Set currentStateOfCache to something so anyone observing does not think they are still observing old requirements (old cache).
         // 4. Start everything up again.
         set(value) {
+            teller.assertNotLimitedFunctionality()
             assertNotDisposed()
 
             field?.let { oldValue ->
@@ -159,9 +173,11 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
     }
 
     private fun performRefresh() {
-        refresh(false)
-                .subscribeOn(schedulersProvider.io())
-                .subscribe()
+        this.requirements?.let { requirements ->
+            getRefresh(false, requirements)
+                    .subscribeOn(schedulersProvider.io())
+                    .subscribe()
+        }
     }
 
     private fun assertNotDisposed() {
@@ -174,8 +190,10 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
      * Teller will automatically perform a [refresh] if the cache does not exist or is too old. You will get notified anytime that the state of the cache changes.
      *
      * @throws RuntimeException If calling after calling [dispose].
+     * @throws TellerLimitedFunctionalityException If calling when initializing Teller via [Teller.initUnitTesting].
      */
     fun observe(): Observable<OnlineCacheState<CACHE>> {
+        teller.assertNotLimitedFunctionality()
         assertNotDisposed()
 
         if (requirements != null) {
@@ -192,8 +210,13 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
      * Do this in onDestroy() of your Fragment or Activity, for example.
      *
      * After calling [dispose], your [OnlineRepository] instance is useless. Calling any function on the instance in the future will result in a [RuntimeException].
+     *
+     * @throws TellerLimitedFunctionalityException If calling when initializing Teller via [Teller.initUnitTesting].
      */
+    @Synchronized
     fun dispose() {
+        teller.assertNotLimitedFunctionality()
+
         if (disposed) return
         disposed = true
 
@@ -220,13 +243,19 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
      *
      * @throws IllegalStateException If [requirements] have not yet been set for the [OnlineRepository]. [OnlineRepository] cannot refresh it it does not know what to refresh.
      * @throws RuntimeException If calling after calling [dispose].
+     * @throws TellerLimitedFunctionalityException If calling when initializing Teller via [Teller.initUnitTesting].
      */
     @Throws(IllegalStateException::class)
     fun refresh(force: Boolean): Single<RefreshResult> {
+        teller.assertNotLimitedFunctionality()
         assertNotDisposed()
 
         val requirements = this.requirements ?: throw IllegalStateException("You need to set requirements before calling refresh.")
 
+        return getRefresh(force, requirements)
+    }
+
+    private fun getRefresh(force: Boolean, requirements: GET_CACHE_REQUIREMENTS): Single<RefreshResult> {
         return if (force || !cacheAgeManager.hasSuccessfullyFetchedCache(requirements.tag) || cacheAgeManager.isCacheTooOld(requirements.tag, maxAgeOfCache)) {
             refreshManager.refresh(fetchFreshCache(requirements), requirements.tag, refreshManagerListener)
         } else {

@@ -31,7 +31,7 @@ class ReposViewModelTest {
     @Mock private lateinit var reposObserver: Observer<OnlineCacheState<List<RepoModel>>>
     @Mock lateinit var requirements: ReposRepository.GetReposRequirements
 
-    @Rule @JvmField val rule = InstantTaskExecutorRule()
+    @get:Rule val rule = InstantTaskExecutorRule()
 
     private lateinit var viewModel: ReposViewModel
 

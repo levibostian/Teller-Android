@@ -21,6 +21,7 @@ import com.levibostian.tellerexample.rule.MockitoInitRule
 import com.levibostian.tellerexample.service.GitHubService
 import com.levibostian.tellerexample.service.provider.AppSchedulersProvider
 import com.levibostian.tellerexample.util.DependencyUtil
+import com.levibostian.tellerexample.util.TestDependencyUtil
 import com.levibostian.tellerexample.util.Wait
 import com.levibostian.tellerexample.viewmodel.ReposViewModel
 import com.nhaarman.mockito_kotlin.verify
@@ -56,7 +57,7 @@ class ReposIntegrationTest {
     @Before
     fun setup() {
         compositeDisposable = CompositeDisposable()
-        database = DependencyUtil.testDbInstance(context)
+        database = TestDependencyUtil.testDbInstance(context)
 
         reposRepository = ReposRepository(service, database, AppSchedulersProvider())
         reposViewModel = ReposViewModel().apply {

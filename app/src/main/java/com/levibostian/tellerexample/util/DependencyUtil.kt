@@ -9,6 +9,8 @@ import com.f2prateek.rx.preferences2.RxSharedPreferences
 import com.levibostian.teller.Teller
 import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.service.GitHubService
+import com.levibostian.tellerexample.wrapper.AppRxSharedPrefsWrapper
+import com.levibostian.tellerexample.wrapper.RxSharedPrefsWrapper
 import io.reactivex.schedulers.Schedulers
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
@@ -21,10 +23,6 @@ class DependencyUtil {
     companion object {
         fun dbInstance(context: Context): AppDatabase {
             return Room.databaseBuilder(context, AppDatabase::class.java, "teller-example").build()
-        }
-
-        fun testDbInstance(context: Context): AppDatabase {
-            return Room.inMemoryDatabaseBuilder(context, AppDatabase::class.java).build()
         }
 
         fun serviceInstance(): GitHubService {
@@ -42,8 +40,8 @@ class DependencyUtil {
                     .create(GitHubService::class.java)
         }
 
-        fun rxSharedPreferences(context: Context): RxSharedPreferences {
-            return RxSharedPreferences.create(sharedPreferences(context))
+        fun rxSharedPreferences(context: Context): RxSharedPrefsWrapper {
+            return AppRxSharedPrefsWrapper(RxSharedPreferences.create(sharedPreferences(context)))
         }
 
         fun sharedPreferences(context: Context): SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)

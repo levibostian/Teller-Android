@@ -58,6 +58,8 @@ This library comes with an example app. You may open it in Android Studio to tes
 
 Enter a GitHub username in the `EditText` in the app and watch how the app fetches a list of repos for the user, saves them to a cache, and fetches fresh if the cache is too old.
 
+[![Build](https://app.bitrise.io/app/9a6ef5eb6e973d3e/status.svg?token=XDJ6sNwFxH5_N0fHhsaikQ&branch=development)](https://app.bitrise.io/app/9a6ef5eb6e973d3e/)
+
 ## Author
 
 * Levi Bostian - [GitHub](https://github.com/levibostian), [Twitter](https://twitter.com/levibostian), [Website/blog](http://levibostian.com)

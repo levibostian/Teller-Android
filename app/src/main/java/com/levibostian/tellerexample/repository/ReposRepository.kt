@@ -62,7 +62,7 @@ class ReposRepository(private val service: GitHubService,
      *
      * Teller is not opinionated about how you save your new cache. Use SQLite/Room/Realm, SharedPreferences, Files, Images, whatever!
      */
-    override fun saveCache(cache: List<RepoModel>, requirements: GetReposRequirements) {
+    public override fun saveCache(cache: List<RepoModel>, requirements: GetReposRequirements) {
         db.reposDao().insertRepos(cache)
     }
 
@@ -73,7 +73,7 @@ class ReposRepository(private val service: GitHubService,
      * Do *not* send `null` in the `Observable` returned from this function. This is a rule set by RxJava and it will throw an exception.
      * If your cache response is in an "empty" state, either (1) return an empty value (Example: an empty String, "") or (2) create a POJO with an optional inside of it.
      */
-    override fun observeCache(requirements: GetReposRequirements): Observable<List<RepoModel>> {
+    public override fun observeCache(requirements: GetReposRequirements): Observable<List<RepoModel>> {
         return db.reposDao().observeReposForUser(requirements.githubUsername)
                 .subscribeOn(schedulersProvider.io())
                 .observeOn(schedulersProvider.mainThread())
@@ -85,9 +85,8 @@ class ReposRepository(private val service: GitHubService,
      *
      * In our example, an empty List, is what we qualify as empty. If you have a POJO, String, or any other response type, you return back if the `cache` parameter is empty or not.
      */
-    override fun isCacheEmpty(cache: List<RepoModel>, requirements: GetReposRequirements): Boolean = cache.isEmpty()
+    public override fun isCacheEmpty(cache: List<RepoModel>, requirements: GetReposRequirements): Boolean = cache.isEmpty()
 
-    //@OpenForTesting
     class GetReposRequirements(val githubUsername: String): GetCacheRequirements {
         override var tag = "Repos for user:$githubUsername"
     }

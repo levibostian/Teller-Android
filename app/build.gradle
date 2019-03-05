@@ -30,6 +30,12 @@ android {
             arg("room.schemaLocation", "$projectDir/schemas".toString())
         }
     }
+    sourceSets {
+        // Put code into below directory that you want shared between unit and integration tests.
+        String sharedTestDir = 'src/sharedTest/java'
+        test.java.srcDirs += sharedTestDir
+        androidTest.java.srcDirs += sharedTestDir
+    }
 }
 
 dependencies {
@@ -74,6 +80,7 @@ dependencies {
     // OkHttp
     def okHttpVersion = "3.10.0"
     implementation "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
+    testImplementation "com.squareup.okhttp3:mockwebserver:$okHttpVersion"
     androidTestImplementation "com.squareup.okhttp3:mockwebserver:$okHttpVersion"
 
     // GSON

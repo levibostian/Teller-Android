@@ -30,7 +30,7 @@ class GitHubUsernameViewModelTest {
     @Mock private lateinit var usernameObserver: Observer<LocalCacheState<String>>
     @Mock private lateinit var requirements: LocalRepository.GetCacheRequirements
 
-    @Rule @JvmField val rule = InstantTaskExecutorRule()
+    @get:Rule val rule = InstantTaskExecutorRule()
 
     private lateinit var viewModel: GitHubUsernameViewModel
 
