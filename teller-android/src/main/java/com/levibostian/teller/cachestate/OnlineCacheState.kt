@@ -84,9 +84,11 @@ open class OnlineCacheState<CACHE: OnlineRepositoryCache> internal constructor(v
      * This is usually used in the UI of an app to display the status of loading the response type for the first time to a user.
      */
     fun deliverFetchingFreshCacheState(listener: OnlineCacheStateFetchingListener) {
-        if (isFetchingFreshData) listener.fetching()
-        errorDuringFetch?.let { listener.finishedFetching(it) }
-        if (justCompletedSuccessfullyFetchingFreshData) listener.finishedFetching(errorDuringFetch)
+        when {
+            isFetchingFreshData -> listener.fetching()
+            justCompletedSuccessfullyFetchingFreshData -> listener.finishedFetching(null)
+            else -> errorDuringFetch?.let { listener.finishedFetching(it) }
+        }
     }
 
     /**
@@ -95,26 +97,34 @@ open class OnlineCacheState<CACHE: OnlineRepositoryCache> internal constructor(v
      * Using this function, you can get the state of the cached response as well as handle errors that may have happened during fetching the cached response.
      */
     fun deliverCacheState(listener: OnlineCacheStateCacheListener<CACHE>) {
-        if (!noCacheExists) {
-            // state of OnlineCacheState could be none() which triggers this code.
-            lastTimeFetched?.let { lastTimeFetched ->
-                if (cacheData != null) {
-                    listener.cache(cacheData, lastTimeFetched)
-                } else {
-                    listener.cacheEmpty(lastTimeFetched)
-                }
+        if (noCacheExists) return
+        
+        // state of OnlineCacheState could be none() which triggers this code. Therefore, make sure that last time fetched is not null before calling listener.
+        lastTimeFetched?.let { lastTimeFetched ->
+            if (cacheData != null) {
+                listener.cache(cacheData, lastTimeFetched)
+            } else {
+                listener.cacheEmpty(lastTimeFetched)
             }
         }
     }
 
     /**
      * This is usually used in the UI of an app to display that the cached response on the device is empty to a user.
+     *
+     * [OnlineCacheStateNoCacheStateListener] listener guaranteed to be called in this order:
+     * * [OnlineCacheStateNoCacheStateListener.noCache]
+     * * [OnlineCacheStateNoCacheStateListener.firstFetch]
+     * * [OnlineCacheStateNoCacheStateListener.finishedFirstFetch]
      */
     fun deliverNoCacheState(listener: OnlineCacheStateNoCacheStateListener) {
-        if (justCompletedSuccessfulFirstFetch) listener.finishedFirstFetch(null)
-        if (fetchingForFirstTime) listener.firstFetch()
-        errorDuringFirstFetch?.let { listener.finishedFirstFetch(it) }
         if (noCacheExists) listener.noCache()
+
+        when {
+            fetchingForFirstTime -> listener.firstFetch()
+            justCompletedSuccessfulFirstFetch -> listener.finishedFirstFetch(null)
+            else -> errorDuringFirstFetch?.let { listener.finishedFirstFetch(it) }
+        }
     }
 
     override fun hashCode(): Int {

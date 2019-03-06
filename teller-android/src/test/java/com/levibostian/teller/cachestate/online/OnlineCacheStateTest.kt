@@ -101,8 +101,11 @@ class OnlineCacheStateTest {
 
         cacheState.deliverNoCacheState(noCacheStateListener)
 
-        verify(noCacheStateListener).noCache()
-        verify(noCacheStateListener).firstFetch()
+        inOrder(noCacheStateListener).apply {
+            verify(noCacheStateListener).noCache()
+            verify(noCacheStateListener).firstFetch()
+        }
+
         verify(noCacheStateListener, never()).finishedFirstFetch(anyOrNull())
     }
 
@@ -125,9 +128,12 @@ class OnlineCacheStateTest {
 
         cacheState.deliverNoCacheState(noCacheStateListener)
 
-        verify(noCacheStateListener).noCache()
+        inOrder(noCacheStateListener).apply {
+            verify(noCacheStateListener).noCache()
+            verify(noCacheStateListener).finishedFirstFetch(error)
+        }
+
         verify(noCacheStateListener, never()).firstFetch()
-        verify(noCacheStateListener).finishedFirstFetch(error)
     }
 
     @Test
