@@ -10,6 +10,7 @@ import org.junit.runner.RunWith
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.levibostian.teller.Teller
 import com.levibostian.teller.cachestate.OnlineCacheState
 import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
 import com.levibostian.teller.extensions.awaitDispose
@@ -56,10 +57,12 @@ class OnlineRepositoryIntegrationTest {
         override fun refreshBegin(tag: GetCacheRequirementsTag) {
             repository.refreshBegin(tag)
         }
-        override fun <RefreshResponseType: Any> refreshComplete(tag: GetCacheRequirementsTag, response: OnlineRepository.FetchResponse<RefreshResponseType>) {
+        override fun <RefreshResponseType: OnlineRepositoryFetchResponse> refreshComplete(tag: GetCacheRequirementsTag, response: OnlineRepository.FetchResponse<RefreshResponseType>) {
             repository.refreshComplete(tag, response as OnlineRepository.FetchResponse<String>)
         }
     }
+
+    private val teller = Teller.getTestingInstance(sharedPreferences)
 
     @get:Rule val mockitoInitMocks = MockitoInitRule(this)
     @get:Rule val clearSharedPreferencesRule = ClearSharedPreferencesRule(sharedPreferences)
@@ -84,7 +87,7 @@ class OnlineRepositoryIntegrationTest {
         refreshManager = OnlineRepositoryRefreshManagerWrapper()
         cacheAgeManager = TellerOnlineRepositoryCacheAgeManager(sharedPreferences)
         requirements = OnlineRepositoryStub.GetRequirements("param")
-        repository = OnlineRepositoryStub(cacheAgeManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener)
+        repository = OnlineRepositoryStub(cacheAgeManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener, teller)
     }
 
     @After

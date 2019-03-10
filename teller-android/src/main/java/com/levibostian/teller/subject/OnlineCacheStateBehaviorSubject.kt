@@ -3,6 +3,7 @@ package com.levibostian.teller.subject
 import com.levibostian.teller.cachestate.OnlineCacheState
 import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
 import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.repository.OnlineRepositoryCache
 import io.reactivex.Observable
 import io.reactivex.subjects.BehaviorSubject
 import java.util.*
@@ -20,7 +21,7 @@ import java.util.*
  *
  * This class is meant to work with [OnlineRepository] because it has all the states cache can have, including loading and fetching of fresh cache.
  */
-internal class OnlineCacheStateBehaviorSubject<CACHE: Any> {
+internal class OnlineCacheStateBehaviorSubject<CACHE: OnlineRepositoryCache> {
 
     private var cacheState: OnlineCacheState<CACHE> = OnlineCacheState.none()
         set(value) {

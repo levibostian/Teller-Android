@@ -1,0 +1,71 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>OnlineRepository.FetchResponse - teller-android</title>
+<link rel="stylesheet" href="../../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../../index.html">teller-android</a>&nbsp;/&nbsp;<a href="../../index.html">com.levibostian.teller.repository</a>&nbsp;/&nbsp;<a href="../index.html">OnlineRepository</a>&nbsp;/&nbsp;<a href="./index.html">FetchResponse</a><br/>
+<br/>
+<h1>FetchResponse</h1>
+<code><span class="keyword">class </span><span class="identifier">FetchResponse</span><span class="symbol">&lt;</span><span class="identifier">FETCH_RESPONSE</span><span class="symbol">&gt;</span></code>
+<p>When a <a href="../fetch-fresh-cache.html">OnlineRepository.fetchFreshCache</a> task is performed, Teller needs to know if the fetch request is considered to be a success or a failure.</p>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="failure.html">failure</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">failure</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html"><span class="identifier">Throwable</span></a><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="response.html">response</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">response</span><span class="symbol">: </span><a href="index.html#FETCH_RESPONSE"><span class="identifier">FETCH_RESPONSE</span></a><span class="symbol">?</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="is-failure.html">isFailure</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">isFailure</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="is-successful.html">isSuccessful</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">isSuccessful</span><span class="symbol">(</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Companion Object Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="fail.html">fail</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">FETCH_RESPONSE</span><span class="symbol">&gt;</span> <span class="identifier">fail</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.OnlineRepository.FetchResponse.Companion$fail(kotlin.Throwable)/throwable">throwable</span><span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-throwable/index.html"><span class="identifier">Throwable</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">FetchResponse</span></a><span class="symbol">&lt;</span><a href="fail.html#FETCH_RESPONSE"><span class="identifier">FETCH_RESPONSE</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="success.html">success</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="symbol">&lt;</span><span class="identifier">FETCH_RESPONSE</span><span class="symbol">&gt;</span> <span class="identifier">success</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.repository.OnlineRepository.FetchResponse.Companion$success(com.levibostian.teller.repository.OnlineRepository.FetchResponse.Companion.success.FETCH_RESPONSE)/response">response</span><span class="symbol">:</span>&nbsp;<a href="success.html#FETCH_RESPONSE"><span class="identifier">FETCH_RESPONSE</span></a><span class="symbol">)</span><span class="symbol">: </span><a href="./index.html"><span class="identifier">FetchResponse</span></a><span class="symbol">&lt;</span><a href="success.html#FETCH_RESPONSE"><span class="identifier">FETCH_RESPONSE</span></a><span class="symbol">&gt;</span></code></td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

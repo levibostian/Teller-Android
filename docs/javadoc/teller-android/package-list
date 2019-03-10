@@ -1,0 +1,12 @@
+$dokka.format:html
+$dokka.linkExtension:html
+
+com.levibostian.teller
+com.levibostian.teller.cachestate
+com.levibostian.teller.cachestate.listener
+com.levibostian.teller.error
+com.levibostian.teller.repository
+com.levibostian.teller.testing.cachestate
+com.levibostian.teller.testing.extensions
+com.levibostian.teller.testing.repository
+com.levibostian.teller.type

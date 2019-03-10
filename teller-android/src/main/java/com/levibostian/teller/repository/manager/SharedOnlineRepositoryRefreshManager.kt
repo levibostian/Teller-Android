@@ -2,6 +2,7 @@ package com.levibostian.teller.repository.manager
 
 import com.levibostian.teller.repository.GetCacheRequirementsTag
 import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.repository.OnlineRepositoryFetchResponse
 import io.reactivex.Single
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -32,7 +33,7 @@ internal object SharedOnlineRepositoryRefreshManager: OnlineRepositoryRefreshMan
      *
      * @return Observable to get notified with the refresh task result (unless you cancel before then).
      */
-    override fun <RefreshResponseType: Any> refresh(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag, repository: OnlineRepositoryRefreshManager.Listener): Single<OnlineRepository.RefreshResult> {
+    override fun <RefreshResponseType: OnlineRepositoryFetchResponse> refresh(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag, repository: OnlineRepositoryRefreshManager.Listener): Single<OnlineRepository.RefreshResult> {
         return synchronized(refreshItems) {
             var refreshItem = refreshItems[tag]
 
@@ -57,7 +58,7 @@ internal object SharedOnlineRepositoryRefreshManager: OnlineRepositoryRefreshMan
     /**
      * Modify the given fetch task with some observer listeners and start running it.
      */
-    private fun <RefreshResponseType: Any> startRefreshTask(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag): Disposable {
+    private fun <RefreshResponseType: OnlineRepositoryFetchResponse> startRefreshTask(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag): Disposable {
         fun doneRefresh(result: OnlineRepository.RefreshResult?, failure: Throwable?) {
             synchronized(refreshItems) {
                 val repositories = refreshItems[tag]?.repositories

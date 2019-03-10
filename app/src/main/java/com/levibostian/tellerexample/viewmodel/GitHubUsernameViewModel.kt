@@ -1,9 +1,9 @@
 package com.levibostian.tellerexample.viewmodel
 
-import android.arch.lifecycle.LiveData
-import android.arch.lifecycle.LiveDataReactiveStreams
-import android.arch.lifecycle.ViewModel
 import android.content.Context
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.LiveDataReactiveStreams
+import androidx.lifecycle.ViewModel
 import com.levibostian.teller.cachestate.LocalCacheState
 import com.levibostian.tellerexample.repository.GitHubUsernameRepository
 import io.reactivex.BackpressureStrategy
@@ -14,10 +14,14 @@ class GitHubUsernameViewModel: ViewModel() {
 
     private val requirements = GitHubUsernameRepository.GitHubUsernameGetCacheRequirements()
 
+    fun init(repository: GitHubUsernameRepository) {
+        this.repository = repository
+    }
+
     fun init(context: Context) {
-        repository = GitHubUsernameRepository(context).apply {
+        init(GitHubUsernameRepository(context).apply {
             requirements = this@GitHubUsernameViewModel.requirements
-        }
+        })
     }
 
     fun setUsername(username: String) {

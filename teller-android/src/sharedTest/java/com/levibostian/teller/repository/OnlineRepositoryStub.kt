@@ -1,5 +1,6 @@
 package com.levibostian.teller.repository
 
+import com.levibostian.teller.Teller
 import com.levibostian.teller.provider.SchedulersProvider
 import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
 import com.levibostian.teller.repository.manager.OnlineRepositoryCacheAgeManager
@@ -12,7 +13,8 @@ internal class OnlineRepositoryStub(cacheAgeManager: OnlineRepositoryCacheAgeMan
                                     refreshManager: OnlineRepositoryRefreshManager,
                                     schedulersProvider: SchedulersProvider,
                                     taskExecutor: TaskExecutor,
-                                    refreshManagerListener: OnlineRepositoryRefreshManager.Listener): OnlineRepository<String, OnlineRepositoryStub.GetRequirements, String>(cacheAgeManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener) {
+                                    refreshManagerListener: OnlineRepositoryRefreshManager.Listener,
+                                    teller: Teller): OnlineRepository<String, OnlineRepositoryStub.GetRequirements, String>(schedulersProvider, cacheAgeManager, refreshManager, taskExecutor, refreshManagerListener, teller) {
 
     override var maxAgeOfCache: Age = Age(1, Age.Unit.HOURS)
 

@@ -1,19 +1,19 @@
 package com.levibostian.tellerexample.activity
 
-import android.arch.lifecycle.Observer
-import android.arch.lifecycle.ViewModelProviders
-import android.support.v7.app.AppCompatActivity
+import androidx.lifecycle.Observer
 import android.os.Bundle
 import com.levibostian.tellerexample.R
 import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.service.GitHubService
 import com.levibostian.tellerexample.viewmodel.ReposViewModel
 import android.os.Handler
-import android.support.design.widget.Snackbar
-import android.support.v7.widget.LinearLayoutManager
 import android.text.format.DateUtils
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
+import android.widget.Toast
 import com.levibostian.teller.cachestate.listener.LocalCacheStateListener
 import com.levibostian.teller.cachestate.listener.OnlineCacheStateListener
 import com.levibostian.tellerexample.adapter.RepoRecyclerViewAdapter
@@ -21,10 +21,15 @@ import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.viewmodel.GitHubUsernameViewModel
 import kotlinx.android.synthetic.main.activity_main.*
 import java.util.*
-import android.support.v7.app.AlertDialog
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProviders
+import androidx.recyclerview.widget.LinearLayoutManager
+import com.google.android.material.snackbar.Snackbar
 import com.levibostian.tellerexample.extensions.closeKeyboard
+import com.levibostian.tellerexample.service.provider.AppSchedulersProvider
+import com.levibostian.tellerexample.util.DataDestroyerUtil
 import com.levibostian.tellerexample.util.DependencyUtil
-
 
 class MainActivity : AppCompatActivity() {
 
@@ -32,6 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var gitHubUsernameViewModel: GitHubUsernameViewModel
     private lateinit var service: GitHubService
     private lateinit var db: AppDatabase
+    private lateinit var dataDestroyerUtil: DataDestroyerUtil
 
     private var updateLastSyncedHandler: Handler? = null
     private var updateLastSyncedRunnable: Runnable? = null
@@ -47,19 +53,55 @@ class MainActivity : AppCompatActivity() {
         initialize()
     }
 
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        MenuInflater(this).inflate(R.menu.menu_main_activity, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem?): Boolean {
+        return when (item?.itemId) {
+            R.id.restart -> {
+                dataDestroyerUtil.deleteAllData {
+                    Toast.makeText(application, R.string.data_deleted, Toast.LENGTH_LONG).show()
+
+                    val restartActivityIntent = intent
+                    finish()
+                    startActivity(restartActivityIntent)
+                }
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun initialize() {
         service = DependencyUtil.serviceInstance()
         db = DependencyUtil.dbInstance(application)
+        dataDestroyerUtil = DependencyUtil.dataDestroyerUtil(application)
 
         reposViewModel = ViewModelProviders.of(this).get(ReposViewModel::class.java)
         gitHubUsernameViewModel = ViewModelProviders.of(this).get(GitHubUsernameViewModel::class.java)
-        reposViewModel.init(service, db)
+        reposViewModel.init(service, db, AppSchedulersProvider())
         gitHubUsernameViewModel.init(this)
+
+        repos_refresh_layout.apply {
+            setOnRefreshListener {
+                repos_refresh_layout.isRefreshing = true
+
+                reposViewModel.refresh()
+                        .subscribe { _ ->
+                            repos_refresh_layout.isRefreshing = false
+                        }
+            }
+
+            isEnabled = false
+        }
 
         reposViewModel.observeRepos()
                 .observe(this, Observer { reposState ->
                     reposState?.deliverAllStates(object : OnlineCacheStateListener<List<RepoModel>> {
                         override fun noCache() {
+                            repos_refresh_layout.isEnabled = false
                             // great place to show empty state where first fetch fails.
                         }
                         override fun finishedFirstFetch(errorDuringFetch: Throwable?) {
@@ -80,9 +122,13 @@ class MainActivity : AppCompatActivity() {
                             showLoadingView()
                         }
                         override fun cacheEmpty(fetched: Date) {
+                            repos_refresh_layout.isEnabled = true
+
                             showEmptyView()
                         }
                         override fun cache(cache: List<RepoModel>, fetched: Date) {
+                            repos_refresh_layout.isEnabled = true
+
                             showDataView()
 
                             updateLastSyncedRunnable?.let { updateLastSyncedHandler?.removeCallbacks(it) }
@@ -114,9 +160,9 @@ class MainActivity : AppCompatActivity() {
                         override fun isEmpty() {
                             username_edittext.setText("", TextView.BufferType.EDITABLE)
                         }
-                        override fun data(data: String) {
-                            username_edittext.setText(data, TextView.BufferType.EDITABLE)
-                            reposViewModel.setUsername(data)
+                        override fun cache(cache: String) {
+                            username_edittext.setText(cache, TextView.BufferType.EDITABLE)
+                            reposViewModel.setUsername(cache)
                         }
                     })
                 })

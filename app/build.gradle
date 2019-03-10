@@ -3,9 +3,13 @@ apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
 
+androidExtensions {
+    experimental = true
+}
+
 android {
     compileSdkVersion 28
-    buildToolsVersion "28.0.3"
+    buildToolsVersion build_tools_version
 
     defaultConfig {
         applicationId "com.levibostian.tellerexample"
@@ -13,7 +17,7 @@ android {
         targetSdkVersion 28
         versionCode 1
         versionName "1.0"
-        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
         release {
@@ -26,35 +30,102 @@ android {
             arg("room.schemaLocation", "$projectDir/schemas".toString())
         }
     }
+    sourceSets {
+        // Put code into below directory that you want shared between unit and integration tests.
+        String sharedTestDir = 'src/sharedTest/java'
+        test.java.srcDirs += sharedTestDir
+        androidTest.java.srcDirs += sharedTestDir
+    }
 }
 
 dependencies {
-    def lifecycle_version = "1.1.1"
-    def room_version = "1.1.1"
-    def retrofit_version = "2.4.0"
-    def support_lib_version = "28.0.0"
     implementation fileTree(include: ['*.jar'], dir: 'libs')
-    implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlin_version"
-    implementation "com.android.support:appcompat-v7:$support_lib_version"
-    implementation "com.android.support:design:$support_lib_version"
-    implementation "com.android.support:recyclerview-v7:$support_lib_version"
+
+    // Teller
     implementation project(':teller-android')
-    implementation "android.arch.lifecycle:extensions:$lifecycle_version"
-    kapt "android.arch.lifecycle:compiler:$lifecycle_version"
-    implementation "android.arch.lifecycle:reactivestreams:$lifecycle_version"
-    implementation "android.arch.persistence.room:runtime:$room_version"
-    kapt "android.arch.persistence.room:compiler:$room_version"
-    implementation "android.arch.persistence.room:rxjava2:$room_version"
-    implementation 'io.reactivex.rxjava2:rxandroid:2.0.2'
-    implementation 'io.reactivex.rxjava2:rxjava:2.1.13'
+
+    // AndroidX UI libs
+    implementation "androidx.appcompat:appcompat:1.0.2"
+    implementation "androidx.fragment:fragment:1.0.0"
+    implementation "com.google.android.material:material:1.0.0"
+    implementation "androidx.recyclerview:recyclerview:1.0.0"
+
+    // Architecture components
+    def lifecycleVersion = "2.0.0"
+    implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
+    kapt "androidx.lifecycle:lifecycle-compiler:$lifecycleVersion"
+    implementation "androidx.lifecycle:lifecycle-reactivestreams:$lifecycleVersion"
+    testImplementation "androidx.arch.core:core-testing:$lifecycleVersion"
+    androidTestImplementation "androidx.arch.core:core-testing:$lifecycleVersion"
+
+    // Room
+    def roomVersion = "2.0.0"
+    implementation "androidx.room:room-runtime:$roomVersion"
+    kapt "androidx.room:room-compiler:$roomVersion"
+    implementation "androidx.room:room-rxjava2:$roomVersion"
+    testImplementation "androidx.room:room-testing:$roomVersion"
+    androidTestImplementation "androidx.room:room-testing:$roomVersion"
+
+    // RxJava
+    implementation "io.reactivex.rxjava2:rxandroid:2.1.0"
+    implementation "io.reactivex.rxjava2:rxjava:2.2.6"
+    implementation "com.f2prateek.rx.preferences2:rx-preferences:2.0.0"
+
+    // Retrofit
+    def retrofitVersion = "2.4.0"
+    implementation "com.squareup.retrofit2:retrofit:$retrofitVersion"
+    implementation "com.squareup.retrofit2:converter-gson:$retrofitVersion"
+    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofitVersion"
+
+    // OkHttp
+    def okHttpVersion = "3.10.0"
+    implementation "com.squareup.okhttp3:logging-interceptor:$okHttpVersion"
+    testImplementation "com.squareup.okhttp3:mockwebserver:$okHttpVersion"
+    androidTestImplementation "com.squareup.okhttp3:mockwebserver:$okHttpVersion"
+
+    // GSON
     implementation 'com.google.code.gson:gson:2.8.4'
-    implementation "com.squareup.retrofit2:retrofit:$retrofit_version"
-    implementation "com.squareup.retrofit2:converter-gson:$retrofit_version"
-    implementation "com.squareup.retrofit2:adapter-rxjava2:$retrofit_version"
-    implementation 'com.squareup.okhttp3:logging-interceptor:3.10.0'
-    implementation 'com.f2prateek.rx.preferences2:rx-preferences:2.0.0'
+
+    // Kotlin
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    testImplementation "org.jetbrains.kotlin:kotlin-test-junit:$kotlin_version"
+
+    // WorkManager
+//    def workVersion = "1.0.0-alpha11"
+//    implementation "android.arch.work:work-runtime:$workVersion"
+//    androidTestImplementation "android.arch.work:work-testing:$workVersion"
+    // Using Android-Job instead of WorkManager for now because I was experiencing process crashes when trying to run UI tests.
     implementation 'com.evernote:android-job:1.2.6'
-    testImplementation 'junit:junit:4.12'
-    androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
+
+    // JUnit
+    def junitVersion = "4.12"
+    testImplementation "junit:junit:$junitVersion"
+    androidTestImplementation "junit:junit:$junitVersion"
+
+    // Truth
+    def truthVersion = "0.42"
+    testImplementation "com.google.truth:truth:$truthVersion"
+    androidTestImplementation "com.google.truth:truth:$truthVersion"
+
+    // Mockito
+    def mockitoVersion = "2.18.3"
+    def mockitoKotlinVersion = "1.5.0"
+    testImplementation "org.mockito:mockito-core:$mockitoVersion"
+    testImplementation "com.nhaarman:mockito-kotlin-kt1.1:$mockitoKotlinVersion", {
+        exclude group: 'org.jetbrains.kotlin'
+        exclude group: 'org.mockito'
+    }
+    androidTestImplementation "org.mockito:mockito-android:$mockitoVersion"
+    androidTestImplementation "com.nhaarman:mockito-kotlin-kt1.1:$mockitoKotlinVersion", {
+        exclude group: 'org.jetbrains.kotlin'
+        exclude group: 'org.mockito'
+    }
+
+    // Android Testing Support Library's runner and rules
+    def androidTestLibVersion = "1.1.0"
+    androidTestImplementation "androidx.test:runner:$androidTestLibVersion"
+    androidTestImplementation "androidx.test:rules:$androidTestLibVersion"
+    androidTestImplementation "androidx.test.ext:junit:1.1.0"
+    androidTestImplementation "androidx.test.ext:truth:1.1.0"
 }

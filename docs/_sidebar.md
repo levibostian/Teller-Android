@@ -15,6 +15,12 @@
   - [Paging](paging.md)
   - [Multiple data types](multiple_data_types_repositories.md)
 
+- [Testing](testing)
+
+  - [Unit testing](testing_unit_testing)  
+  - [Instrumentation testing](testing_android_instrumentation_tests)
+  - [Test Repository subclasses](testing_repository_subclasses)
+
 - [Contribute](contribute.md)
 
   - [Build Teller](contribute_build.md)
