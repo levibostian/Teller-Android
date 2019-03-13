@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.Teller
 import com.levibostian.teller.error.TellerLimitedFunctionalityException
+import com.levibostian.teller.extensions.awaitComplete
 import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.provider.SchedulersProvider
 import com.levibostian.teller.repository.manager.OnlineRepositoryCacheAgeManager
@@ -85,7 +86,7 @@ class OnlineRepositoryTest {
 
         compositeDisposable += repository.refresh(false)
                 .test()
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it).isEqualTo(OnlineRepository.RefreshResult.success())
                 })
@@ -105,7 +106,7 @@ class OnlineRepositoryTest {
 
         compositeDisposable += repository.refresh(false)
                 .test()
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it).isEqualTo(OnlineRepository.RefreshResult.success())
                 })
@@ -125,7 +126,7 @@ class OnlineRepositoryTest {
 
         compositeDisposable += repository.refresh(true)
                 .test()
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it).isEqualTo(OnlineRepository.RefreshResult.success())
                 })
@@ -143,7 +144,7 @@ class OnlineRepositoryTest {
 
         compositeDisposable += repository.refresh(false)
                 .test()
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it.didSkip()).isTrue()
                     assertThat(it.skipped).isEqualTo(OnlineRepository.RefreshResult.SkippedReason.CACHE_NOT_TOO_OLD)

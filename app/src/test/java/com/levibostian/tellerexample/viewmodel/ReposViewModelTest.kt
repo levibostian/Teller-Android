@@ -22,6 +22,7 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
 import java.util.*
+import java.util.concurrent.TimeUnit
 
 @RunWith(MockitoJUnitRunner::class)
 class ReposViewModelTest {
@@ -80,7 +81,6 @@ class ReposViewModelTest {
         viewModel.refresh()
                 .test()
                 .await()
-                .assertComplete()
                 .assertValues(refreshResult)
 
         verify(reposRepository).refresh(force = true)

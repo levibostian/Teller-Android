@@ -13,10 +13,7 @@ import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.Teller
 import com.levibostian.teller.cachestate.OnlineCacheState
 import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
-import com.levibostian.teller.extensions.awaitDispose
-import com.levibostian.teller.extensions.awaitDone
-import com.levibostian.teller.extensions.getTellerSharedPreferences
-import com.levibostian.teller.extensions.plusAssign
+import com.levibostian.teller.extensions.*
 import com.levibostian.teller.provider.TellerSchedulersProvider
 import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
 import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManagerWrapper
@@ -215,7 +212,7 @@ class OnlineRepositoryIntegrationTest {
         repository.dispose()
 
         compositeDisposable += testObserver
-                .await()
+                .awaitComplete()
                 .assertComplete()
 
         fetchTestObserver
