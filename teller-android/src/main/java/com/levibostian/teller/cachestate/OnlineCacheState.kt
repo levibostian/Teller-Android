@@ -18,18 +18,48 @@ Data in apps are in 1 of 3 different types of state:
 2. Data has been cached in the app and is either empty or not.
 3. A cache exists, and we are fetching fresh response to update the cache.
  */
-open class OnlineCacheState<CACHE: OnlineRepositoryCache> internal constructor(val noCacheExists: Boolean,
-                                                                               val fetchingForFirstTime: Boolean,
-                                                                               val cacheData: CACHE?,
+open class OnlineCacheState<CACHE: OnlineRepositoryCache> internal constructor(internal val noCacheExists: Boolean,
+                                                                               internal val fetchingForFirstTime: Boolean,
+                                                                               internal val cacheData: CACHE?,
                                                                                val lastTimeFetched: Date?,
-                                                                               val isFetchingFreshData: Boolean,
+                                                                               internal val isFetchingFreshData: Boolean,
                                                                                val requirements: OnlineRepository.GetCacheRequirements?,
                                                                                internal val stateMachine: OnlineCacheStateStateMachine<CACHE>?,
         // To prevent the end user getting spammed like crazy with UI messages of the same error or same status of response, the following properties should be set once in the constructor and then for future state calls, negate them.
-                                                                               val errorDuringFirstFetch: Throwable?,
-                                                                               val justCompletedSuccessfulFirstFetch: Boolean,
-                                                                               val errorDuringFetch: Throwable?,
-                                                                               val justCompletedSuccessfullyFetchingFreshData: Boolean) {
+                                                                               internal val errorDuringFirstFetch: Throwable?,
+                                                                               internal val justCompletedSuccessfulFirstFetch: Boolean,
+                                                                               internal val errorDuringFetch: Throwable?,
+                                                                               internal val justCompletedSuccessfullyFetchingFreshData: Boolean) {
+
+    /**
+     * Has a cache ever been successfully fetched before?
+     */
+    val cacheExists: Boolean
+        get() = !noCacheExists
+
+    /**
+     * Is this cache currently being fetched for the first time or updated?
+     */
+    val fetching: Boolean
+        get() = fetchingForFirstTime || isFetchingFreshData
+
+    /**
+     * The cache data, if it exists.
+     */
+    val cache: CACHE?
+        get() = cacheData
+
+    /**
+     * If a recent fetch happened and there was an error.
+     */
+    val fetchError: Throwable?
+        get() = errorDuringFirstFetch ?: errorDuringFetch
+
+    /**
+     * Did a fetch just happen and was successful?
+     */
+    val justSuccessfullyFetchedCache: Boolean
+        get() = justCompletedSuccessfulFirstFetch || justCompletedSuccessfullyFetchingFreshData
 
     internal companion object {
         /**

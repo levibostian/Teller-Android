@@ -52,6 +52,95 @@ class OnlineCacheStateTest {
     }
 
     @Test
+    fun cacheExists_expectCorrectValue() {
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cacheEmpty()
+        assertThat(cacheState.cacheExists).isTrue()
+
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cache("Cache")
+        assertThat(cacheState.cacheExists).isTrue()
+
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch()
+        assertThat(cacheState.cacheExists).isFalse()
+    }
+
+    @Test
+    fun fetching_expectCorrectValues() {
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cacheEmpty()
+        assertThat(cacheState.fetching).isFalse()
+
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cacheEmpty().change().fetchingFreshCache()
+        assertThat(cacheState.fetching).isTrue()
+
+        cacheState = OnlineCacheStateStateMachine.noCacheExists(cacheRequirements)
+        assertThat(cacheState.fetching).isFalse()
+
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch()
+        assertThat(cacheState.fetching).isTrue()
+
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch().change().successfulFirstFetch(Date())
+        assertThat(cacheState.fetching).isFalse()
+    }
+
+    @Test
+    fun cache_expectCorrectValue() {
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch()
+        assertThat(cacheState.cache).isNull()
+
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch().change().successfulFirstFetch(Date())
+        assertThat(cacheState.cache).isNull()
+
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cacheEmpty()
+        assertThat(cacheState.cache).isNull()
+
+        val cache = "cache"
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cache(cache)
+        assertThat(cacheState.cache).isEqualTo(cache)
+    }
+
+    @Test
+    fun fetchError_expectCorrectValue() {
+        cacheState = OnlineCacheStateStateMachine.noCacheExists(cacheRequirements)
+        assertThat(cacheState.fetchError).isNull()
+
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch().change().successfulFirstFetch(Date())
+        assertThat(cacheState.fetchError).isNull()
+
+        val fetchFail = IllegalStateException("fail")
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch().change().failFirstFetch(fetchFail)
+        assertThat(cacheState.fetchError).isEqualTo(fetchFail)
+
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().fetchingFreshCache().change().successfulRefreshCache(Date())
+        assertThat(cacheState.fetchError).isNull()
+
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().fetchingFreshCache().change().failRefreshCache(fetchFail)
+        assertThat(cacheState.fetchError).isEqualTo(fetchFail)
+
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().fetchingFreshCache().change().failRefreshCache(fetchFail).change().fetchingFreshCache().change().successfulRefreshCache(Date())
+        assertThat(cacheState.fetchError).isNull()
+    }
+
+    @Test
+    fun justCompletedFetchCache_expectCorrectValue() {
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch()
+        assertThat(cacheState.justSuccessfullyFetchedCache).isFalse()
+
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch().change().successfulFirstFetch(Date())
+        assertThat(cacheState.justSuccessfullyFetchedCache).isTrue()
+
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch().change().successfulFirstFetch(Date()).change().cacheEmpty()
+        assertThat(cacheState.justSuccessfullyFetchedCache).isFalse()
+
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().fetchingFreshCache()
+        assertThat(cacheState.justSuccessfullyFetchedCache).isFalse()
+
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().fetchingFreshCache().change().successfulRefreshCache(Date())
+        assertThat(cacheState.justSuccessfullyFetchedCache).isTrue()
+
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().fetchingFreshCache().change().successfulRefreshCache(Date()).change().cacheEmpty()
+        assertThat(cacheState.justSuccessfullyFetchedCache).isFalse()
+    }
+
+    @Test
     fun deliverCacheState_cacheEmpty_expectCallListenerFunctions() {
         val fetched = Date()
         cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, fetched).change().cacheEmpty()
