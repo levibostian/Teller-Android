@@ -12,6 +12,8 @@ import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
 import com.levibostian.teller.util.AssertionUtil.Companion.check
 import com.levibostian.teller.util.TaskExecutor
 import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.anyOrNull
+import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -39,9 +41,13 @@ class OnlineRepositoryTest {
     @Mock private lateinit var taskExecutor: TaskExecutor
     @Mock private lateinit var refreshManagerListener: OnlineRepositoryRefreshManager.Listener
     @Mock private lateinit var sharedPreferences: SharedPreferences
+    @Mock private lateinit var sharedPreferencesEditor: SharedPreferences.Editor
 
     @Before
     fun setup() {
+        whenever(sharedPreferences.edit()).thenReturn(sharedPreferencesEditor)
+        whenever(sharedPreferencesEditor.putString(any(), anyOrNull())).thenReturn(sharedPreferencesEditor)
+
         compositeDisposable = CompositeDisposable()
         schedulersProvider.apply {
             `when`(io()).thenReturn(Schedulers.trampoline())
@@ -56,7 +62,7 @@ class OnlineRepositoryTest {
     private fun initRepository(limitedFunctionality: Boolean = false) {
         val teller = if (limitedFunctionality) Teller.getUnitTestingInstance() else Teller.getTestingInstance(sharedPreferences)
 
-        repository = OnlineRepositoryStub(cacheAgeManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener, teller)
+        repository = OnlineRepositoryStub(sharedPreferences, cacheAgeManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener, teller)
     }
 
     @After
@@ -186,5 +192,7 @@ class OnlineRepositoryTest {
             repository.refresh(false)
         }
     }
+
+
 
 }

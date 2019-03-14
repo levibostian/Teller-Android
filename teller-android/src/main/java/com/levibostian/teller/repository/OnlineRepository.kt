@@ -1,5 +1,6 @@
 package com.levibostian.teller.repository
 
+import android.util.Log
 import com.levibostian.teller.Teller
 import com.levibostian.teller.cachestate.OnlineCacheState
 import com.levibostian.teller.error.TellerLimitedFunctionalityException
@@ -173,6 +174,11 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
     }
 
     private fun performRefresh() {
+        /**
+         * Do not throw an exception if disposed (such as with [assertNotDisposed]), as [performRefresh] is used internally. This check is mostly to prevent calling refresh if the observed cache triggers an onNext call on a different thread while the repository is disposing.
+         */
+        if (disposed) return
+
         this.requirements?.let { requirements ->
             getRefresh(false, requirements)
                     .subscribeOn(schedulersProvider.io())
@@ -315,8 +321,10 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
 
             val newCache = response.response!!
             stopObservingCache()
+            // It's important to update the last time fetched *after* a successful save in case it fails. However, make sure that the observer of the cache does not kick off an update until after the last successful fetch is updated.
             saveCache(newCache, requirements)
             cacheAgeManager.updateLastSuccessfulFetch(requirements.tag, timeFetched)
+
             restartObservingCache(requirements)
         }
     }
