@@ -48,7 +48,7 @@ However, with Teller this pain goes away. By using Teller you will get the benef
 Here are some more benefits of Teller:
 
 * Small - The only dependency at this time is RxJava2 ([this issue is working to make it optional](https://github.com/levibostian/Teller-Android/issues/1))
-* Built in Kotlin, for Kotlin (also compatible with Java)
+* Built in Kotlin, for Kotlin
 * Not opinionated. Use any storage method you wish
 * Paging *just works*
 * Full test suite, full documentation

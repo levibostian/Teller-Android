@@ -16,7 +16,6 @@ class Teller internal constructor(internal val sharedPreferences: SharedPreferen
     companion object {
         private var instance: Teller? = null
 
-        @JvmStatic
         fun init(application: Application) {
             if (instance == null) instance = getInstance(application)
         }
@@ -46,7 +45,6 @@ class Teller internal constructor(internal val sharedPreferences: SharedPreferen
          *
          * @throws RuntimeException If you have not called [Teller.Companion.init] yet to initialize singleton instance.
          */
-        @JvmStatic
         fun sharedInstance(): Teller {
             if (instance == null) throw RuntimeException("Oh, no! You forgot to call Teller.init()")
             return instance!!
@@ -55,7 +53,6 @@ class Teller internal constructor(internal val sharedPreferences: SharedPreferen
         /**
          * Short hand version of calling [sharedInstance].
          */
-        @JvmStatic
         val shared: Teller by lazy { sharedInstance() }
     }
 

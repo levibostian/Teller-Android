@@ -382,12 +382,10 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
                                                                  val failure: Throwable? = null) {
 
         companion object {
-            @JvmStatic
             fun <FETCH_RESPONSE: OnlineRepositoryFetchResponse> success(response: FETCH_RESPONSE): FetchResponse<FETCH_RESPONSE> {
                 return FetchResponse(response = response)
             }
 
-            @JvmStatic
             fun <FETCH_RESPONSE: OnlineRepositoryFetchResponse> fail(throwable: Throwable): FetchResponse<FETCH_RESPONSE> {
                 return FetchResponse(failure = throwable)
             }
