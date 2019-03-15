@@ -6,7 +6,7 @@ buildscript {
     ext.build_tools_version = "28.0.3"
 
     ext {
-        teller_version = "0.1.0-alpha"
+        teller_version = "0.2.0-alpha"
         bintrayRepo = 'Teller-Android'
         libraryName = 'Teller-Android'
         bintrayPackageName = 'com.levibostian.teller-android'
