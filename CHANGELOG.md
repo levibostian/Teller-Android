@@ -1,3 +1,21 @@
+## [0.2.0-alpha] - 2019-03-15
+
+Testing utilities and improved API for CacheState objects!
+
+### Changed
+- **Breaking Change** The `deliver_()` functions in `OnlineCacheState` and `LocalCacheState` have been replaced with a more Kotlin like callback API with lambdas. [47](https://github.com/levibostian/Teller-Android/issues/47)
+- Remove Java close compatibility. Because Kotlin and Java work nicely together, Teller may still work nicely with Java, but Teller is no longer focusing on making sure that is the case. [46](https://github.com/levibostian/Teller-Android/issues/46)
+- Expose public properties to `OnlineCacheState`. 
+
+### Added 
+- Create code of conduct and add to the docs. 
+- Create set of utilities into Teller to assist in creating unit, integration, and instrumentation tests. 
+- Create section in docs on how to test with Teller in your app. 
+- Create tests in example to show examples on how to use Teller's testing utilities and to test the API as it's developed. 
+
+### Fixed
+- Fixed bug in `OnlineCacheState` where refresh calls may not call `refreshComplete()` after a fetch finished successfully. 
+
 ## [0.1.0-alpha] - 2019-02-21
 
 Changes to the API, docs, full test suite, thread safety and bug fixes.
