@@ -1,6 +1,7 @@
 [![Download](https://api.bintray.com/packages/levibostian/Teller-Android/com.levibostian.teller-android/images/download.svg) ](https://bintray.com/levibostian/Teller-Android/com.levibostian.teller-android/_latestVersion)
 [![Build](https://app.bitrise.io/app/4c0b872bdaf76300/status.svg?token=PYpJBThARi6LvucXS2noVw&branch=development)](https://app.bitrise.io/app/4c0b872bdaf76300)
 [![GitHub license](https://img.shields.io/github/license/levibostian/Teller-Android.svg)](https://github.com/levibostian/Teller-Android/blob/master/LICENSE)
+[![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/JStumpp/awesome-android/blob/master/readme.md#other)
 
 # Teller
 
@@ -47,7 +48,7 @@ However, with Teller this pain goes away. By using Teller you will get the benef
 Here are some more benefits of Teller:
 
 * Small - The only dependency at this time is RxJava2 ([this issue is working to make it optional](https://github.com/levibostian/Teller-Android/issues/1))
-* Built in Kotlin, for Kotlin (also compatible with Java)
+* Built in Kotlin, for Kotlin
 * Not opinionated. Use any storage method you wish
 * Paging *just works*
 * Full test suite, full documentation
@@ -63,3 +64,22 @@ The very detailed documentation for Teller can be found [here](http://levibostia
 * Levi Bostian - [GitHub](https://github.com/levibostian), [Twitter](https://twitter.com/levibostian), [Website/blog](http://levibostian.com)
 
 ![Levi Bostian image](https://gravatar.com/avatar/22355580305146b21508c74ff6b44bc5?s=250)
+
+## Contribute
+
+Do you think Teller is cool? Want to help make it *more cool*? Great! We can use your help.
+
+Open source isn't just writing code. Teller could use your help with any of the
+following:
+
+- Finding (and reporting!) bugs.
+- New feature suggestions.
+- Answering questions on issues.
+- Documentation improvements.
+- Reviewing pull requests.
+- Helping to manage issue priorities.
+- Fixing bugs/new features.
+
+The Teller community is a very positive one, and the maintainers are committed to keeping things awesome. Like [in over 230,000+ other communities](https://github.com/search?l=Markdown&q=%22Contributor+Covenant%22+fork%3Afalse&type=Code), always assume positive intent; even if a comment sounds mean-spirited, give the person the benefit of the doubt.
+
+Please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by [its terms](https://github.com/levibostian/Teller-Android/blob/master/CODE_OF_CONDUCT.md).

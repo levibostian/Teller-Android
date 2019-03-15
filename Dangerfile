@@ -12,13 +12,13 @@ end
 
 if github.branch_for_base == "master"
   if github.pr_body.include? "#non-release"
-    if !git.modified_files.include? "teller/*"
-      warn 'You edited some files in `teller/`. Are you sure this is a #non-release?'
+    if !git.modified_files.include? "teller-android/*"
+      warn 'You edited some files in `teller-android/`. Are you sure this is a #non-release?'
     end    
   else
     if !git.modified_files.include? "CHANGELOG.md"
       fail 'You need to edit the CHANGELOG.md file.'
     end
-    android_version_change.assert_version_name_changed("teller/build.gradle")
+    android_version_change.assert_version_name_changed("teller-android/build.gradle")
   end
 end

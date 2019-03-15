@@ -1,0 +1,73 @@
+<HTML>
+<HEAD>
+<meta charset="UTF-8">
+<title>LocalCacheState - teller-android</title>
+<link rel="stylesheet" href="../../../style.css">
+</HEAD>
+<BODY>
+<a href="../../index.html">teller-android</a>&nbsp;/&nbsp;<a href="../index.html">com.levibostian.teller.cachestate</a>&nbsp;/&nbsp;<a href="./index.html">LocalCacheState</a><br/>
+<br/>
+<h1>LocalCacheState</h1>
+<code><span class="keyword">data</span> <span class="keyword">class </span><span class="identifier">LocalCacheState</span><span class="symbol">&lt;</span><span class="identifier">CACHE</span>&nbsp;<span class="symbol">:</span>&nbsp;<a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-any/index.html"><span class="identifier">Any</span></a><span class="symbol">&gt;</span></code>
+<p>Local response (response obtained from the user or device, no network fetch call) in apps are in 1 of 2 different types of state:</p>
+<ol><li>It is empty.</li>
+<li>It is not empty.</li>
+</ol>
+<p>This class takes in a type of <a href="cache-data.html">cacheData</a> to keep state on via generic <a href="index.html#CACHE">CACHE</a> and it maintains the state of that <a href="cache-data.html">cacheData</a>. It gives you a snapshot of the state of your local response at any given time.</p>
+<p>This class is used in companion with <a href="../../com.levibostian.teller.repository/-local-repository/index.html">LocalRepository</a> and <a href="#">LocalCacheStateBehaviorSubject</a> to maintain the state of <a href="cache-data.html">cacheData</a> to deliver to someone observing.</p>
+<h3>Types</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="-testing.html">Testing</a></p>
+</td>
+<td>
+<code><span class="keyword">object </span><span class="identifier">Testing</span></code>
+<p>Used for testing purposes to create instances of <a href="./index.html">LocalCacheState</a>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3>Properties</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="cache-data.html">cacheData</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">cacheData</span><span class="symbol">: </span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">?</span></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="is-empty.html">isEmpty</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">isEmpty</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-boolean/index.html"><span class="identifier">Boolean</span></a></code></td>
+</tr>
+<tr>
+<td>
+<p><a href="requirements.html">requirements</a></p>
+</td>
+<td>
+<code><span class="keyword">val </span><span class="identifier">requirements</span><span class="symbol">: </span><a href="../../com.levibostian.teller.repository/-local-repository/-get-cache-requirements.html"><span class="identifier">GetCacheRequirements</span></a><span class="symbol">?</span></code></td>
+</tr>
+</tbody>
+</table>
+<h3>Functions</h3>
+<table>
+<tbody>
+<tr>
+<td>
+<p><a href="deliver-state.html">deliverState</a></p>
+</td>
+<td>
+<code><span class="keyword">fun </span><span class="identifier">deliverState</span><span class="symbol">(</span><span class="identifier" id="com.levibostian.teller.cachestate.LocalCacheState$deliverState(com.levibostian.teller.cachestate.listener.LocalCacheStateListener((com.levibostian.teller.cachestate.LocalCacheState.CACHE)))/listener">listener</span><span class="symbol">:</span>&nbsp;<a href="../../com.levibostian.teller.cachestate.listener/-local-cache-state-listener/index.html"><span class="identifier">LocalCacheStateListener</span></a><span class="symbol">&lt;</span><a href="index.html#CACHE"><span class="identifier">CACHE</span></a><span class="symbol">&gt;</span><span class="symbol">)</span><span class="symbol">: </span><a href="https://kotlinlang.org/api/latest/jvm/stdlib/kotlin/-unit/index.html"><span class="identifier">Unit</span></a></code>
+<p>This is usually used in the UI of an app to display cache to a user.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</BODY>
+</HTML>

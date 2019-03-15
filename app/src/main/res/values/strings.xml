@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Teller example</string>
+    <string name="restart">Restart</string>
+    <string name="data_deleted">Data deleted!</string>
 </resources>

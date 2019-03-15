@@ -13,7 +13,7 @@ import java.util.*
  *
  * Implementation used by [OnlineRepository] instances in the Teller library.
  */
-internal class TellerOnlineRepositoryCacheAgeManager(private val sharedPreferences: SharedPreferences = Teller.shared.sharedPreferences): OnlineRepositoryCacheAgeManager {
+internal class TellerOnlineRepositoryCacheAgeManager(private val sharedPreferences: SharedPreferences = Teller.shared.sharedPreferences!!): OnlineRepositoryCacheAgeManager {
 
     companion object {
         internal const val INVALID_LAST_FETCHED_VALUE: Long = -1L

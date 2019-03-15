@@ -6,15 +6,14 @@ import com.levibostian.teller.cachestate.OnlineCacheState
 import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
 import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.repository.OnlineRepository
-import org.junit.Test
 import com.levibostian.teller.util.AssertionUtil.Companion.check
-
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
 import io.reactivex.disposables.CompositeDisposable
 import org.junit.After
 import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.junit.MockitoJUnitRunner
 import java.util.*
 
 @RunWith(MockitoJUnitRunner::class)

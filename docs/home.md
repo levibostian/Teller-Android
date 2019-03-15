@@ -1,6 +1,7 @@
 [![Download](https://api.bintray.com/packages/levibostian/Teller-Android/com.levibostian.teller-android/images/download.svg) ](https://bintray.com/levibostian/Teller-Android/com.levibostian.teller-android/_latestVersion)
 [![Build](https://app.bitrise.io/app/4c0b872bdaf76300/status.svg?token=PYpJBThARi6LvucXS2noVw&branch=development)](https://app.bitrise.io/app/4c0b872bdaf76300)
 [![GitHub license](https://img.shields.io/github/license/levibostian/Teller-Android.svg)](https://github.com/levibostian/Teller-Android/blob/master/LICENSE)
+[![Awesome](https://cdn.rawgit.com/sindresorhus/awesome/d7305f38d29fed78fa85652e3a63e154dd8e8829/media/badge.svg)](https://github.com/JStumpp/awesome-android/blob/master/readme.md#other)
 
 # Intro 
 
@@ -57,6 +58,8 @@ What are you waiting for? Let's [install](install) Teller!
 This library comes with an example app. You may open it in Android Studio to test it out and see how the code works with the library. The example app uses an `OnlineRepository` as well as a `LocalRepository`. 
 
 Enter a GitHub username in the `EditText` in the app and watch how the app fetches a list of repos for the user, saves them to a cache, and fetches fresh if the cache is too old.
+
+[![Build](https://app.bitrise.io/app/9a6ef5eb6e973d3e/status.svg?token=XDJ6sNwFxH5_N0fHhsaikQ&branch=development)](https://app.bitrise.io/app/9a6ef5eb6e973d3e/)
 
 ## Author
 

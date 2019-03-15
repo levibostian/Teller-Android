@@ -1,24 +1,29 @@
 package com.levibostian.teller.repository
 
+import android.content.SharedPreferences
 import com.google.common.truth.Truth.assertThat
+import com.levibostian.teller.Teller
+import com.levibostian.teller.error.TellerLimitedFunctionalityException
+import com.levibostian.teller.extensions.awaitComplete
 import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.provider.SchedulersProvider
-import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
 import com.levibostian.teller.repository.manager.OnlineRepositoryCacheAgeManager
-import org.junit.Test
+import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
 import com.levibostian.teller.util.AssertionUtil.Companion.check
 import com.levibostian.teller.util.TaskExecutor
 import com.nhaarman.mockito_kotlin.any
-
-import org.junit.runner.RunWith
-import org.mockito.Mock
-import org.mockito.junit.MockitoJUnitRunner
+import com.nhaarman.mockito_kotlin.anyOrNull
+import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
-import org.junit.Before
-import org.mockito.Mockito.`when`
 import io.reactivex.schedulers.Schedulers
 import org.junit.After
+import org.junit.Before
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.mockito.Mock
+import org.mockito.Mockito.`when`
+import org.mockito.junit.MockitoJUnitRunner
 import java.util.*
 import kotlin.test.assertFailsWith
 
@@ -35,9 +40,14 @@ class OnlineRepositoryTest {
     @Mock private lateinit var schedulersProvider: SchedulersProvider
     @Mock private lateinit var taskExecutor: TaskExecutor
     @Mock private lateinit var refreshManagerListener: OnlineRepositoryRefreshManager.Listener
+    @Mock private lateinit var sharedPreferences: SharedPreferences
+    @Mock private lateinit var sharedPreferencesEditor: SharedPreferences.Editor
 
     @Before
     fun setup() {
+        whenever(sharedPreferences.edit()).thenReturn(sharedPreferencesEditor)
+        whenever(sharedPreferencesEditor.putString(any(), anyOrNull())).thenReturn(sharedPreferencesEditor)
+
         compositeDisposable = CompositeDisposable()
         schedulersProvider.apply {
             `when`(io()).thenReturn(Schedulers.trampoline())
@@ -47,7 +57,12 @@ class OnlineRepositoryTest {
             (it.getArgument(0) as () -> Unit).invoke()
         }
         requirements = OnlineRepositoryStub.GetRequirements()
-        repository = OnlineRepositoryStub(cacheAgeManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener)
+    }
+
+    private fun initRepository(limitedFunctionality: Boolean = false) {
+        val teller = if (limitedFunctionality) Teller.getUnitTestingInstance() else Teller.getTestingInstance(sharedPreferences)
+
+        repository = OnlineRepositoryStub(sharedPreferences, cacheAgeManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener, teller)
     }
 
     @After
@@ -57,6 +72,8 @@ class OnlineRepositoryTest {
 
     @Test
     fun refresh_requirementsNotSet_expectThrowException() {
+        initRepository()
+
         assertFailsWith(IllegalStateException::class) {
             repository.refresh(false)
                     .subscribe()
@@ -65,6 +82,8 @@ class OnlineRepositoryTest {
 
     @Test
     fun refresh_hasNeverFetched_expectRefreshCall() {
+        initRepository()
+
         val refreshResult = Single.just(OnlineRepository.RefreshResult.success())
         `when`(cacheAgeManager.hasSuccessfullyFetchedCache(requirements.tag)).thenReturn(false)
         `when`(refreshManager.refresh(repository.fetchFreshCache_return, requirements.tag, refreshManagerListener)).thenReturn(refreshResult)
@@ -73,7 +92,7 @@ class OnlineRepositoryTest {
 
         compositeDisposable += repository.refresh(false)
                 .test()
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it).isEqualTo(OnlineRepository.RefreshResult.success())
                 })
@@ -81,6 +100,8 @@ class OnlineRepositoryTest {
 
     @Test
     fun refresh_fetchedCacheTooOld_expectRefreshCall() {
+        initRepository()
+
         val refreshResult = Single.just(OnlineRepository.RefreshResult.success())
         `when`(cacheAgeManager.hasSuccessfullyFetchedCache(requirements.tag)).thenReturn(true)
         `when`(cacheAgeManager.lastSuccessfulFetch(requirements.tag)).thenReturn(Date())
@@ -91,7 +112,7 @@ class OnlineRepositoryTest {
 
         compositeDisposable += repository.refresh(false)
                 .test()
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it).isEqualTo(OnlineRepository.RefreshResult.success())
                 })
@@ -99,6 +120,8 @@ class OnlineRepositoryTest {
 
     @Test
     fun refresh_fetchedCacheNotTooOldForceRefresh_expectRefreshCall() {
+        initRepository()
+
         val refreshResult = Single.just(OnlineRepository.RefreshResult.success())
         `when`(cacheAgeManager.hasSuccessfullyFetchedCache(requirements.tag)).thenReturn(true)
         `when`(cacheAgeManager.lastSuccessfulFetch(requirements.tag)).thenReturn(Date())
@@ -109,7 +132,7 @@ class OnlineRepositoryTest {
 
         compositeDisposable += repository.refresh(true)
                 .test()
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it).isEqualTo(OnlineRepository.RefreshResult.success())
                 })
@@ -117,6 +140,8 @@ class OnlineRepositoryTest {
 
     @Test
     fun refresh_fetchedCacheNotTooOldNoForceRefresh_expectSkipRefreshCall() {
+        initRepository()
+
         `when`(cacheAgeManager.hasSuccessfullyFetchedCache(requirements.tag)).thenReturn(true)
         `when`(cacheAgeManager.lastSuccessfulFetch(requirements.tag)).thenReturn(Date())
         `when`(cacheAgeManager.isCacheTooOld(requirements.tag, repository.maxAgeOfCache)).thenReturn(false)
@@ -125,11 +150,49 @@ class OnlineRepositoryTest {
 
         compositeDisposable += repository.refresh(false)
                 .test()
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it.didSkip()).isTrue()
                     assertThat(it.skipped).isEqualTo(OnlineRepository.RefreshResult.SkippedReason.CACHE_NOT_TOO_OLD)
                 })
     }
+
+    @Test
+    fun setRequirements_throwExceptionWhenLimitedFunctionality() {
+        initRepository(limitedFunctionality = true)
+
+        assertFailsWith(TellerLimitedFunctionalityException::class) {
+            repository.requirements = requirements
+        }
+    }
+
+    @Test
+    fun observe_throwExceptionWhenLimitedFunctionality() {
+        initRepository(limitedFunctionality = true)
+
+        assertFailsWith(TellerLimitedFunctionalityException::class) {
+            repository.observe()
+        }
+    }
+
+    @Test
+    fun dispose_throwExceptionWhenLimitedFunctionality() {
+        initRepository(limitedFunctionality = true)
+
+        assertFailsWith(TellerLimitedFunctionalityException::class) {
+            repository.dispose()
+        }
+    }
+
+    @Test
+    fun refresh_throwExceptionWhenLimitedFunctionality() {
+        initRepository(limitedFunctionality = true)
+
+        assertFailsWith(TellerLimitedFunctionalityException::class) {
+            repository.refresh(false)
+        }
+    }
+
+
 
 }

@@ -10,11 +10,9 @@ import org.junit.runner.RunWith
 import androidx.test.core.app.ApplicationProvider
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
+import com.levibostian.teller.Teller
 import com.levibostian.teller.cachestate.LocalCacheState
-import com.levibostian.teller.extensions.awaitDispose
-import com.levibostian.teller.extensions.awaitDone
-import com.levibostian.teller.extensions.getTellerSharedPreferences
-import com.levibostian.teller.extensions.plusAssign
+import com.levibostian.teller.extensions.*
 import com.levibostian.teller.provider.TellerSchedulersProvider
 import com.levibostian.teller.rule.ClearSharedPreferencesRule
 import com.levibostian.teller.rule.MockitoInitRule
@@ -39,6 +37,7 @@ class LocalRepositoryIntegrationTest {
 
     private val schedulersProvider = TellerSchedulersProvider()
     private val taskExecutor = TellerTaskExecutor()
+    private val teller = Teller.getTestingInstance(sharedPreferences)
 
     @get:Rule val mockitoInitMocks = MockitoInitRule(this)
     @get:Rule val clearSharedPreferencesRule = ClearSharedPreferencesRule(sharedPreferences)
@@ -48,7 +47,7 @@ class LocalRepositoryIntegrationTest {
         compositeDisposable = CompositeDisposable()
 
         requirements = LocalRepositoryStub.GetRequirements()
-        repository = LocalRepositoryStub(sharedPreferences, schedulersProvider, taskExecutor)
+        repository = LocalRepositoryStub(sharedPreferences, schedulersProvider, taskExecutor, teller)
     }
 
     @After
@@ -88,7 +87,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalCacheState.data(cache)
+                            LocalCacheState.cache(requirements, cache)
                     ))
                 })
     }
@@ -145,7 +144,7 @@ class LocalRepositoryIntegrationTest {
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
                             LocalCacheState.none(),
-                            LocalCacheState.isEmpty()
+                            LocalCacheState.isEmpty(requirements)
                     ))
                 })
 
@@ -154,7 +153,7 @@ class LocalRepositoryIntegrationTest {
         repository.dispose()
 
         compositeDisposable += testObserver
-                .await()
+                .awaitComplete()
                 .assertComplete()
 
         observeCachedDataTestObserver
@@ -204,7 +203,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalCacheState.data(cache)
+                            LocalCacheState.cache(requirements, cache)
                     ))
                 })
 
@@ -240,7 +239,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalCacheState.data(cache)
+                            LocalCacheState.cache(requirements, cache)
                     ))
                 })
     }
@@ -266,7 +265,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalCacheState.isEmpty()
+                            LocalCacheState.isEmpty(requirements)
                     ))
                 })
     }
@@ -292,7 +291,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalCacheState.data(oldCache)
+                            LocalCacheState.cache(requirements, oldCache)
                     ))
                 })
 
@@ -303,7 +302,7 @@ class LocalRepositoryIntegrationTest {
                 .awaitCount(expectedEventsSequence.size + 1)
                 .assertValueSequence(expectedEventsSequence.apply {
                     addAll(listOf(
-                            LocalCacheState.data(newCache)
+                            LocalCacheState.cache(requirements, newCache)
                     ))
                 })
     }

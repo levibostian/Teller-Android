@@ -1,8 +1,0 @@
-$dokka.format:html
-$dokka.linkExtension:html
-
-com.levibostian.teller
-com.levibostian.teller.datastate
-com.levibostian.teller.datastate.listener
-com.levibostian.teller.repository
-com.levibostian.teller.type

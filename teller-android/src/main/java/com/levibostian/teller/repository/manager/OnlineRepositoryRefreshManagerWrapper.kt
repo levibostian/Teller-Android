@@ -2,6 +2,7 @@ package com.levibostian.teller.repository.manager
 
 import com.levibostian.teller.repository.GetCacheRequirementsTag
 import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.repository.OnlineRepositoryFetchResponse
 import io.reactivex.Single
 
 /**
@@ -14,7 +15,7 @@ internal class OnlineRepositoryRefreshManagerWrapper: OnlineRepositoryRefreshMan
      *
      * @see SharedOnlineRepositoryRefreshManager.refresh
      */
-    override fun <RefreshResponseType: Any> refresh(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag, repository: OnlineRepositoryRefreshManager.Listener): Single<OnlineRepository.RefreshResult> {
+    override fun <RefreshResponseType: OnlineRepositoryFetchResponse> refresh(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag, repository: OnlineRepositoryRefreshManager.Listener): Single<OnlineRepository.RefreshResult> {
         return SharedOnlineRepositoryRefreshManager.refresh(task, tag, repository)
     }
 

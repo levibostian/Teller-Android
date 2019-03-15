@@ -8,11 +8,13 @@ import com.levibostian.teller.type.Age
 import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.service.GitHubService
+import com.levibostian.tellerexample.service.provider.SchedulersProvider
 import io.reactivex.Observable
 import io.reactivex.Single
 
 class ReposRepository(private val service: GitHubService,
-                      private val db: AppDatabase): OnlineRepository<List<RepoModel>, ReposRepository.GetReposRequirements, List<RepoModel>>() {
+                      private val db: AppDatabase,
+                      private val schedulersProvider: SchedulersProvider): OnlineRepository<List<RepoModel>, ReposRepository.GetReposRequirements, List<RepoModel>>() {
 
     /**
      * Tells Teller how old cache can be before it's determined "too old" and new cache is fetched automatically by calling `fetchFreshCache()`.
@@ -60,7 +62,7 @@ class ReposRepository(private val service: GitHubService,
      *
      * Teller is not opinionated about how you save your new cache. Use SQLite/Room/Realm, SharedPreferences, Files, Images, whatever!
      */
-    override fun saveCache(cache: List<RepoModel>, requirements: GetReposRequirements) {
+    public override fun saveCache(cache: List<RepoModel>, requirements: GetReposRequirements) {
         db.reposDao().insertRepos(cache)
     }
 
@@ -71,8 +73,10 @@ class ReposRepository(private val service: GitHubService,
      * Do *not* send `null` in the `Observable` returned from this function. This is a rule set by RxJava and it will throw an exception.
      * If your cache response is in an "empty" state, either (1) return an empty value (Example: an empty String, "") or (2) create a POJO with an optional inside of it.
      */
-    override fun observeCache(requirements: GetReposRequirements): Observable<List<RepoModel>> {
-        return db.reposDao().observeReposForUser(requirements.githubUsername).toObservable()
+    public override fun observeCache(requirements: GetReposRequirements): Observable<List<RepoModel>> {
+        return db.reposDao().observeReposForUser(requirements.githubUsername)
+                .subscribeOn(schedulersProvider.io())
+                .observeOn(schedulersProvider.mainThread())
     }
 
     /**
@@ -81,7 +85,7 @@ class ReposRepository(private val service: GitHubService,
      *
      * In our example, an empty List, is what we qualify as empty. If you have a POJO, String, or any other response type, you return back if the `cache` parameter is empty or not.
      */
-    override fun isCacheEmpty(cache: List<RepoModel>, requirements: GetReposRequirements): Boolean = cache.isEmpty()
+    public override fun isCacheEmpty(cache: List<RepoModel>, requirements: GetReposRequirements): Boolean = cache.isEmpty()
 
     class GetReposRequirements(val githubUsername: String): GetCacheRequirements {
         override var tag = "Repos for user:$githubUsername"

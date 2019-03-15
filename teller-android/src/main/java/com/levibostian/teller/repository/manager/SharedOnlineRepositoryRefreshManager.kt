@@ -2,6 +2,7 @@ package com.levibostian.teller.repository.manager
 
 import com.levibostian.teller.repository.GetCacheRequirementsTag
 import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.repository.OnlineRepositoryFetchResponse
 import io.reactivex.Single
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
@@ -32,15 +33,18 @@ internal object SharedOnlineRepositoryRefreshManager: OnlineRepositoryRefreshMan
      *
      * @return Observable to get notified with the refresh task result (unless you cancel before then).
      */
-    override fun <RefreshResponseType: Any> refresh(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag, repository: OnlineRepositoryRefreshManager.Listener): Single<OnlineRepository.RefreshResult> {
+    override fun <RefreshResponseType: OnlineRepositoryFetchResponse> refresh(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag, repository: OnlineRepositoryRefreshManager.Listener): Single<OnlineRepository.RefreshResult> {
         return synchronized(refreshItems) {
             var refreshItem = refreshItems[tag]
 
             if (refreshItem == null) {
+                /**
+                 * It's ok that we are starting the refresh task here without adding a repository until later because we have a lock to [refreshItems] so even if the refresh task ends instantly, it cannot do anything until the lock is unlocked.
+                 */
                 refreshItem = RefreshTaskItem(startRefreshTask(task, tag), arrayListOf())
                 refreshItems[tag] = refreshItem
             }
-            
+
             var repositoryItems = refreshItem.repositories.find { it.listener.get() == repository }
             if (repositoryItems == null) {
                 repositoryItems = Repository(ReplaySubject.create<OnlineRepository.RefreshResult>(), WeakReference(repository))
@@ -57,48 +61,49 @@ internal object SharedOnlineRepositoryRefreshManager: OnlineRepositoryRefreshMan
     /**
      * Modify the given fetch task with some observer listeners and start running it.
      */
-    private fun <RefreshResponseType: Any> startRefreshTask(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag): Disposable {
+    private fun <RefreshResponseType: OnlineRepositoryFetchResponse> startRefreshTask(task: Single<OnlineRepository.FetchResponse<RefreshResponseType>>, tag: GetCacheRequirementsTag): Disposable {
         fun doneRefresh(result: OnlineRepository.RefreshResult?, failure: Throwable?) {
-            synchronized(refreshItems) {
-                val repositories = refreshItems[tag]?.repositories
+            val repositories = refreshItems[tag]?.repositories
 
-                failure?.let { failure ->
-                    repositories?.forEach {
-                        it.refreshTaskStatus.onError(failure)
-                    }
-                } ?: kotlin.run {
-                    repositories?.forEach {
-                        it.refreshTaskStatus.onNext(result!!)
-                    }
-                }
+            failure?.let { failure ->
                 repositories?.forEach {
-                    it.refreshTaskStatus.onComplete()
+                    it.refreshTaskStatus.onError(failure)
                 }
-
-                refreshItems.remove(tag)
+            } ?: kotlin.run {
+                repositories?.forEach {
+                    it.refreshTaskStatus.onNext(result!!)
+                }
             }
+            repositories?.forEach {
+                it.refreshTaskStatus.onComplete()
+            }
+
+            refreshItems.remove(tag)
         }
 
         return task.doOnSuccess { response ->
-            updateRepositoryListeners(tag) { listener ->
-                listener.refreshComplete(tag, response)
-            }
+            synchronized(refreshItems) {
+                updateRepositoryListeners(tag) { listener ->
+                    listener.refreshComplete(tag, response)
+                }
 
-            response.failure?.let { fetchFailure ->
-                doneRefresh(OnlineRepository.RefreshResult.failure(fetchFailure), null)
-            } ?: kotlin.run {
-                doneRefresh(OnlineRepository.RefreshResult.success(), null)
+                val responseFailure = response.failure
+                if (responseFailure != null) {
+                    doneRefresh(OnlineRepository.RefreshResult.failure(responseFailure), null)
+                } else {
+                    doneRefresh(OnlineRepository.RefreshResult.success(), null)
+                }
             }
         }.doOnError { error ->
-            doneRefresh(null, error)
+            synchronized(refreshItems) {
+                doneRefresh(null, error)
+            }
         }.subscribeOn(Schedulers.io()).subscribe()
     }
 
     private fun updateRepositoryListeners(tag: GetCacheRequirementsTag, update: (listener: OnlineRepositoryRefreshManager.Listener) -> Unit) {
-        synchronized(refreshItems) {
-            refreshItems[tag]?.repositories?.forEach { repository ->
-                repository.listener.get()?.let { update.invoke(it) }
-            }
+        refreshItems[tag]?.repositories?.forEach { repository ->
+            repository.listener.get()?.let { update.invoke(it) }
         }
     }
 

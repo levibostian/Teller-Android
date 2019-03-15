@@ -1,18 +1,17 @@
 package com.levibostian.teller.repository.manager
 
 import com.google.common.truth.Truth.assertThat
+import com.levibostian.teller.extensions.awaitComplete
 import com.levibostian.teller.repository.GetCacheRequirementsTag
 import com.levibostian.teller.repository.OnlineRepository
-import io.reactivex.subjects.PublishSubject
-import org.junit.Test
 import com.levibostian.teller.util.AssertionUtil.Companion.check
 import com.levibostian.teller.util.Wait
-
+import com.nhaarman.mockito_kotlin.*
+import io.reactivex.subjects.ReplaySubject
+import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.junit.MockitoJUnitRunner
-import com.nhaarman.mockito_kotlin.*
-import io.reactivex.subjects.ReplaySubject
 
 @RunWith(MockitoJUnitRunner::class)
 class OnlineRepositoryRefreshManagerTest {
@@ -45,13 +44,13 @@ class OnlineRepositoryRefreshManagerTest {
         }
 
         repo1TestObserver
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it.didSucceed()).isTrue()
                 })
 
         repo2TestObserver
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it.didSucceed()).isTrue()
                 })
@@ -90,13 +89,13 @@ class OnlineRepositoryRefreshManagerTest {
         }
 
         repo1TestObserver
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it.didSucceed()).isTrue()
                 })
 
         repo2TestObserver
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it.didFail()).isTrue()
                 })
@@ -135,13 +134,13 @@ class OnlineRepositoryRefreshManagerTest {
         }
 
         repo1TestObserver
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it.didSucceed()).isTrue()
                 })
 
         repo1SecondTestObserver
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it.didSucceed()).isTrue()
                 })
@@ -168,7 +167,7 @@ class OnlineRepositoryRefreshManagerTest {
         SharedOnlineRepositoryRefreshManager.cancelTasksForRepository(defaultTag, repo1)
 
         repo1TestObserver
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it.didSkip()).isTrue()
                 })
@@ -212,14 +211,14 @@ class OnlineRepositoryRefreshManagerTest {
         }
 
         repo1TestObserver
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it.didSkip()).isTrue()
                     assertThat(it.didSucceed()).isFalse()
                 })
 
         repo2TestObserver
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it.didSkip()).isFalse()
                     assertThat(it.didSucceed()).isTrue()

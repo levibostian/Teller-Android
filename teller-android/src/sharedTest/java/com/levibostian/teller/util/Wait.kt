@@ -7,12 +7,11 @@ import java.util.concurrent.TimeUnit
 /**
  * Tiny companion wrapper for [CountDownLatch] to make testing async code easy.
  */
-class Wait private constructor(val number: Int) {
+class Wait private constructor(number: Int) {
 
     private val countdown = CountDownLatch(number)
-    var count: Long = 0
+    val count: Long
         get() = countdown.count
-        private set
 
     companion object {
         fun times(times: Int): Wait = Wait(times)

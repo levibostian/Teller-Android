@@ -8,29 +8,54 @@ import com.levibostian.teller.repository.LocalRepository
 import io.reactivex.Completable
 import io.reactivex.Observable
 import android.content.SharedPreferences
+import com.levibostian.tellerexample.service.provider.AppSchedulersProvider
+import com.levibostian.tellerexample.service.provider.SchedulersProvider
+import com.levibostian.tellerexample.util.DependencyUtil
+import com.levibostian.tellerexample.wrapper.RxSharedPrefsWrapper
 import io.reactivex.Scheduler
 import io.reactivex.schedulers.Schedulers
 
-class GitHubUsernameRepository(private val context: Context): LocalRepository<String, GitHubUsernameRepository.GitHubUsernameGetCacheRequirements>() {
+class GitHubUsernameRepository: LocalRepository<String, GitHubUsernameRepository.GitHubUsernameGetCacheRequirements> {
 
-    private val githubUsernameSharedPrefsKey = "${this::class.java.simpleName}_githubUsername_key"
-    private val rxSharedPreferences: RxSharedPreferences = RxSharedPreferences.create(PreferenceManager.getDefaultSharedPreferences(context))
-    private val sharedPreferences: SharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+    companion object {
+        internal const val GITHUB_USERNAME_SHARED_PREFS_KEY = "GitHubUsernameRepository_githubUsername_key"
+        internal const val GITHUB_USERNAME_SHARED_PREFS_DEFAULT = ""
+    }
+
+    private val rxSharedPrefsWrapper: RxSharedPrefsWrapper
+    private val sharedPreferences: SharedPreferences
+    private val schedulersProvider: SchedulersProvider
+
+    constructor(context: Context): super() {
+        rxSharedPrefsWrapper = DependencyUtil.rxSharedPreferences(context)
+        sharedPreferences = DependencyUtil.sharedPreferences(context)
+        schedulersProvider = AppSchedulersProvider()
+    }
+
+    constructor(
+            rxSharedPrefsWrapper: RxSharedPrefsWrapper,
+            sharedPreferences: SharedPreferences,
+            schedulersProvider: SchedulersProvider
+    ) {
+        this.rxSharedPrefsWrapper = rxSharedPrefsWrapper
+        this.sharedPreferences = sharedPreferences
+        this.schedulersProvider = schedulersProvider
+    }
 
     /**
      * Use the `LocalRepository` as a regular repository. Add more functions to it to read, edit, delete the GitHub username cache.
      */
     var currentUsernameSaved: String? = null
-        get() = sharedPreferences.getString(githubUsernameSharedPrefsKey, null)
+        get() = sharedPreferences.getString(GITHUB_USERNAME_SHARED_PREFS_KEY, null)
         private set
 
     /**
      * Save cache to the local Android device.
      * Note: This function is guaranteed to be called on a background thread.
      */
-    override fun saveCache(cache: String, requirements: GitHubUsernameGetCacheRequirements) {
+    public override fun saveCache(cache: String, requirements: GitHubUsernameGetCacheRequirements) {
         // In this case, we are using SharedPreferences to save our cache.
-        PreferenceManager.getDefaultSharedPreferences(context).edit().putString(githubUsernameSharedPrefsKey, cache).apply()
+        sharedPreferences.edit().putString(GITHUB_USERNAME_SHARED_PREFS_KEY, cache).apply()
     }
 
     /**
@@ -40,13 +65,11 @@ class GitHubUsernameRepository(private val context: Context): LocalRepository<St
      * Do *not* send `null` in the `Observable` returned from this function. This is a rule set by RxJava and it will throw an exception.
      * If your cache is in an "empty" state, either (1) return an empty value (Example: an empty String, "") or (2) create a POJO with an optional inside of it.
      */
-    override fun observeCache(requirements: GitHubUsernameGetCacheRequirements): Observable<String> {
+    public override fun observeCache(requirements: GitHubUsernameGetCacheRequirements): Observable<String> {
         // Here, we are using the RxSharedPreferences library to Observe the SharedPreferences
         // Library link: https://github.com/f2prateek/rx-preferences
-        return rxSharedPreferences.getString(githubUsernameSharedPrefsKey, "")
-                .asObservable()
-                .filter { it.isNotBlank() }
-                .subscribeOn(Schedulers.io())
+        return rxSharedPrefsWrapper.observeString(GITHUB_USERNAME_SHARED_PREFS_KEY, GITHUB_USERNAME_SHARED_PREFS_DEFAULT)
+                .subscribeOn(schedulersProvider.io())
     }
 
     /**
@@ -55,7 +78,7 @@ class GitHubUsernameRepository(private val context: Context): LocalRepository<St
      *
      * In our example, an empty String (""), is what we qualify as empty. If you have a POJO, List, or any other type, you return back if the `cache` parameter is empty or not.
      */
-    override fun isCacheEmpty(cache: String, requirements: GitHubUsernameGetCacheRequirements): Boolean = cache.isBlank()
+    public override fun isCacheEmpty(cache: String, requirements: GitHubUsernameGetCacheRequirements): Boolean = cache.isBlank()
 
     class GitHubUsernameGetCacheRequirements: LocalRepository.GetCacheRequirements
 

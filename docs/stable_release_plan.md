@@ -7,7 +7,7 @@ Here is the current plan to release Teller in alpha, beta, then stable.
 Alpha:
 
 - [X] Example app built demonstrating Teller.
-- [ ] JavaDoc created. (Close to being complete)
+- [ ] JavaDoc completed. (It's being worked on, but it's not fully documented yet)
 - [X] Tests written (and passing 😉).
 - [X] Full documentation on how to use Teller.
 
