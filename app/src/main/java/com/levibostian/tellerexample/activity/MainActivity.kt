@@ -14,13 +14,9 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
-import com.levibostian.teller.cachestate.listener.LocalCacheStateListener
-import com.levibostian.teller.cachestate.listener.OnlineCacheStateListener
 import com.levibostian.tellerexample.adapter.RepoRecyclerViewAdapter
-import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.viewmodel.GitHubUsernameViewModel
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.*
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProviders
@@ -99,72 +95,72 @@ class MainActivity : AppCompatActivity() {
 
         reposViewModel.observeRepos()
                 .observe(this, Observer { reposState ->
-                    reposState?.deliverAllStates(object : OnlineCacheStateListener<List<RepoModel>> {
-                        override fun noCache() {
+                    reposState.apply {
+                        fetchError?.let { fetchError ->
+                            fetchError.message?.let { showEmptyView(it) }
+
+                            AlertDialog.Builder(this@MainActivity)
+                                    .setTitle("Error")
+                                    .setMessage(fetchError.message?: "Unknown error. Please, try again.")
+                                    .setPositiveButton("Ok") { dialog, _ ->
+                                        dialog.dismiss()
+                                    }
+                                    .create()
+                                    .show()
+                        }
+
+                        whenNoCache { isFetching, _ ->
                             repos_refresh_layout.isEnabled = false
                             // great place to show empty state where first fetch fails.
-                        }
-                        override fun finishedFirstFetch(errorDuringFetch: Throwable?) {
-                            if (errorDuringFetch != null) {
-                                errorDuringFetch.message?.let { showEmptyView(it) }
 
-                                AlertDialog.Builder(this@MainActivity)
-                                        .setTitle("Error")
-                                        .setMessage(errorDuringFetch.message?: "Unknown error. Please, try again.")
-                                        .setPositiveButton("Ok") { dialog, _ ->
-                                            dialog.dismiss()
-                                        }
-                                        .create()
-                                        .show()
+                            when {
+                                isFetching -> showLoadingView()
                             }
                         }
-                        override fun firstFetch() {
-                            showLoadingView()
-                        }
-                        override fun cacheEmpty(fetched: Date) {
-                            repos_refresh_layout.isEnabled = true
+                        whenCache { cache, lastSuccessfulFetch, isFetching, _, _ ->
+                            if (cache == null) {
+                                repos_refresh_layout.isEnabled = true
+                                showEmptyView()
+                            } else {
+                                repos_refresh_layout.isEnabled = true
 
-                            showEmptyView()
-                        }
-                        override fun cache(cache: List<RepoModel>, fetched: Date) {
-                            repos_refresh_layout.isEnabled = true
+                                showDataView()
 
-                            showDataView()
+                                updateLastSyncedRunnable?.let { updateLastSyncedHandler?.removeCallbacks(it) }
+                                updateLastSyncedHandler = Handler()
+                                updateLastSyncedRunnable = Runnable {
+                                    data_age_textview.text = "Data last synced ${DateUtils.getRelativeTimeSpanString(lastSuccessfulFetch.time, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS)}"
+                                    updateLastSyncedHandler?.postDelayed(updateLastSyncedRunnable!!, 1000)
+                                }
+                                updateLastSyncedHandler?.post(updateLastSyncedRunnable!!)
 
-                            updateLastSyncedRunnable?.let { updateLastSyncedHandler?.removeCallbacks(it) }
-                            updateLastSyncedHandler = Handler()
-                            updateLastSyncedRunnable = Runnable {
-                                data_age_textview.text = "Data last synced ${DateUtils.getRelativeTimeSpanString(fetched.time, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS)}"
-                                updateLastSyncedHandler?.postDelayed(updateLastSyncedRunnable!!, 1000)
+                                repos_recyclerview.apply {
+                                    layoutManager = LinearLayoutManager(this@MainActivity)
+                                    adapter = RepoRecyclerViewAdapter(cache)
+                                    setHasFixedSize(true)
+                                }
                             }
-                            updateLastSyncedHandler?.post(updateLastSyncedRunnable!!)
 
-                            repos_recyclerview.apply {
-                                layoutManager = LinearLayoutManager(this@MainActivity)
-                                adapter = RepoRecyclerViewAdapter(cache)
-                                setHasFixedSize(true)
+                            if (isFetching) {
+                                fetchingSnackbar = Snackbar.make(parent_view, "Updating repos list...", Snackbar.LENGTH_LONG)
+                                fetchingSnackbar?.show()
+                            } else {
+                                fetchingSnackbar?.dismiss()
                             }
                         }
-                        override fun fetching() {
-                            fetchingSnackbar = Snackbar.make(parent_view, "Updating repos list...", Snackbar.LENGTH_LONG)
-                            fetchingSnackbar?.show()
-                        }
-                        override fun finishedFetching(errorDuringFetch: Throwable?) {
-                            fetchingSnackbar?.dismiss()
-                        }
-                    })
+                    }
                 })
+
         gitHubUsernameViewModel.observeUsername()
-                .observe(this, Observer { username ->
-                    username?.deliverState(object : LocalCacheStateListener<String> {
-                        override fun isEmpty() {
+                .observe(this, Observer { usernameState ->
+                    usernameState.apply {
+                        if (cache == null) {
                             username_edittext.setText("", TextView.BufferType.EDITABLE)
-                        }
-                        override fun cache(cache: String) {
+                        } else {
                             username_edittext.setText(cache, TextView.BufferType.EDITABLE)
-                            reposViewModel.setUsername(cache)
+                            reposViewModel.setUsername(cache!!)
                         }
-                    })
+                    }
                 })
 
         go_button.setOnClickListener {

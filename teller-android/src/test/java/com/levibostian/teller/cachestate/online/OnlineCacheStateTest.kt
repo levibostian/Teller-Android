@@ -1,17 +1,14 @@
 package com.levibostian.teller.cachestate.online
 
 import com.google.common.truth.Truth.assertThat
-import com.levibostian.teller.cachestate.OnlineCacheState
-import com.levibostian.teller.cachestate.listener.OnlineCacheStateCacheListener
-import com.levibostian.teller.cachestate.listener.OnlineCacheStateFetchingListener
-import com.levibostian.teller.cachestate.listener.OnlineCacheStateListener
-import com.levibostian.teller.cachestate.listener.OnlineCacheStateNoCacheStateListener
+import com.levibostian.teller.cachestate.*
 import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
 import com.levibostian.teller.repository.OnlineRepository
 import com.nhaarman.mockito_kotlin.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito
 import org.mockito.junit.MockitoJUnitRunner
 import java.util.*
 
@@ -20,35 +17,22 @@ class OnlineCacheStateTest {
 
     private lateinit var cacheState: OnlineCacheState<String>
     @Mock private lateinit var cacheRequirements: OnlineRepository.GetCacheRequirements
-    @Mock private lateinit var cacheStateListener: OnlineCacheStateCacheListener<String>
-    @Mock private lateinit var noCacheStateListener: OnlineCacheStateNoCacheStateListener
-    @Mock private lateinit var fetchingFreshCacheListener: OnlineCacheStateFetchingListener
-    @Mock private lateinit var allStatesListener: OnlineCacheStateListener<String>
 
     @Test
     fun none_setsCorrectProperties() {
         cacheState = OnlineCacheState.none()
 
         assertThat(cacheState.noCacheExists).isFalse()
-        assertThat(cacheState.fetchingForFirstTime).isFalse()
-        assertThat(cacheState.cacheData).isNull()
-        assertThat(cacheState.lastTimeFetched).isNull()
-        assertThat(cacheState.isFetchingFreshData).isFalse()
+        assertThat(cacheState.isFetchingFirstCache).isFalse()
+        assertThat(cacheState.cache).isNull()
+        assertThat(cacheState.lastSuccessfulFetch).isNull()
+        assertThat(cacheState.isFetchingToUpdateCache).isFalse()
         assertThat(cacheState.requirements).isNull()
         assertThat(cacheState.stateMachine).isNull()
-        assertThat(cacheState.errorDuringFirstFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfulFirstFetch).isFalse()
-        assertThat(cacheState.errorDuringFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfullyFetchingFreshData).isFalse()
-    }
-
-    @Test
-    fun `none() - deliverAllStates() - No listener calls`() {
-        cacheState = OnlineCacheState.none()
-
-        cacheState.deliverAllStates(allStatesListener)
-
-        verifyZeroInteractions(allStatesListener)
+        assertThat(cacheState.fetchFirstCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedFirstCache).isFalse()
+        assertThat(cacheState.fetchToUpdateCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedToUpdateCache).isFalse()
     }
 
     @Test
@@ -64,37 +48,39 @@ class OnlineCacheStateTest {
     }
 
     @Test
-    fun fetching_expectCorrectValues() {
+    fun cacheExistsAndEmpty_expectCorrectValue() {
         cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cacheEmpty()
-        assertThat(cacheState.fetching).isFalse()
+        assertThat(cacheState.cacheExistsAndEmpty).isTrue()
 
         cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cacheEmpty().change().fetchingFreshCache()
-        assertThat(cacheState.fetching).isTrue()
+        assertThat(cacheState.cacheExistsAndEmpty).isTrue()
 
-        cacheState = OnlineCacheStateStateMachine.noCacheExists(cacheRequirements)
-        assertThat(cacheState.fetching).isFalse()
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cache("Cache")
+        assertThat(cacheState.cacheExistsAndEmpty).isFalse()
+
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cache("Cache").change().cacheEmpty()
+        assertThat(cacheState.cacheExistsAndEmpty).isTrue()
 
         cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch()
-        assertThat(cacheState.fetching).isTrue()
-
-        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch().change().successfulFirstFetch(Date())
-        assertThat(cacheState.fetching).isFalse()
+        assertThat(cacheState.cacheExistsAndEmpty).isFalse()
     }
 
     @Test
-    fun cache_expectCorrectValue() {
+    fun isFetching_expectCorrectValues() {
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cacheEmpty()
+        assertThat(cacheState.isFetching).isFalse()
+
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cacheEmpty().change().fetchingFreshCache()
+        assertThat(cacheState.isFetching).isTrue()
+
+        cacheState = OnlineCacheStateStateMachine.noCacheExists(cacheRequirements)
+        assertThat(cacheState.isFetching).isFalse()
+
         cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch()
-        assertThat(cacheState.cache).isNull()
+        assertThat(cacheState.isFetching).isTrue()
 
         cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch().change().successfulFirstFetch(Date())
-        assertThat(cacheState.cache).isNull()
-
-        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cacheEmpty()
-        assertThat(cacheState.cache).isNull()
-
-        val cache = "cache"
-        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cache(cache)
-        assertThat(cacheState.cache).isEqualTo(cache)
+        assertThat(cacheState.isFetching).isFalse()
     }
 
     @Test
@@ -120,7 +106,7 @@ class OnlineCacheStateTest {
     }
 
     @Test
-    fun justCompletedFetchCache_expectCorrectValue() {
+    fun justSuccessfullyFetchedCache_expectCorrectValue() {
         cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch()
         assertThat(cacheState.justSuccessfullyFetchedCache).isFalse()
 
@@ -141,130 +127,134 @@ class OnlineCacheStateTest {
     }
 
     @Test
-    fun deliverCacheState_cacheEmpty_expectCallListenerFunctions() {
-        val fetched = Date()
-        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, fetched).change().cacheEmpty()
+    fun whenNoCache_noCache_expectCallbacks() {
+        cacheState = OnlineCacheStateStateMachine.noCacheExists(cacheRequirements)
 
-        cacheState.deliverCacheState(cacheStateListener)
+        val callback = mock<WhenNoCacheCallback>()
 
-        verify(cacheStateListener).cacheEmpty(fetched)
-        verify(cacheStateListener, never()).cache(anyOrNull(), any())
+        cacheState.whenNoCache(callback)
+
+        verify(callback).invoke(false, null)
     }
 
     @Test
-    fun deliverCacheState_cacheData_expectCallListenerFunctions() {
+    fun whenNoCache_fetchingForFirstTime_expectCallbacks() {
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch()
+
+        val callback = mock<WhenNoCacheCallback>()
+        cacheState.whenNoCache(callback)
+
+        verify(callback).invoke(true, null)
+    }
+
+    @Test
+    fun whenNoCache_finishedFirstFetch_expectNoCallbacks() {
+        val timeFetched = Date()
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch().change().successfulFirstFetch(timeFetched)
+
+        val callback = mock<WhenNoCacheCallback>()
+        cacheState.whenNoCache(callback)
+
+        verify(callback, never()).invoke(any(), anyOrNull())
+    }
+
+    @Test
+    fun whenNoCache_errorFirstFetch_expectCallbacks() {
+        val error = RuntimeException("")
+        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch().change().failFirstFetch(error)
+
+        val callback = mock<WhenNoCacheCallback>()
+        cacheState.whenNoCache(callback)
+
+        verify(callback).invoke(false, error)
+    }
+
+    @Test
+    fun whenNoCache_cacheExists_expectCallbacks() {
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cacheEmpty()
+
+        val callback = mock<WhenNoCacheCallback>()
+        cacheState.whenNoCache(callback)
+
+        verify(callback, never()).invoke(any(), anyOrNull())
+    }
+
+    @Test
+    fun whenCache_cacheEmpty_expectCallbacks() {
+        val fetched = Date()
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, fetched).change().cacheEmpty()
+
+        val callback = mock<WhenCacheCallback<String>>()
+        cacheState.whenCache(callback)
+
+        verify(callback).invoke(null, fetched, false, false, null)
+    }
+
+    @Test
+    fun whenCache_cacheData_expectCallbacks() {
         val data = "foo"
         val dataFetched = Date()
         cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, dataFetched).change().cache(data)
 
-        cacheState.deliverCacheState(cacheStateListener)
+        val callback = mock<WhenCacheCallback<String>>()
+        cacheState.whenCache(callback)
 
-        verify(cacheStateListener, never()).cacheEmpty(any())
-        verify(cacheStateListener).cache(data, dataFetched)
+        verify(callback).invoke(data, dataFetched, false, false, null)
     }
 
     @Test
-    fun deliverCacheState_noCache_expectNoListenerCalls() {
+    fun whenCache_noCache_expectNoCallbacks() {
         cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch()
 
-        cacheState.deliverCacheState(cacheStateListener)
+        val callback = mock<WhenCacheCallback<String>>()
+        cacheState.whenCache(callback)
 
-        verify(cacheStateListener, never()).cacheEmpty(any())
-        verify(cacheStateListener, never()).cache(anyOrNull(), any())
+        verify(callback, never()).invoke(anyOrNull(), any(), any(), any(), anyOrNull())
     }
 
     @Test
-    fun deliverNoCacheState_noCache_expectCallListenerFunctions() {
-        cacheState = OnlineCacheStateStateMachine.noCacheExists(cacheRequirements)
-
-        cacheState.deliverNoCacheState(noCacheStateListener)
-
-        verify(noCacheStateListener).noCache()
-        verify(noCacheStateListener, never()).firstFetch()
-        verify(noCacheStateListener, never()).finishedFirstFetch(anyOrNull())
-    }
-
-    @Test
-    fun deliverNoCacheState_fetchingForFirstTime_expectCallListenerFunctions() {
-        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch()
-
-        cacheState.deliverNoCacheState(noCacheStateListener)
-
-        inOrder(noCacheStateListener).apply {
-            verify(noCacheStateListener).noCache()
-            verify(noCacheStateListener).firstFetch()
-        }
-
-        verify(noCacheStateListener, never()).finishedFirstFetch(anyOrNull())
-    }
-
-    @Test
-    fun deliverNoCacheState_finishedFirstFetch_expectCallListenerFunctions() {
+    fun whenCache_firstFetchSuccessful_expectNoCallbacks() {
         val timeFetched = Date()
         cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch().change().successfulFirstFetch(timeFetched)
 
-        cacheState.deliverNoCacheState(noCacheStateListener)
+        val callback = mock<WhenCacheCallback<String>>()
+        cacheState.whenCache(callback)
 
-        verify(noCacheStateListener, never()).noCache()
-        verify(noCacheStateListener, never()).firstFetch()
-        verify(noCacheStateListener).finishedFirstFetch(null)
+        verify(callback).invoke(null, timeFetched, false, true, null)
     }
 
     @Test
-    fun deliverNoCacheState_errorFirstFetch_expectCallListenerFunctions() {
-        val error = RuntimeException("")
-        cacheState = OnlineCacheStateStateMachine.noCacheExists<String>(cacheRequirements).change().firstFetch().change().failFirstFetch(error)
+    fun whenCache_fetchingFreshCache_expectCallbacks() {
+        val lastFetch = Date()
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, lastFetch).change().fetchingFreshCache()
 
-        cacheState.deliverNoCacheState(noCacheStateListener)
+        val callback = mock<WhenCacheCallback<String>>()
+        cacheState.whenCache(callback)
 
-        inOrder(noCacheStateListener).apply {
-            verify(noCacheStateListener).noCache()
-            verify(noCacheStateListener).finishedFirstFetch(error)
-        }
-
-        verify(noCacheStateListener, never()).firstFetch()
+        verify(callback).invoke(null, lastFetch, true, false, null)
     }
 
     @Test
-    fun deliverNoCacheState_cacheExists_expectNoListenerCalls() {
-        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cacheEmpty()
-
-        cacheState.deliverNoCacheState(noCacheStateListener)
-
-        verify(noCacheStateListener, never()).noCache()
-        verify(noCacheStateListener, never()).firstFetch()
-        verify(noCacheStateListener, never()).finishedFirstFetch(anyOrNull())
-    }
-
-    @Test
-    fun deliverFetchingFreshCacheState_fetchingFreshCache_expectCallListenerFunctions() {
-        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().fetchingFreshCache()
-
-        cacheState.deliverFetchingFreshCacheState(fetchingFreshCacheListener)
-
-        verify(fetchingFreshCacheListener).fetching()
-        verify(fetchingFreshCacheListener, never()).finishedFetching(anyOrNull())
-    }
-
-    @Test
-    fun deliverFetchingFreshCacheState_finishedFetchingFreshCache_expectCallListenerFunctions() {
+    fun whenCache_failFetch_expectCallbacks() {
         val error = RuntimeException()
-        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().fetchingFreshCache().change().failRefreshCache(error)
+        val fetched = Date()
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, fetched).change().fetchingFreshCache().change().failRefreshCache(error)
 
-        cacheState.deliverFetchingFreshCacheState(fetchingFreshCacheListener)
+        val callback = mock<WhenCacheCallback<String>>()
+        cacheState.whenCache(callback)
 
-        verify(fetchingFreshCacheListener, never()).fetching()
-        verify(fetchingFreshCacheListener).finishedFetching(error)
+        verify(callback).invoke(null, fetched, false, false, error)
     }
 
     @Test
-    fun deliverFetchingFreshCacheState_notFetchingFreshData_expectNoListenerCalls() {
-        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().cacheEmpty()
+    fun whenCache_successfulFetch_expectCallbacks() {
+        val timeFetched = Date()
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().fetchingFreshCache().change().successfulRefreshCache(timeFetched)
 
-        cacheState.deliverFetchingFreshCacheState(fetchingFreshCacheListener)
+        val callback = mock<WhenCacheCallback<String>>()
+        cacheState.whenCache(callback)
 
-        verify(fetchingFreshCacheListener, never()).fetching()
-        verify(fetchingFreshCacheListener, never()).finishedFetching(anyOrNull())
+        verify(callback).invoke(null, timeFetched, false, true, null)
     }
 
 }

@@ -28,16 +28,16 @@ internal class OnlineCacheStateStateMachine<CACHE: OnlineRepositoryCache> privat
 
             return OnlineCacheState(
                     noCacheExists = true,
-                    fetchingForFirstTime = false,
-                    cacheData = null,
-                    lastTimeFetched = null,
-                    isFetchingFreshData = false,
+                    isFetchingFirstCache = false,
+                    cache = null,
+                    lastSuccessfulFetch = null,
+                    isFetchingToUpdateCache = false,
                     requirements = requirements,
                     stateMachine = onlineDataStateMachine,
-                    errorDuringFirstFetch = null,
-                    justCompletedSuccessfulFirstFetch = false,
-                    errorDuringFetch = null,
-                    justCompletedSuccessfullyFetchingFreshData = false)
+                    fetchFirstCacheError = null,
+                    justSuccessfullyFetchedFirstCache = false,
+                    fetchToUpdateCacheError = null,
+                    justSuccessfullyFetchedToUpdateCache = false)
         }
 
         fun <CACHE: OnlineRepositoryCache> cacheExists(requirements: OnlineRepository.GetCacheRequirements, lastTimeFetched: Date): OnlineCacheState<CACHE> {
@@ -47,16 +47,16 @@ internal class OnlineCacheStateStateMachine<CACHE: OnlineRepositoryCache> privat
 
             return OnlineCacheState(
                     noCacheExists = false,
-                    fetchingForFirstTime = false,
-                    cacheData = null,
-                    lastTimeFetched = lastTimeFetched,
-                    isFetchingFreshData = false,
+                    isFetchingFirstCache = false,
+                    cache = null,
+                    lastSuccessfulFetch = lastTimeFetched,
+                    isFetchingToUpdateCache = false,
                     requirements = requirements,
                     stateMachine = onlineDataStateMachine,
-                    errorDuringFirstFetch = null,
-                    justCompletedSuccessfulFirstFetch = false,
-                    errorDuringFetch = null,
-                    justCompletedSuccessfullyFetchingFreshData = false)
+                    fetchFirstCacheError = null,
+                    justSuccessfullyFetchedFirstCache = false,
+                    fetchToUpdateCacheError = null,
+                    justSuccessfullyFetchedToUpdateCache = false)
         }
     }
 
@@ -68,16 +68,16 @@ internal class OnlineCacheStateStateMachine<CACHE: OnlineRepositoryCache> privat
 
         return OnlineCacheState(
                 noCacheExists = true,
-                fetchingForFirstTime = true,
-                cacheData = null,
-                lastTimeFetched = null,
-                isFetchingFreshData = false,
+                isFetchingFirstCache = true,
+                cache = null,
+                lastSuccessfulFetch = null,
+                isFetchingToUpdateCache = false,
                 requirements = requirements,
                 stateMachine = onlineDataStateMachine,
-                errorDuringFirstFetch = null,
-                justCompletedSuccessfulFirstFetch = false,
-                errorDuringFetch = null,
-                justCompletedSuccessfullyFetchingFreshData = false)
+                fetchFirstCacheError = null,
+                justSuccessfullyFetchedFirstCache = false,
+                fetchToUpdateCacheError = null,
+                justSuccessfullyFetchedToUpdateCache = false)
     }
 
     @Throws(NodeNotPossibleError::class)
@@ -92,16 +92,16 @@ internal class OnlineCacheStateStateMachine<CACHE: OnlineRepositoryCache> privat
         
         return OnlineCacheState(
                 noCacheExists = true,
-                fetchingForFirstTime = false,
-                cacheData = null,
-                lastTimeFetched = null,
-                isFetchingFreshData = false,
+                isFetchingFirstCache = false,
+                cache = null,
+                lastSuccessfulFetch = null,
+                isFetchingToUpdateCache = false,
                 requirements = requirements,
                 stateMachine = onlineDataStateMachine,
-                errorDuringFirstFetch = error,
-                justCompletedSuccessfulFirstFetch = false,
-                errorDuringFetch = null,
-                justCompletedSuccessfullyFetchingFreshData = false)
+                fetchFirstCacheError = error,
+                justSuccessfullyFetchedFirstCache = false,
+                fetchToUpdateCacheError = null,
+                justSuccessfullyFetchedToUpdateCache = false)
     }
 
     @Throws(NodeNotPossibleError::class)
@@ -119,16 +119,16 @@ internal class OnlineCacheStateStateMachine<CACHE: OnlineRepositoryCache> privat
 
         return OnlineCacheState(
                 noCacheExists = false,
-                fetchingForFirstTime = false,
-                cacheData = null,
-                lastTimeFetched = timeFetched,
-                isFetchingFreshData = false,
+                isFetchingFirstCache = false,
+                cache = null,
+                lastSuccessfulFetch = timeFetched,
+                isFetchingToUpdateCache = false,
                 requirements = requirements,
                 stateMachine = onlineDataStateMachine,
-                errorDuringFirstFetch = null,
-                justCompletedSuccessfulFirstFetch = true,
-                errorDuringFetch = null,
-                justCompletedSuccessfullyFetchingFreshData = false)
+                fetchFirstCacheError = null,
+                justSuccessfullyFetchedFirstCache = true,
+                fetchToUpdateCacheError = null,
+                justSuccessfullyFetchedToUpdateCache = false)
     }
 
     @Throws(NodeNotPossibleError::class)
@@ -147,16 +147,16 @@ internal class OnlineCacheStateStateMachine<CACHE: OnlineRepositoryCache> privat
 
         return OnlineCacheState(
                 noCacheExists = false,
-                fetchingForFirstTime = false,
-                cacheData = null,
-                lastTimeFetched = fetchingFreshCacheStateMachine.lastTimeFetched,
-                isFetchingFreshData = fetchingFreshCacheStateMachine.isFetching,
+                isFetchingFirstCache = false,
+                cache = null,
+                lastSuccessfulFetch = fetchingFreshCacheStateMachine.lastTimeFetched,
+                isFetchingToUpdateCache = fetchingFreshCacheStateMachine.isFetching,
                 requirements = requirements,
                 stateMachine = onlineDataStateMachine,
-                errorDuringFirstFetch = null,
-                justCompletedSuccessfulFirstFetch = false,
-                errorDuringFetch = null,
-                justCompletedSuccessfullyFetchingFreshData = false)
+                fetchFirstCacheError = null,
+                justSuccessfullyFetchedFirstCache = false,
+                fetchToUpdateCacheError = null,
+                justSuccessfullyFetchedToUpdateCache = false)
     }
 
     @Throws(NodeNotPossibleError::class)
@@ -175,16 +175,16 @@ internal class OnlineCacheStateStateMachine<CACHE: OnlineRepositoryCache> privat
 
         return OnlineCacheState(
                 noCacheExists = false,
-                fetchingForFirstTime = false,
-                cacheData = cache,
-                lastTimeFetched = fetchingFreshCacheStateMachine.lastTimeFetched,
-                isFetchingFreshData = fetchingFreshCacheStateMachine.isFetching,
+                isFetchingFirstCache = false,
+                cache = cache,
+                lastSuccessfulFetch = fetchingFreshCacheStateMachine.lastTimeFetched,
+                isFetchingToUpdateCache = fetchingFreshCacheStateMachine.isFetching,
                 requirements = requirements,
                 stateMachine = onlineDataStateMachine,
-                errorDuringFirstFetch = null,
-                justCompletedSuccessfulFirstFetch = false,
-                errorDuringFetch = null,
-                justCompletedSuccessfullyFetchingFreshData = false)
+                fetchFirstCacheError = null,
+                justSuccessfullyFetchedFirstCache = false,
+                fetchToUpdateCacheError = null,
+                justSuccessfullyFetchedToUpdateCache = false)
     }
 
     @Throws(NodeNotPossibleError::class)
@@ -203,16 +203,16 @@ internal class OnlineCacheStateStateMachine<CACHE: OnlineRepositoryCache> privat
 
         return OnlineCacheState(
                 noCacheExists = false,
-                fetchingForFirstTime = false,
-                cacheData = cacheExistsStateMachine.cache,
-                lastTimeFetched = fetchingFreshCacheStateMachine.lastTimeFetched,
-                isFetchingFreshData = true,
+                isFetchingFirstCache = false,
+                cache = cacheExistsStateMachine.cache,
+                lastSuccessfulFetch = fetchingFreshCacheStateMachine.lastTimeFetched,
+                isFetchingToUpdateCache = true,
                 requirements = requirements,
                 stateMachine = onlineDataStateMachine,
-                errorDuringFirstFetch = null,
-                justCompletedSuccessfulFirstFetch = false,
-                errorDuringFetch = null,
-                justCompletedSuccessfullyFetchingFreshData = false)
+                fetchFirstCacheError = null,
+                justSuccessfullyFetchedFirstCache = false,
+                fetchToUpdateCacheError = null,
+                justSuccessfullyFetchedToUpdateCache = false)
     }
 
     @Throws(NodeNotPossibleError::class)
@@ -231,16 +231,16 @@ internal class OnlineCacheStateStateMachine<CACHE: OnlineRepositoryCache> privat
 
         return OnlineCacheState(
                 noCacheExists = false,
-                fetchingForFirstTime = false,
-                cacheData = cacheExistsStateMachine.cache,
-                lastTimeFetched = fetchingFreshCacheStateMachine.lastTimeFetched,
-                isFetchingFreshData = false,
+                isFetchingFirstCache = false,
+                cache = cacheExistsStateMachine.cache,
+                lastSuccessfulFetch = fetchingFreshCacheStateMachine.lastTimeFetched,
+                isFetchingToUpdateCache = false,
                 requirements = requirements,
                 stateMachine = onlineDataStateMachine,
-                errorDuringFirstFetch = null,
-                justCompletedSuccessfulFirstFetch = false,
-                errorDuringFetch = error,
-                justCompletedSuccessfullyFetchingFreshData = false)
+                fetchFirstCacheError = null,
+                justSuccessfullyFetchedFirstCache = false,
+                fetchToUpdateCacheError = error,
+                justSuccessfullyFetchedToUpdateCache = false)
     }
 
     @Throws(NodeNotPossibleError::class)
@@ -259,20 +259,20 @@ internal class OnlineCacheStateStateMachine<CACHE: OnlineRepositoryCache> privat
 
         return OnlineCacheState(
                 noCacheExists = false,
-                fetchingForFirstTime = false,
-                cacheData = cacheExistsStateMachine.cache,
-                lastTimeFetched = timeFetched,
-                isFetchingFreshData = false,
+                isFetchingFirstCache = false,
+                cache = cacheExistsStateMachine.cache,
+                lastSuccessfulFetch = timeFetched,
+                isFetchingToUpdateCache = false,
                 requirements = requirements,
                 stateMachine = onlineDataStateMachine,
-                errorDuringFirstFetch = null,
-                justCompletedSuccessfulFirstFetch = false,
-                errorDuringFetch = null,
-                justCompletedSuccessfullyFetchingFreshData = true)
+                fetchFirstCacheError = null,
+                justSuccessfullyFetchedFirstCache = false,
+                fetchToUpdateCacheError = null,
+                justSuccessfullyFetchedToUpdateCache = true)
     }
 
     override fun toString(): String {
-        return "State of machine: ${noCacheStateMachine?.toString() ?: ""} ${cacheExistsStateMachine?.toString() ?: ""} ${fetchingFreshCacheStateMachine?.toString() ?: ""}"
+        return "State: ${noCacheStateMachine?.toString() ?: ""} ${cacheExistsStateMachine?.toString() ?: ""} ${fetchingFreshCacheStateMachine?.toString() ?: ""}"
     }
     
     internal class NodeNotPossibleError(stateOfMachine: String): Throwable("Node not possible path in state machine with current state of machine: $stateOfMachine")
