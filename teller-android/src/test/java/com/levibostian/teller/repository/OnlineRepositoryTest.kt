@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.Teller
 import com.levibostian.teller.error.TellerLimitedFunctionalityException
+import com.levibostian.teller.extensions.awaitComplete
 import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.provider.SchedulersProvider
 import com.levibostian.teller.repository.manager.OnlineRepositoryCacheAgeManager
@@ -11,6 +12,8 @@ import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
 import com.levibostian.teller.util.AssertionUtil.Companion.check
 import com.levibostian.teller.util.TaskExecutor
 import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.anyOrNull
+import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -38,9 +41,13 @@ class OnlineRepositoryTest {
     @Mock private lateinit var taskExecutor: TaskExecutor
     @Mock private lateinit var refreshManagerListener: OnlineRepositoryRefreshManager.Listener
     @Mock private lateinit var sharedPreferences: SharedPreferences
+    @Mock private lateinit var sharedPreferencesEditor: SharedPreferences.Editor
 
     @Before
     fun setup() {
+        whenever(sharedPreferences.edit()).thenReturn(sharedPreferencesEditor)
+        whenever(sharedPreferencesEditor.putString(any(), anyOrNull())).thenReturn(sharedPreferencesEditor)
+
         compositeDisposable = CompositeDisposable()
         schedulersProvider.apply {
             `when`(io()).thenReturn(Schedulers.trampoline())
@@ -55,7 +62,7 @@ class OnlineRepositoryTest {
     private fun initRepository(limitedFunctionality: Boolean = false) {
         val teller = if (limitedFunctionality) Teller.getUnitTestingInstance() else Teller.getTestingInstance(sharedPreferences)
 
-        repository = OnlineRepositoryStub(cacheAgeManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener, teller)
+        repository = OnlineRepositoryStub(sharedPreferences, cacheAgeManager, refreshManager, schedulersProvider, taskExecutor, refreshManagerListener, teller)
     }
 
     @After
@@ -85,7 +92,7 @@ class OnlineRepositoryTest {
 
         compositeDisposable += repository.refresh(false)
                 .test()
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it).isEqualTo(OnlineRepository.RefreshResult.success())
                 })
@@ -105,7 +112,7 @@ class OnlineRepositoryTest {
 
         compositeDisposable += repository.refresh(false)
                 .test()
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it).isEqualTo(OnlineRepository.RefreshResult.success())
                 })
@@ -125,7 +132,7 @@ class OnlineRepositoryTest {
 
         compositeDisposable += repository.refresh(true)
                 .test()
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it).isEqualTo(OnlineRepository.RefreshResult.success())
                 })
@@ -143,7 +150,7 @@ class OnlineRepositoryTest {
 
         compositeDisposable += repository.refresh(false)
                 .test()
-                .await()
+                .awaitComplete()
                 .assertValue(check {
                     assertThat(it.didSkip()).isTrue()
                     assertThat(it.skipped).isEqualTo(OnlineRepository.RefreshResult.SkippedReason.CACHE_NOT_TOO_OLD)
@@ -185,5 +192,7 @@ class OnlineRepositoryTest {
             repository.refresh(false)
         }
     }
+
+
 
 }

@@ -11,6 +11,8 @@ import com.levibostian.teller.repository.manager.OnlineRepositoryRefreshManager
 import com.levibostian.teller.util.AssertionUtil.Companion.check
 import com.levibostian.teller.util.TaskExecutor
 import com.nhaarman.mockito_kotlin.any
+import com.nhaarman.mockito_kotlin.anyOrNull
+import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -33,9 +35,13 @@ class LocalRepositoryTest {
     @Mock private lateinit var schedulersProvider: SchedulersProvider
     @Mock private lateinit var taskExecutor: TaskExecutor
     @Mock private lateinit var sharedPreferences: SharedPreferences
+    @Mock private lateinit var sharedPreferencesEditor: SharedPreferences.Editor
 
     @Before
     fun setup() {
+        whenever(sharedPreferences.edit()).thenReturn(sharedPreferencesEditor)
+        whenever(sharedPreferencesEditor.putString(any(), anyOrNull())).thenReturn(sharedPreferencesEditor)
+
         requirements = LocalRepositoryStub.GetRequirements()
     }
 

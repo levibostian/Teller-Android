@@ -25,19 +25,16 @@ githubUsernameRepository.requirements = GitHubUsernameGetCacheRequirements()
 
 !> Even if your `LocalRepository.GetCacheRequirements` subclass does not have any parameters as the example above, you still need to set the `requirements` object in your `LocalRepository` instance to instruct Teller to begin.
 
-* Lastly, let's have Teller help us to parse the `usernameState` object and help us understand the current state of our cache. Do that via the `deliver_` functions in `LocalCacheState`.
+* Lastly, let's evaluate the current state of our cache and display that in the UI.
 
 ```kotlin
 githubUsernameRepository.observe()
      .subscribe { usernameState ->
-        usernameState?.deliverState(object : LocalCacheStateListener<String> {
-            override fun isEmpty() {
-                // The GitHub username cache is currently empty. Update your UI here to tell your user to type in a username.
-            }
-            override fun cache(cache: String) {
-                // The GitHub username has been set! You can use the `cache` parameter here as the GitHub username and display it however you wish in your app's UI.
-            }
-        })   
+        if (usernameState.cache != null) {
+            // The GitHub username has been set! You can use the `cache` parameter here as the GitHub username and display it however you wish in your app's UI.
+        } else {
+            // The GitHub username cache is currently empty. Update your UI here to tell your user to type in a username.
+        }
     }
 ```
 

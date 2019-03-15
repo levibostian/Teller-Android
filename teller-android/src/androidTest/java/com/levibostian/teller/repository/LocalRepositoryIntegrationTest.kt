@@ -12,10 +12,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.Teller
 import com.levibostian.teller.cachestate.LocalCacheState
-import com.levibostian.teller.extensions.awaitDispose
-import com.levibostian.teller.extensions.awaitDone
-import com.levibostian.teller.extensions.getTellerSharedPreferences
-import com.levibostian.teller.extensions.plusAssign
+import com.levibostian.teller.extensions.*
 import com.levibostian.teller.provider.TellerSchedulersProvider
 import com.levibostian.teller.rule.ClearSharedPreferencesRule
 import com.levibostian.teller.rule.MockitoInitRule
@@ -156,7 +153,7 @@ class LocalRepositoryIntegrationTest {
         repository.dispose()
 
         compositeDisposable += testObserver
-                .await()
+                .awaitComplete()
                 .assertComplete()
 
         observeCachedDataTestObserver

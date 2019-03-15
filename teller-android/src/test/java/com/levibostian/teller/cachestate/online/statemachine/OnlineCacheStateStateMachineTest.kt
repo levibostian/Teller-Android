@@ -28,16 +28,16 @@ class OnlineCacheStateStateMachineTest {
         cacheState = OnlineCacheStateStateMachine.noCacheExists(cacheRequirements)
 
         assertThat(cacheState.noCacheExists).isTrue()
-        assertThat(cacheState.fetchingForFirstTime).isFalse()
-        assertThat(cacheState.cacheData).isNull()
-        assertThat(cacheState.lastTimeFetched).isNull()
-        assertThat(cacheState.isFetchingFreshData).isFalse()
+        assertThat(cacheState.isFetchingFirstCache).isFalse()
+        assertThat(cacheState.cache).isNull()
+        assertThat(cacheState.lastSuccessfulFetch).isNull()
+        assertThat(cacheState.isFetchingToUpdateCache).isFalse()
         assertThat(cacheState.requirements).isEqualTo(cacheRequirements)
         assertThat(cacheState.stateMachine).isNotNull()
-        assertThat(cacheState.errorDuringFirstFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfulFirstFetch).isFalse()
-        assertThat(cacheState.errorDuringFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfullyFetchingFreshData).isFalse()
+        assertThat(cacheState.fetchFirstCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedFirstCache).isFalse()
+        assertThat(cacheState.fetchToUpdateCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedToUpdateCache).isFalse()
     }
 
     @Test
@@ -59,16 +59,16 @@ class OnlineCacheStateStateMachineTest {
         cacheState = OnlineCacheStateStateMachine.cacheExists(cacheRequirements, lastTimeFetched)
 
         assertThat(cacheState.noCacheExists).isFalse()
-        assertThat(cacheState.fetchingForFirstTime).isFalse()
-        assertThat(cacheState.cacheData).isNull()
-        assertThat(cacheState.lastTimeFetched).isEqualTo(lastTimeFetched)
-        assertThat(cacheState.isFetchingFreshData).isFalse()
+        assertThat(cacheState.isFetchingFirstCache).isFalse()
+        assertThat(cacheState.cache).isNull()
+        assertThat(cacheState.lastSuccessfulFetch).isEqualTo(lastTimeFetched)
+        assertThat(cacheState.isFetchingToUpdateCache).isFalse()
         assertThat(cacheState.requirements).isEqualTo(cacheRequirements)
         assertThat(cacheState.stateMachine).isNotNull()
-        assertThat(cacheState.errorDuringFirstFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfulFirstFetch).isFalse()
-        assertThat(cacheState.errorDuringFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfullyFetchingFreshData).isFalse()
+        assertThat(cacheState.fetchFirstCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedFirstCache).isFalse()
+        assertThat(cacheState.fetchToUpdateCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedToUpdateCache).isFalse()
     }
 
     @Test
@@ -97,16 +97,16 @@ class OnlineCacheStateStateMachineTest {
         cacheState = cacheState.change().firstFetch()
 
         assertThat(cacheState.noCacheExists).isTrue()
-        assertThat(cacheState.fetchingForFirstTime).isTrue()
-        assertThat(cacheState.cacheData).isNull()
-        assertThat(cacheState.lastTimeFetched).isNull()
-        assertThat(cacheState.isFetchingFreshData).isFalse()
+        assertThat(cacheState.isFetchingFirstCache).isTrue()
+        assertThat(cacheState.cache).isNull()
+        assertThat(cacheState.lastSuccessfulFetch).isNull()
+        assertThat(cacheState.isFetchingToUpdateCache).isFalse()
         assertThat(cacheState.requirements).isEqualTo(cacheRequirements)
         assertThat(cacheState.stateMachine).isNotNull()
-        assertThat(cacheState.errorDuringFirstFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfulFirstFetch).isFalse()
-        assertThat(cacheState.errorDuringFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfullyFetchingFreshData).isFalse()
+        assertThat(cacheState.fetchFirstCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedFirstCache).isFalse()
+        assertThat(cacheState.fetchToUpdateCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedToUpdateCache).isFalse()
     }
 
     @Test
@@ -140,16 +140,16 @@ class OnlineCacheStateStateMachineTest {
         cacheState = cacheState.change().failFirstFetch(fetchFail)
 
         assertThat(cacheState.noCacheExists).isTrue()
-        assertThat(cacheState.fetchingForFirstTime).isFalse()
-        assertThat(cacheState.cacheData).isNull()
-        assertThat(cacheState.lastTimeFetched).isNull()
-        assertThat(cacheState.isFetchingFreshData).isFalse()
+        assertThat(cacheState.isFetchingFirstCache).isFalse()
+        assertThat(cacheState.cache).isNull()
+        assertThat(cacheState.lastSuccessfulFetch).isNull()
+        assertThat(cacheState.isFetchingToUpdateCache).isFalse()
         assertThat(cacheState.requirements).isEqualTo(cacheRequirements)
         assertThat(cacheState.stateMachine).isNotNull()
-        assertThat(cacheState.errorDuringFirstFetch).isEqualTo(fetchFail)
-        assertThat(cacheState.justCompletedSuccessfulFirstFetch).isFalse()
-        assertThat(cacheState.errorDuringFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfullyFetchingFreshData).isFalse()
+        assertThat(cacheState.fetchFirstCacheError).isEqualTo(fetchFail)
+        assertThat(cacheState.justSuccessfullyFetchedFirstCache).isFalse()
+        assertThat(cacheState.fetchToUpdateCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedToUpdateCache).isFalse()
     }
 
     @Test
@@ -185,16 +185,16 @@ class OnlineCacheStateStateMachineTest {
         cacheState = cacheState.change().successfulFirstFetch(lastTimeFetched)
 
         assertThat(cacheState.noCacheExists).isFalse()
-        assertThat(cacheState.fetchingForFirstTime).isFalse()
-        assertThat(cacheState.cacheData).isNull()
-        assertThat(cacheState.lastTimeFetched).isEqualTo(lastTimeFetched)
-        assertThat(cacheState.isFetchingFreshData).isFalse()
+        assertThat(cacheState.isFetchingFirstCache).isFalse()
+        assertThat(cacheState.cache).isNull()
+        assertThat(cacheState.lastSuccessfulFetch).isEqualTo(lastTimeFetched)
+        assertThat(cacheState.isFetchingToUpdateCache).isFalse()
         assertThat(cacheState.requirements).isEqualTo(cacheRequirements)
         assertThat(cacheState.stateMachine).isNotNull()
-        assertThat(cacheState.errorDuringFirstFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfulFirstFetch).isTrue()
-        assertThat(cacheState.errorDuringFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfullyFetchingFreshData).isFalse()
+        assertThat(cacheState.fetchFirstCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedFirstCache).isTrue()
+        assertThat(cacheState.fetchToUpdateCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedToUpdateCache).isFalse()
     }
 
     @Test
@@ -227,16 +227,16 @@ class OnlineCacheStateStateMachineTest {
         cacheState = cacheState.change().cacheEmpty()
 
         assertThat(cacheState.noCacheExists).isFalse()
-        assertThat(cacheState.fetchingForFirstTime).isFalse()
-        assertThat(cacheState.cacheData).isNull()
-        assertThat(cacheState.lastTimeFetched).isEqualTo(lastTimeFetched)
-        assertThat(cacheState.isFetchingFreshData).isTrue()
+        assertThat(cacheState.isFetchingFirstCache).isFalse()
+        assertThat(cacheState.cache).isNull()
+        assertThat(cacheState.lastSuccessfulFetch).isEqualTo(lastTimeFetched)
+        assertThat(cacheState.isFetchingToUpdateCache).isTrue()
         assertThat(cacheState.requirements).isEqualTo(cacheRequirements)
         assertThat(cacheState.stateMachine).isNotNull()
-        assertThat(cacheState.errorDuringFirstFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfulFirstFetch).isFalse()
-        assertThat(cacheState.errorDuringFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfullyFetchingFreshData).isFalse()
+        assertThat(cacheState.fetchFirstCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedFirstCache).isFalse()
+        assertThat(cacheState.fetchToUpdateCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedToUpdateCache).isFalse()
     }
 
     @Test
@@ -269,16 +269,16 @@ class OnlineCacheStateStateMachineTest {
         cacheState = cacheState.change().cache(cache)
 
         assertThat(cacheState.noCacheExists).isFalse()
-        assertThat(cacheState.fetchingForFirstTime).isFalse()
-        assertThat(cacheState.cacheData).isEqualTo(cache)
-        assertThat(cacheState.lastTimeFetched).isEqualTo(lastTimeFetched)
-        assertThat(cacheState.isFetchingFreshData).isTrue()
+        assertThat(cacheState.isFetchingFirstCache).isFalse()
+        assertThat(cacheState.cache).isEqualTo(cache)
+        assertThat(cacheState.lastSuccessfulFetch).isEqualTo(lastTimeFetched)
+        assertThat(cacheState.isFetchingToUpdateCache).isTrue()
         assertThat(cacheState.requirements).isEqualTo(cacheRequirements)
         assertThat(cacheState.stateMachine).isNotNull()
-        assertThat(cacheState.errorDuringFirstFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfulFirstFetch).isFalse()
-        assertThat(cacheState.errorDuringFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfullyFetchingFreshData).isFalse()
+        assertThat(cacheState.fetchFirstCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedFirstCache).isFalse()
+        assertThat(cacheState.fetchToUpdateCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedToUpdateCache).isFalse()
     }
 
     @Test
@@ -312,16 +312,16 @@ class OnlineCacheStateStateMachineTest {
         cacheState = cacheState.change().fetchingFreshCache()
 
         assertThat(cacheState.noCacheExists).isFalse()
-        assertThat(cacheState.fetchingForFirstTime).isFalse()
-        assertThat(cacheState.cacheData).isEqualTo(cache)
-        assertThat(cacheState.lastTimeFetched).isEqualTo(lastTimeFetched)
-        assertThat(cacheState.isFetchingFreshData).isTrue()
+        assertThat(cacheState.isFetchingFirstCache).isFalse()
+        assertThat(cacheState.cache).isEqualTo(cache)
+        assertThat(cacheState.lastSuccessfulFetch).isEqualTo(lastTimeFetched)
+        assertThat(cacheState.isFetchingToUpdateCache).isTrue()
         assertThat(cacheState.requirements).isEqualTo(cacheRequirements)
         assertThat(cacheState.stateMachine).isNotNull()
-        assertThat(cacheState.errorDuringFirstFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfulFirstFetch).isFalse()
-        assertThat(cacheState.errorDuringFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfullyFetchingFreshData).isFalse()
+        assertThat(cacheState.fetchFirstCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedFirstCache).isFalse()
+        assertThat(cacheState.fetchToUpdateCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedToUpdateCache).isFalse()
     }
 
     @Test
@@ -361,16 +361,16 @@ class OnlineCacheStateStateMachineTest {
         cacheState = cacheState.change().failRefreshCache(fetchFailure)
 
         assertThat(cacheState.noCacheExists).isFalse()
-        assertThat(cacheState.fetchingForFirstTime).isFalse()
-        assertThat(cacheState.cacheData).isEqualTo(cache)
-        assertThat(cacheState.lastTimeFetched).isEqualTo(lastTimeFetched)
-        assertThat(cacheState.isFetchingFreshData).isFalse()
+        assertThat(cacheState.isFetchingFirstCache).isFalse()
+        assertThat(cacheState.cache).isEqualTo(cache)
+        assertThat(cacheState.lastSuccessfulFetch).isEqualTo(lastTimeFetched)
+        assertThat(cacheState.isFetchingToUpdateCache).isFalse()
         assertThat(cacheState.requirements).isEqualTo(cacheRequirements)
         assertThat(cacheState.stateMachine).isNotNull()
-        assertThat(cacheState.errorDuringFirstFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfulFirstFetch).isFalse()
-        assertThat(cacheState.errorDuringFetch).isEqualTo(fetchFailure)
-        assertThat(cacheState.justCompletedSuccessfullyFetchingFreshData).isFalse()
+        assertThat(cacheState.fetchFirstCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedFirstCache).isFalse()
+        assertThat(cacheState.fetchToUpdateCacheError).isEqualTo(fetchFailure)
+        assertThat(cacheState.justSuccessfullyFetchedToUpdateCache).isFalse()
     }
 
     @Test
@@ -415,16 +415,16 @@ class OnlineCacheStateStateMachineTest {
         cacheState = cacheState.change().successfulRefreshCache(newTimeFetched)
 
         assertThat(cacheState.noCacheExists).isFalse()
-        assertThat(cacheState.fetchingForFirstTime).isFalse()
-        assertThat(cacheState.cacheData).isEqualTo(cache)
-        assertThat(cacheState.lastTimeFetched).isEqualTo(newTimeFetched)
-        assertThat(cacheState.isFetchingFreshData).isFalse()
+        assertThat(cacheState.isFetchingFirstCache).isFalse()
+        assertThat(cacheState.cache).isEqualTo(cache)
+        assertThat(cacheState.lastSuccessfulFetch).isEqualTo(newTimeFetched)
+        assertThat(cacheState.isFetchingToUpdateCache).isFalse()
         assertThat(cacheState.requirements).isEqualTo(cacheRequirements)
         assertThat(cacheState.stateMachine).isNotNull()
-        assertThat(cacheState.errorDuringFirstFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfulFirstFetch).isFalse()
-        assertThat(cacheState.errorDuringFetch).isNull()
-        assertThat(cacheState.justCompletedSuccessfullyFetchingFreshData).isTrue()
+        assertThat(cacheState.fetchFirstCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedFirstCache).isFalse()
+        assertThat(cacheState.fetchToUpdateCacheError).isNull()
+        assertThat(cacheState.justSuccessfullyFetchedToUpdateCache).isTrue()
     }
 
     @Test

@@ -125,19 +125,19 @@ class OnlineRepositoryTestingTest {
 //        val maxAgeOfCache = Age(1, Age.Unit.HOURS)
 //        `when`(repository.maxAgeOfCache).thenReturn(maxAgeOfCache)
 //
-//        val lastTimeFetched = Calendar.getInstance().apply {
+//        val lastSuccessfulFetch = Calendar.getInstance().apply {
 //            add(Calendar.DATE, -100)
 //        }.time
 //
 //        onlineRepositoryTesting.initState(repository, requirements) {
-//            cacheEmpty {
-//                lastFetched(lastTimeFetched)
+//            cacheExistsAndEmpty {
+//                lastFetched(lastSuccessfulFetch)
 //            }
 //        }
 //
 //        val setLastFetchedCaptor = argumentCaptor<Date>()
 //        verify(cacheAgeManager).updateLastSuccessfulFetch(eq(requirements.tag), setLastFetchedCaptor.capture())
-//        assertThat(setLastFetchedCaptor.firstValue).isEqualTo(lastTimeFetched)
+//        assertThat(setLastFetchedCaptor.firstValue).isEqualTo(lastSuccessfulFetch)
 //
 //        verify(repository, never()).saveCacheSyncCurrentThread(ArgumentMatchers.anyString(), eq(requirements))
 //    }

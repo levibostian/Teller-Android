@@ -26,49 +26,42 @@ reposRepository.requirements = ReposRepository.GetReposRequirements(usernameOfGi
 
 !> Even if your `OnlineRepository.GetCacheRequirements` subclass does not have any parameters, you still need to set the `requirements` object in your `OnlineRepository` instance to instruct Teller to begin.
 
-* Lastly, let's have Teller help us to parse the `reposState` object and help us understand the current state of our cache. Do that via one of the `deliver_` functions in `OnlineCacheState`.
+* Lastly, let's have Teller help us to parse the `reposState` object and help us understand the current state of our cache. 
 
 ```kotlin
 reposRepository.observe()
     .subscribe { reposState ->
-        reposState?.deliverAllStates(object : OnlineCacheStateListener<List<RepoModel>> {
-            override fun noCache() {
-                // GitHub repos have never been fetched successfully for this GitHub user before. 
-                // This function will be called along with `finishedFirstFetch()` if there was a failed first fetch of the cache.
-                // Therefore, this is a great place to show an "empty view" to your users. Perhaps a button for them to try a network fetch again? 
+        reposState.apply {
+            // You can evaluate the properties of `OnlineCacheState` to perform actions when they are set. Here, we handle *all* fetch errors.
+            fetchError?.let { fetchError ->
+                // If fetch error occurred during an update cache fetch or fetch for the first cache. 
             }
-            override fun firstFetch() {
-                // GitHub repos have never been fetched successfully before, but there is currently a network call happening right now to get those repositories. 
-                // Great place to show you your app user that their cache is being fetched for the first time.
+
+            // Or, use one of the handy functions below when a cache exists and when it does not. 
+            // This function tells us that a cache has never successfully been fetched before. 
+            whenNoCache { isFetching, errorDuringFetch ->
+                // GitHub repos have never been fetched successfully for this GitHub user before.    
+                // This is a great place to show an "empty view" to your users. Perhaps a button for them to try a network fetch again if `errorDuringFetch` is not null? 
+                // Also, make sure to check `isFetching` to determine if there is currently a network fetch happening to fetch the first cache successfully. 
+            }        
+            // This function tells us that a cache has successfully been fetched before. 
+            whenCache { cache, lastSuccessfulFetch, isFetching, isFetching, justSuccessfullyFetched, errorDuringFetch ->
+                if (cache == null) {
+                    // Cache has been fetched successfully before, but it is empty. There are not GitHub repositories for this user.
+                } else {
+                    // Cache has been fetched successfully before, and it's available as the `cache` parameter! Those are the GitHub repositories for the GitHub user you asked for!
+                }
+
+                // `lastSuccessfulFetch` tells you how old the empty cache is. It's recommended to show this in the UI of your app so the user knows how old the cache they are looking at is. 
+                // `isFetching` indicates cache exists, but is too old *or* you manually triggered a call to `ReposRepository.refresh()`.
             }
-            override fun finishedFirstFetch(errorDuringFetch: Throwable?) {
-                // The first fetch is complete (but it may not have been successful). 
-                // This is a great place to show an error message to your user or tell them that the cache has been fetched successfully for the first time.
-                // If `errorDuringFetch` is *not* null, it is the error that you returned from `OnlineRepository.fetchFreshCache()`.
-                // If `errorDuringFetch` is null, `noCache` or `cache` will be called to give you the state of the cache from the fetch.
-            } 
-            override fun cacheEmpty(fetched: Date) {
-                // Cache has been fetched successfully before, but it is empty. There are not GitHub repositories for this user. 
-                // `fetched` tells you how old the empty cache is. It's recommended to show this in the UI of your app.           
-            }
-            override fun cache(cache: List<RepoModel>, fetched: Date) {
-                // Cache has been fetched successfully before, and it's available as the `cache` parameter! Those are the GitHub repositories for the GitHub user you asked for!
-                // `fetched` tells you how old the cache is. It's recommended to show this in the UI of your app.
-            }
-            override fun fetching() {
-                // Cache exists, but is too old *or* you manually triggered a call to `ReposRepository.refresh()`.
-            }
-            override fun finishedFetching(errorDuringFetch: Throwable?) {
-                // Cache exists, and the fetch to try and update the cache is complete.
-                // If `errorDuringFetch` is *not* null, it is the error that you returned from `OnlineRepository.fetchFreshCache()`. `cacheEmpty()` or `cache` will also be called along with this function.
-            }
-        })
+        }
     }
 ```
 
 How easy is that? Teller tells you if the cache has been fetched before, if it's currently fetching, how old the cache is, and more! All you need to take care of is populating the UI of your app now depending on the state of the cache!
 
-`deliverAllStates()` has *a lot* of callback functions available. It can be a little much. Check out [the Javadoc](/javadoc/teller-android/com.levibostian.teller.cachestate/-online-cache-state/index.html) to learn about all of the `deliver_` functions available to you.
+`OnlineCacheState` has *a lot* of properties, and a couple callback functions available you can use. Check out [the Javadoc](/javadoc/teller-android/com.levibostian.teller.cachestate/-online-cache-state/index.html) to learn about all of the options available to you for displaying the state of the cache in the UI.
 
 ?> It is important to inform your users how old their cache is. Please, **use the `fetched` property to your advantage**! Tell the user in the UI that their cache is "Last updated 25 hours ago", "Last updated 2 minutes ago". Android provides some handy utility functions to print a human readable date to your users. Check out [DateUtils](https://developer.android.com/reference/android/text/format/DateUtils) where you will find functions you can use such as: `DateUtils.getRelativeTimeSpanString(fetched.time, System.currentTimeMillis(), DateUtils.SECOND_IN_MILLIS))`
 

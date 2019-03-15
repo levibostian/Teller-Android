@@ -1,14 +1,13 @@
 package com.levibostian.teller.cachestate
 
-import com.levibostian.teller.cachestate.listener.OnlineCacheStateCacheListener
-import com.levibostian.teller.cachestate.listener.OnlineCacheStateListener
-import com.levibostian.teller.cachestate.listener.OnlineCacheStateFetchingListener
-import com.levibostian.teller.cachestate.listener.OnlineCacheStateNoCacheStateListener
 import com.levibostian.teller.cachestate.online.statemachine.OnlineCacheStateStateMachine
 import com.levibostian.teller.repository.OnlineRepository
 import com.levibostian.teller.repository.OnlineRepositoryCache
 import com.levibostian.teller.testing.cachestate.OnlineCacheStateTesting
 import java.util.*
+
+typealias WhenNoCacheCallback = (isFetching: Boolean, errorDuringFetch: Throwable?) -> Unit
+typealias WhenCacheCallback<CACHE> = (cache: CACHE?, lastSuccessfulFetch: Date, isFetching: Boolean, justSuccessfullyFetched: Boolean, errorDuringFetch: Throwable?) -> Unit
 
 /**
 Holds the current state of response that is obtained via a network call. This response structure is meant to be passed out of Teller and to the application using Teller so it can parse it and display the response representation in the app.
@@ -18,18 +17,79 @@ Data in apps are in 1 of 3 different types of state:
 2. Data has been cached in the app and is either empty or not.
 3. A cache exists, and we are fetching fresh response to update the cache.
  */
-open class OnlineCacheState<CACHE: OnlineRepositoryCache> internal constructor(val noCacheExists: Boolean,
-                                                                               val fetchingForFirstTime: Boolean,
-                                                                               val cacheData: CACHE?,
-                                                                               val lastTimeFetched: Date?,
-                                                                               val isFetchingFreshData: Boolean,
-                                                                               val requirements: OnlineRepository.GetCacheRequirements?,
-                                                                               internal val stateMachine: OnlineCacheStateStateMachine<CACHE>?,
+open class OnlineCacheState<CACHE: OnlineRepositoryCache> internal constructor(
+        /**
+         * Cache has never successfully been fetched before.
+         */
+        val noCacheExists: Boolean,
+        /**
+         * Is this cache currently being fetched for the first time?
+         */
+        val isFetchingFirstCache: Boolean,
+        /**
+         * The cache data, if it exists and is not empty.
+         */
+        val cache: CACHE?,
+        /**
+         * The time when the last successful cache fetch took finished.
+         */
+        val lastSuccessfulFetch: Date?,
+        /**
+         * Is this cache currently being updated?
+         */
+        val isFetchingToUpdateCache: Boolean,
+        /**
+         * The [OnlineRepository.GetCacheRequirements] requirements that loaded this cache state.
+         */
+        val requirements: OnlineRepository.GetCacheRequirements?,
+        internal val stateMachine: OnlineCacheStateStateMachine<CACHE>?,
         // To prevent the end user getting spammed like crazy with UI messages of the same error or same status of response, the following properties should be set once in the constructor and then for future state calls, negate them.
-                                                                               val errorDuringFirstFetch: Throwable?,
-                                                                               val justCompletedSuccessfulFirstFetch: Boolean,
-                                                                               val errorDuringFetch: Throwable?,
-                                                                               val justCompletedSuccessfullyFetchingFreshData: Boolean) {
+        /**
+         * Error thrown during the first fetch for cache.
+         */
+        val fetchFirstCacheError: Throwable?,
+        /**
+         * The first fetch of cache just successfully completed.
+         */
+        val justSuccessfullyFetchedFirstCache: Boolean,
+        /**
+         * Error thrown during the fetch to update the cache.
+         */
+        val fetchToUpdateCacheError: Throwable?,
+        /**
+         * The fetch to update cache just successfully completed.
+         */
+        val justSuccessfullyFetchedToUpdateCache: Boolean) {
+
+    /**
+     * Has a cache ever been successfully fetched before?
+     */
+    val cacheExists: Boolean
+        get() = !noCacheExists
+
+    /**
+     * Cache has successfully been fetched before, and it's empty.
+     */
+    val cacheExistsAndEmpty: Boolean
+        get() = cacheExists && cache == null
+
+    /**
+     * Is this cache currently being fetched for the first time or updated?
+     */
+    val isFetching: Boolean
+        get() = isFetchingFirstCache || isFetchingToUpdateCache
+
+    /**
+     * If a recent fetch happened and there was an error.
+     */
+    val fetchError: Throwable?
+        get() = fetchFirstCacheError ?: fetchToUpdateCacheError
+
+    /**
+     * Did a fetch just happen and was successful?
+     */
+    val justSuccessfullyFetchedCache: Boolean
+        get() = justSuccessfullyFetchedFirstCache || justSuccessfullyFetchedToUpdateCache
 
     internal companion object {
         /**
@@ -38,16 +98,16 @@ open class OnlineCacheState<CACHE: OnlineRepositoryCache> internal constructor(v
         fun <CACHE: OnlineRepositoryCache> none(): OnlineCacheState<CACHE> {
             return OnlineCacheState(
                     noCacheExists = false,
-                    fetchingForFirstTime = false,
-                    cacheData = null,
-                    lastTimeFetched = null,
-                    isFetchingFreshData = false,
+                    isFetchingFirstCache = false,
+                    cache = null,
+                    lastSuccessfulFetch = null,
+                    isFetchingToUpdateCache = false,
                     requirements = null,
                     stateMachine = null,
-                    errorDuringFirstFetch = null,
-                    justCompletedSuccessfulFirstFetch = false,
-                    errorDuringFetch = null,
-                    justCompletedSuccessfullyFetchingFreshData = false)
+                    fetchFirstCacheError = null,
+                    justSuccessfullyFetchedFirstCache = false,
+                    fetchToUpdateCacheError = null,
+                    justSuccessfullyFetchedToUpdateCache = false)
         }
     }
 
@@ -68,76 +128,39 @@ open class OnlineCacheState<CACHE: OnlineRepositoryCache> internal constructor(v
     }
 
     /**
-     * Receive the full status of the response.
+     * Status of when a cache has never been successfully fetched before.
      *
-     * @see OnlineCacheStateNoCacheStateListener
-     * @see OnlineCacheStateCacheListener
-     * @see OnlineCacheStateFetchingListener
+     * *Note: After the first successful fetch for cache happens, this callback will not be notified. This callback will only be called when a cache has not successfully been fetched. See [justSuccessfullyFetchedFirstCache] when the first fetch finishes successfully.*
      */
-    fun deliverAllStates(listener: OnlineCacheStateListener<CACHE>) {
-        deliverCacheState(listener)
-        deliverFetchingFreshCacheState(listener)
-        deliverNoCacheState(listener)
+    fun whenNoCache(call: WhenNoCacheCallback) {
+        if (cacheExists) return
+
+        call.invoke(isFetchingFirstCache, fetchFirstCacheError)
     }
 
     /**
-     * This is usually used in the UI of an app to display the status of loading the response type for the first time to a user.
+     * Status of when a cache has been successfully fetched.
      */
-    fun deliverFetchingFreshCacheState(listener: OnlineCacheStateFetchingListener) {
-        when {
-            isFetchingFreshData -> listener.fetching()
-            justCompletedSuccessfullyFetchingFreshData -> listener.finishedFetching(null)
-            else -> errorDuringFetch?.let { listener.finishedFetching(it) }
-        }
-    }
-
-    /**
-     * This is usually used in the UI of an app to display the cached response to a user.
-     *
-     * Using this function, you can get the state of the cached response as well as handle errors that may have happened during fetching the cached response.
-     */
-    fun deliverCacheState(listener: OnlineCacheStateCacheListener<CACHE>) {
+    fun whenCache(call: WhenCacheCallback<CACHE>) {
         if (noCacheExists) return
-        
+
         // state of OnlineCacheState could be none() which triggers this code. Therefore, make sure that last time fetched is not null before calling listener.
-        lastTimeFetched?.let { lastTimeFetched ->
-            if (cacheData != null) {
-                listener.cache(cacheData, lastTimeFetched)
-            } else {
-                listener.cacheEmpty(lastTimeFetched)
-            }
-        }
-    }
-
-    /**
-     * This is usually used in the UI of an app to display that the cached response on the device is empty to a user.
-     *
-     * [OnlineCacheStateNoCacheStateListener] listener guaranteed to be called in this order:
-     * * [OnlineCacheStateNoCacheStateListener.noCache]
-     * * [OnlineCacheStateNoCacheStateListener.firstFetch]
-     * * [OnlineCacheStateNoCacheStateListener.finishedFirstFetch]
-     */
-    fun deliverNoCacheState(listener: OnlineCacheStateNoCacheStateListener) {
-        if (noCacheExists) listener.noCache()
-
-        when {
-            fetchingForFirstTime -> listener.firstFetch()
-            justCompletedSuccessfulFirstFetch -> listener.finishedFirstFetch(null)
-            else -> errorDuringFirstFetch?.let { listener.finishedFirstFetch(it) }
+        lastSuccessfulFetch?.let { lastSuccessfulFetch ->
+            call.invoke(cache, lastSuccessfulFetch, isFetchingToUpdateCache, justSuccessfullyFetchedCache, fetchToUpdateCacheError)
         }
     }
 
     override fun hashCode(): Int {
         var result = noCacheExists.hashCode()
-        result = 31 * result + fetchingForFirstTime.hashCode()
-        result = 31 * result + (cacheData?.hashCode() ?: 0)
-        result = 31 * result + (lastTimeFetched?.hashCode() ?: 0)
-        result = 31 * result + isFetchingFreshData.hashCode()
+        result = 31 * result + isFetchingFirstCache.hashCode()
+        result = 31 * result + (cache?.hashCode() ?: 0)
+        result = 31 * result + (lastSuccessfulFetch?.hashCode() ?: 0)
+        result = 31 * result + isFetchingToUpdateCache.hashCode()
         result = 31 * result + (requirements?.hashCode() ?: 0)
-        result = 31 * result + (errorDuringFirstFetch?.hashCode() ?: 0)
-        result = 31 * result + justCompletedSuccessfulFirstFetch.hashCode()
-        result = 31 * result + (errorDuringFetch?.hashCode() ?: 0)
-        result = 31 * result + justCompletedSuccessfullyFetchingFreshData.hashCode()
+        result = 31 * result + (fetchFirstCacheError?.hashCode() ?: 0)
+        result = 31 * result + justSuccessfullyFetchedFirstCache.hashCode()
+        result = 31 * result + (fetchToUpdateCacheError?.hashCode() ?: 0)
+        result = 31 * result + justSuccessfullyFetchedToUpdateCache.hashCode()
         return result
     }
 
@@ -146,17 +169,17 @@ open class OnlineCacheState<CACHE: OnlineRepositoryCache> internal constructor(v
 
         // Everything but state machine. That doesn't matter. The response here does.
         return this.noCacheExists == other.noCacheExists &&
-                this.fetchingForFirstTime == other.fetchingForFirstTime &&
-                this.cacheData == other.cacheData &&
-                this.isFetchingFreshData == other.isFetchingFreshData &&
-                this.lastTimeFetched == other.lastTimeFetched &&
+                this.isFetchingFirstCache == other.isFetchingFirstCache &&
+                this.cache == other.cache &&
+                this.isFetchingToUpdateCache == other.isFetchingToUpdateCache &&
+                this.lastSuccessfulFetch == other.lastSuccessfulFetch &&
 
                 this.requirements?.tag == other.requirements?.tag &&
 
-                this.errorDuringFirstFetch == other.errorDuringFirstFetch &&
-                this.justCompletedSuccessfulFirstFetch == other.justCompletedSuccessfulFirstFetch &&
-                this.justCompletedSuccessfullyFetchingFreshData == other.justCompletedSuccessfullyFetchingFreshData &&
-                this.errorDuringFetch == other.errorDuringFetch
+                this.fetchFirstCacheError == other.fetchFirstCacheError &&
+                this.justSuccessfullyFetchedFirstCache == other.justSuccessfullyFetchedFirstCache &&
+                this.justSuccessfullyFetchedToUpdateCache == other.justSuccessfullyFetchedToUpdateCache &&
+                this.fetchToUpdateCacheError == other.fetchToUpdateCacheError
     }
 
     override fun toString(): String {
