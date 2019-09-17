@@ -54,7 +54,7 @@ class OnlineCacheStateTesting private constructor() {
         fun <CACHE: OnlineRepositoryCache> cache(requirements: OnlineRepository.GetCacheRequirements,
                                lastTimeFetched: Date,
                                more: (CacheExistsDsl<CACHE>.() -> Unit)? = null): OnlineCacheState<CACHE> {
-            val cacheExists = CacheExistsDsl<CACHE>(lastTimeFetched)
+            val cacheExists = CacheExistsDsl<CACHE>()
             more?.let { cacheExists.it() }
 
             var stateMachine = OnlineCacheStateStateMachine.cacheExists<CACHE>(requirements, lastTimeFetched)
@@ -73,7 +73,7 @@ class OnlineCacheStateTesting private constructor() {
 
             if (cacheExists.props.successfulFetch) {
                 stateMachine = stateMachine.change().fetchingFreshCache()
-                        .change().successfulRefreshCache(cacheExists.props.timeFetched!!)
+                        .change().successfulRefreshCache(cacheExists.props.successfulFetchTime!!)
             }
 
             return stateMachine
@@ -109,10 +109,8 @@ class OnlineCacheStateTesting private constructor() {
     }
 
     @OnlineCacheStateTestingDsl
-    class CacheExistsDsl<CACHE: OnlineRepositoryCache>(lastFetched: Date) {
-        var props = Props<CACHE>(
-                timeFetched = lastFetched
-        )
+    class CacheExistsDsl<CACHE: OnlineRepositoryCache> {
+        var props = Props<CACHE>()
 
         fun cache(cache: CACHE) {
             props = Props(
@@ -138,7 +136,7 @@ class OnlineCacheStateTesting private constructor() {
             props = Props(
                     cache = props.cache,
                     successfulFetch = true,
-                    timeFetched = timeFetched
+                    successfulFetchTime = timeFetched
             )
         }
 
@@ -146,7 +144,7 @@ class OnlineCacheStateTesting private constructor() {
                                                        val fetching: Boolean = false,
                                                        val errorDuringFetch: Throwable? = null,
                                                        val successfulFetch: Boolean = false,
-                                                       val timeFetched: Date? = null)
+                                                       val successfulFetchTime: Date? = null)
     }
 
 }
