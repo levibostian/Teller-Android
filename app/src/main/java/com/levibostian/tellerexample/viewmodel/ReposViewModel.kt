@@ -40,8 +40,10 @@ class ReposViewModel: ViewModel() {
                 .observeOn(schedulersProvider.mainThread()))
     }
 
-    fun dispose() {
+    override fun onCleared() {
         reposRepository.dispose()
+
+        super.onCleared()
     }
 
     fun refresh(): Single<OnlineRepository.RefreshResult> {

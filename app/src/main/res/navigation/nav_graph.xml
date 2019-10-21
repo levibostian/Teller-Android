@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/reposForUserFragment">
+    <fragment
+        android:id="@+id/reposForUserFragment"
+        android:name="com.levibostian.tellerexample.fragment.ReposForUserFragment"
+        android:label="OnlineRepository example" />
+    <fragment
+        android:id="@+id/paging"
+        android:name="com.levibostian.tellerexample.fragment.PagingFragment"
+        android:label="Paging example" />
+</navigation>
