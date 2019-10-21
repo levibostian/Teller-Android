@@ -8,13 +8,13 @@ androidExtensions {
 }
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 29
     buildToolsVersion build_tools_version
 
     defaultConfig {
         applicationId "com.levibostian.tellerexample"
         minSdkVersion 16
-        targetSdkVersion 28
+        targetSdkVersion 29
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
@@ -45,13 +45,13 @@ dependencies {
     implementation project(':teller-android')
 
     // AndroidX UI libs
-    implementation "androidx.appcompat:appcompat:1.0.2"
-    implementation "androidx.fragment:fragment:1.0.0"
+    implementation "androidx.appcompat:appcompat:1.1.0"
+    implementation "androidx.fragment:fragment:1.1.0"
     implementation "com.google.android.material:material:1.0.0"
     implementation "androidx.recyclerview:recyclerview:1.0.0"
 
     // Architecture components
-    def lifecycleVersion = "2.0.0"
+    def lifecycleVersion = "2.1.0"
     implementation "androidx.lifecycle:lifecycle-extensions:$lifecycleVersion"
     kapt "androidx.lifecycle:lifecycle-compiler:$lifecycleVersion"
     implementation "androidx.lifecycle:lifecycle-reactivestreams:$lifecycleVersion"
@@ -59,7 +59,7 @@ dependencies {
     androidTestImplementation "androidx.arch.core:core-testing:$lifecycleVersion"
 
     // Room
-    def roomVersion = "2.0.0"
+    def roomVersion = "2.2.0"
     implementation "androidx.room:room-runtime:$roomVersion"
     kapt "androidx.room:room-compiler:$roomVersion"
     implementation "androidx.room:room-rxjava2:$roomVersion"
@@ -67,8 +67,8 @@ dependencies {
     androidTestImplementation "androidx.room:room-testing:$roomVersion"
 
     // RxJava
-    implementation "io.reactivex.rxjava2:rxandroid:2.1.0"
-    implementation "io.reactivex.rxjava2:rxjava:2.2.6"
+    implementation "io.reactivex.rxjava2:rxandroid:2.1.1"
+    implementation "io.reactivex.rxjava2:rxjava:2.2.10"
     implementation "com.f2prateek.rx.preferences2:rx-preferences:2.0.0"
 
     // Retrofit
@@ -84,7 +84,7 @@ dependencies {
     androidTestImplementation "com.squareup.okhttp3:mockwebserver:$okHttpVersion"
 
     // GSON
-    implementation 'com.google.code.gson:gson:2.8.4'
+    implementation 'com.google.code.gson:gson:2.8.5'
 
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -126,6 +126,6 @@ dependencies {
     def androidTestLibVersion = "1.1.0"
     androidTestImplementation "androidx.test:runner:$androidTestLibVersion"
     androidTestImplementation "androidx.test:rules:$androidTestLibVersion"
-    androidTestImplementation "androidx.test.ext:junit:1.1.0"
-    androidTestImplementation "androidx.test.ext:truth:1.1.0"
+    androidTestImplementation "androidx.test.ext:junit:1.1.1"
+    androidTestImplementation "androidx.test.ext:truth:1.2.0"
 }
