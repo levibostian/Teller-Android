@@ -117,7 +117,9 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
         // 2. Cancel refreshing so no fetch can finish.
         // 3. Set currentStateOfCache to something so anyone observing does not think they are still observing old requirements (old cache).
         // 4. Start everything up again.
-        set(value) {
+        set(newRequirements) {
+            val oldRequirements = this.requirements
+
             teller.assertNotLimitedFunctionality()
             assertNotDisposed()
 
@@ -126,13 +128,18 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
                 stopObservingCache()
             }
 
-            field = value
+            field = newRequirements
 
-            val newRequirements = field
             if (newRequirements != null) {
                 if (cacheAgeManager.hasSuccessfullyFetchedCache(newRequirements.tag)) {
                     currentStateOfCache.resetToCacheState(newRequirements, cacheAgeManager.lastSuccessfulFetch(newRequirements.tag)!!)
                     restartObservingCache(newRequirements)
+                } else if (pagingRepository && oldRequirements != null && cacheAgeManager.hasSuccessfullyFetchedCache(oldRequirements.tag)) {
+                    // If we get here, we are trying to load a new page of data that has never been fetched before. So, we are going to load the page before the new one, perform a refresh, then when the new page is loaded it will begin observing the new data.
+                    //currentStateOfCache.resetToCacheState(oldRequirements, cacheAgeManager.lastSuccessfulFetch(oldRequirements.tag)!!)
+                    //restartObservingCache(oldRequirements)
+
+                    performRefresh() // after done performing refresh, it will take the new requirements and start observing that
                 } else {
                     currentStateOfCache.resetToNoCacheState(newRequirements)
                     // When we set new requirements, we want to fetch for first time if have never been done before. Example: paging cache. If we go to a new page we have never gotten before, we want to fetch that cache for the first time.
@@ -143,6 +150,14 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
             }
         }
 
+    /**
+     * Indicates this repository is meant to load a paged collection of data using pagination. When a repository is marked as a paging repository, the repository will load old caches while new pages are being loaded to prevent the scenario where Teller indicates a cache doesn't exist but it does.
+     */
+    open val pagingRepository: Boolean = false
+
+    /**
+     * Have thought about making this function protected so that subclass can dispose of old observable to restart with a new one but always decide to keep it private. I can always conclude with, "Observables should be able to react to changes and stream data of any type". So if you need to change the cache you're observing for some reason, perhaps use a Subject or something. Design of your subclass may solve this problem.
+     */
     private fun restartObservingCache(requirements: GET_CACHE_REQUIREMENTS) {
         /**
          * You need to subscribe and observe on the UI thread because popular database solutions such as Realm, SQLite all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.
