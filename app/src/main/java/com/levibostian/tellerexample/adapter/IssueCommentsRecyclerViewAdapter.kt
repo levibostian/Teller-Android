@@ -18,7 +18,7 @@ class IssueCommentsRecyclerViewAdapter: PagedListAdapter<IssueCommentModel, Issu
         private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<IssueCommentModel>() {
             override fun areItemsTheSame(old: IssueCommentModel, new: IssueCommentModel): Boolean = old.id == new.id
 
-            override fun areContentsTheSame(old: IssueCommentModel, new: IssueCommentModel): Boolean = areItemsTheSame(old, new)
+            override fun areContentsTheSame(old: IssueCommentModel, new: IssueCommentModel): Boolean = old == new
         }
     }
 

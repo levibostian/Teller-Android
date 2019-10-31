@@ -7,7 +7,7 @@ import com.levibostian.tellerexample.service.vo.GitHubIssueCommentVo
 import java.util.*
 
 @Entity(tableName = "issue_comment")
-class IssueCommentModel(@PrimaryKey var id: Long = 0,
+data class IssueCommentModel(@PrimaryKey var id: Long = 0,
                         var node_id: String = "",
                         var body: String = "",
                         var github_username: String = "",

@@ -134,8 +134,8 @@ class PagingFragment : Fragment() {
                 })
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onStop() {
+        super.onStop()
 
         updateLastSyncedRunnable?.let { updateLastSyncedHandler?.removeCallbacks(it) }
     }
