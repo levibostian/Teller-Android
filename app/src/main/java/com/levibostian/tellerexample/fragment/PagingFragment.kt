@@ -82,28 +82,16 @@ class PagingFragment : Fragment() {
                     commentsState.apply {
                         val activity = this@PagingFragment.activity ?: return@apply
 
-                        fetchError?.let { fetchError ->
-                            fetchError.message?.let { showEmptyView(it) }
-
-                            AlertDialog.Builder(activity)
-                                    .setTitle("Error")
-                                    .setMessage(fetchError.message?: "Unknown error. Please, try again.")
-                                    .setPositiveButton("Ok") { dialog, _ ->
-                                        dialog.dismiss()
-                                    }
-                                    .create()
-                                    .show()
-                        }
-
-                        whenNoCache { isFetching, _ ->
+                        whenNoCache { isFetching, errorFetching ->
                             comments_refresh_layout.isEnabled = false
                             // great place to show empty state where first fetch fails.
 
                             when {
                                 isFetching -> showLoadingView()
+                                errorFetching != null -> showEmptyView(errorFetching.message!!)
                             }
                         }
-                        whenCache { cache, lastSuccessfulFetch, isFetching, _, _ ->
+                        whenCache { cache, lastSuccessfulFetch, isFetching, _, errorFetching ->
                             if (cache == null) {
                                 comments_refresh_layout.isEnabled = true
                                 showEmptyView()
@@ -128,6 +116,17 @@ class PagingFragment : Fragment() {
                                 fetchingSnackbar?.show()
                             } else {
                                 fetchingSnackbar?.dismiss()
+                            }
+
+                            errorFetching?.let { fetchingError ->
+                                AlertDialog.Builder(activity)
+                                        .setTitle("Error")
+                                        .setMessage(fetchingError.message?: "Unknown error. Please, try again.")
+                                        .setPositiveButton("Ok") { dialog, _ ->
+                                            dialog.dismiss()
+                                        }
+                                        .create()
+                                        .show()
                             }
                         }
                     }

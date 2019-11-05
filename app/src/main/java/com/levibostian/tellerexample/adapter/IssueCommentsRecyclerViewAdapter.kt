@@ -4,13 +4,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.paging.PagedList
 import androidx.paging.PagedListAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.levibostian.tellerexample.R
 import com.levibostian.tellerexample.model.IssueCommentModel
-import com.levibostian.tellerexample.model.RepoModel
 
 class IssueCommentsRecyclerViewAdapter: PagedListAdapter<IssueCommentModel, IssueCommentsRecyclerViewAdapter.ViewHolder>(DIFF_CALLBACK) {
 

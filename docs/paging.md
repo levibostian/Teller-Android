@@ -1,277 +1,233 @@
 # Paging 
 
-Teller works nicely with if your `OnlineRepository` is working with a network API that uses [paging/pagination](https://en.wikipedia.org/wiki/Pagination). Here are a couple of tips and some example code to build an `OnlineRepository` that will help do the job. 
+When working with a network API, you may encounter the situation of paging (also known as pagination). Paging is required when you are dealing with a large amount of data. Imagine if you asked the Twitter API to give you every tweet in your timeline. Twitter could respond with thousands, hundreds of thousands, or even millions of tweets! That many tweets could result is your app slowing down from having to download and then show that many tweets at a time. To combat this potential problem, pagination exists to help you retrieve chunks (or pages) of data from an API to make your app speedy. 
 
-* Create an `OnlineRepository` that is built to work with a paging network API. This `OnlineRepository` subclass looks like a regular `OnlineRepository` you [have created before](create_onlinerepository) with a couple small additions. 
+Need an example? [Open this GitHub webpage](https://github.com/search?q=android) and scroll to the bottom. You will see something that looks like this:
 
-Add a new parameter to your `OnlineRepository.GetCacheRequirements` instance to take in a page number.
+![buttons allowing you to browse to other pages of results from GitHub search](img/paging_page_indicator.png)
+
+GitHub's search returns pages of results where you can browse to other pages of results if you wish. Imagine if Google returned all of your search results to you without paging...
+
+Teller has built-in support for paging so you can easily add caching abilities to your paging API endpoint!
+
+!> Paging is a common scenario to encounter. In fact, [Android Jetpack](https://developer.android.com/jetpack) offers a library [specifically meant for paging](https://developer.android.com/topic/libraries/architecture/paging/) that you can use in your Android app. This library is optional and Teller will work if you decide to use it or not. You can decide on that later. Let's move onto learning about how to implement paging in our app. 
+
+# How to implement paging in an app
+
+For anyone needing to add paging support to their app, you need to follow these steps:
+
+1. Fetch the first page of data from a network API. Display this first page of fetched data to your user. Like if you went to the first page of [GitHub's search results](https://github.com/search?q=android). 
+2. In the UI of your app, know when to browse to the next page of data. This can be done through a scroll listener on a RecyclerView that determines when the user has scrolled to the end of the list or this can be done by a button instructing you to go to the next page like the bottom of [GitHub's search results](https://github.com/search?q=android). 
+3. Repeat. This process of paging in an app is a simple loop of (1) fetching and displaying pages of data and (2) determining in your UI when to go to the next page. 
+
+## How to implement paging *with a cache* in an app
+
+You're using Teller in your app which means that you want to cache the result of network API calls. For anyone needing to add paging support to their app while also caching the paged data, the process is similar to the steps above with a couple of additions:
+
+1. When the app starts up, check if an existing cache exists. 
+  * If a cache exists, show the cache to the user within the app. 
+  * If a cache does not exist, fetch the first page of data from a network API. 
+2. In the UI of your app, know when to browse to the next page of data. This can be done through a scroll listener on a RecyclerView that determines when the user has scrolled to the end of the list or this can be done by a button instructing you to go to the next page like the bottom of [GitHub's search results](https://github.com/search?q=android). 
+3. When you determine it's time to navigate to the next page, fetch the next page of data, append it to the existing cache, and then show the cache to the user. 
+4. Repeat. Keep going this process until it's time to navigate away from your app. The user might close the app, might navigate away to another screen, or something else. Either way, you need to do some cleanup. At this point, delete your cache beyond the first page. That way when the user opens up your app again, we are ready to go back to step 1 above and display the first page of cache only. We want to delete this old cache because (1) it's a convenient way to make sure we don't store an infinite amount of old, cached data in our app which may continue to take up storage on our user's device and (2) bugs can easily occur. To prevent bugs and keep our app's speedy, it's best to delete irrelevant cache and start over. 
+
+# Add paging with a cache to your app easily with Teller 
+
+Teller was built with paging in mind. It's easy to get going if you're used to the way Teller works already. To add paging, all it takes are these simple steps:
+
+1. Determine how paging works with the network API you are working with. Every API works differently with how pages of data are requested. Here are some examples.
+
+[GitHub's API](https://developer.github.com/v3/guides/traversing-with-pagination/) uses a page number where you request what page of data you need in the HTTP request: `https://api.github.com/search/code?q=addClass+user:mozilla&page=14` (see the `page=14` query parameter at the end?). So, as long as you have the page number of the last successful HTTP request, that's all you need to make the next request. 
+
+[SoundCloud has a few endpoints that use pagination](https://developers.soundcloud.com/docs/api/guide#pagination). SoundCloud will return a `next_href` property in the JSON response body if there is more cache to fetch. This `next_href` is a URL that you call to get the next page. So, as long as you have the `next_href` URL found in the last successful HTTP request, that's all you need to make the next request. 
+
+[Twitter's API uses 2 properties for pagination](https://developer.twitter.com/en/docs/basics/cursoring.html) that they like to call "cursoring". So, you will need to remember the `previousCursor` and `nextCursor` values from the last successful HTTP request to make the next request. 
+
+?> These 3 examples above are popular techniques amongst APIs. If you are working with an API that follows a technique that is different from the 3 above, [share it with us so we can add examples to these docs](https://github.com/levibostian/teller-android/issues/new). 
+
+Remember your decision. You will need to know this information for implementing the `OnlinePagingRepository.PagingRequirements` subclass. 
+
+2. Decide if you would like to use the [Android Jetpack paging library](https://developer.android.com/topic/libraries/architecture/paging/) or not. If you are using Room and LiveData, this library adds paging support to your RecyclerView with little to no effort. If you're not using Room and LiveData, read the paging library overview to see if it's worth using for your situation.
+
+There are many ways to determine if your user has scrolled to the end of a RecyclerView when not using the Jetpack paging library. Because of that, this document does not cover how to do this. It's up to you to look up a solution that works best for you. 
+
+Remember your decision. You will need to know this for implementing how you query the cache and navigate to new pages of your cache. 
+
+3. Time to bring everything together. Make a new class extending `OnlinePagingRepository`. `OnlinePagingRepository` is almost identical to the `OnlineRepository` [subclass you are familiar with](create_onlinerepository) except it adds a couple small changes specifically to make paging work with no extra work on your part. 
+
+Here is the example paging repository from the Teller example app with comments to help explain it all to you. 
+
+*Note: The below example code uses the Android Jetpack paging library. However, the logic behind the use of the abstract `OnlinePagingRepository` is the same no matter if you use this library or not. Follow the tips in the comments below if you're not using the paging library.*
 
 ```kotlin
-class GetReposRequirements(val githubUsername: String, val pageNumber: Int = 0): GetCacheRequirements {
-    override var tag = "Repos for user:$githubUsername, pageNumber:$pageNumber"
-}
-```
-
-To determine what parameter to add to your `OnlineRepository.GetCacheRequirements` subclass is difficult to say. It all depends on how the network API is created. Here are some examples.
-
-[GitHub's search code API endpoint](https://developer.github.com/v3/search/) uses a page number technique: 
-
-```kotlin
-class SearchCodeRequirements(val searchQuery: String, val pageNumber: Int = 0): GetCacheRequirements {
-    override var tag = "Search code for repo. Query:$searchQuery, pageNumber:$pageNumber"
-}
-```
-
-[SoundCloud has a few endpoints that use pagination](https://developers.soundcloud.com/docs/api/guide#pagination). SoundCloud will return a `next_href` property in the JSON response if there is more cache to fetch, or it will not exist if you have reached the end.
-
-```kotlin
-class GetTracksRequirements(val soundcloudUserId: Int, 
-                            val linkedPartitioning: Int? = null, 
-                            val nextHref: String? = null): GetCacheRequirements {
-    // `linkedPartitioning` represents the page number and `soundcloudUserId` represents the user.
-    override var tag = "Tracks for user. User ID:$soundcloudUserId, pageNumber:${linkedPartitioning ?: "0"}"
-}
-```
-
-[Twitter's API uses 2 properties for pagination](https://developer.twitter.com/en/docs/basics/cursoring.html) that they like to call "cursoring". 
-
-```kotlin
-class GetTimelineTweetsRequirements(val previousCursor: Long? = null, 
-                                    val nextCursor: Long? = null): GetCacheRequirements {
-    // `previousCursor` and `nextCursor` represents the paged chunk of cache we fetched.
-    override var tag = "My timeline of tweets. Next page:${nextCursor ?: "0"}, previous page:${previousCursor ?: "0"}"
-}
-```
-
-Try to think to yourself, "What pieces of information identify this unique chunk of cache?". Whatever that may be is how you need to construct the `OnlineRepository.GetCacheRequirements.tag`.
-
-* The next step is to incorporate paging into the rest of the `OnlineRepository` subclass. 
-
-This can be pretty straightforward. 
-
-```kotlin
-class SearchCodeRepository(private val service: GitHubRetrofitService,
-                           private val db: AppDatabase): OnlineRepository<SearchCodeFetchResponse, SearchCodeRepository.GetReposRequirements, SearchCodeFetchResponse>() {
-
-    override var maxAgeOfCache: Age = Age(7, Age.Unit.DAYS)
+/**
+ * Note the use of [PagedList] as the Cache type. This is because this example is using the Android Jetpack paging library. If you're not using the Jetpack paging library, you can use [List] or something equivalent. Whatever datatype your cache is in on the device. 
+ */
+class IssueCommentsRepository(private val service: GitHubService,
+                              private val db: AppDatabase,
+                              private val schedulersProvider: SchedulersProvider) : OnlinePagingRepository<PagedList<IssueCommentModel>, IssueCommentsRepository.PagingRequirements, IssueCommentsRepository.Requirements, List<IssueCommentModel>>(PagingRequirements()) {
 
     companion object {
-        const val PAGE_SIZE = 50
+        /**
+         * The default page size returned from the GitHub API is 30.
+         */
+        private const val PAGE_SIZE: Int = 30
     }
 
-    override fun fetchFreshCache(requirements: SearchCodeRequirements): Single<FetchResponse<SearchCodeFetchResponse>> {
-        return service.searchCode(requirements.searchQuery, pageNumber = requirements.pageNumber)
-                .map { response ->
-                    val fetchResponse: FetchResponse<SearchCodeFetchResponse>
-                    if (!response.isSuccessful) {
-                        fetchResponse = when (response.code()) {
-                            in 500..600 -> {
-                                FetchResponse.fail("The GitHub API is down. Please, try again later.")
-                            }                        
-                            else -> {
-                                // I do not like when apps say, "Unknown error. Please try again". It's terrible to do. But if it ever happens, that means you need to handle more HTTP status codes. Above are the only ones that I know GitHub will return. They don't document the rest of them, I don't think?
-                                FetchResponse.fail("Unknown error. Please, try again.")
-                            }
-                        }
-                    } else {         
-                        // Here, I am specifying if more pages are available or not.                
-                        val areMorePagesAvailable = response.body()!!.incomplete_results
-                        this.requirements.morePagesAvailable = areMorePagesAvailable                        
-                        val items = response.body()!!.items
-                        
-                        fetchResponse = FetchResponse.success(SearchCodeFetchResponse(items, areMorePagesAvailable))                        
-                    }
+    /**
+     * Tells Teller how old cache can be before it's determined "too old" and new cache is fetched automatically by calling `fetchFreshCache()`.
+     */
+    override var maxAgeOfCache: Age = Age(1, Age.Unit.DAYS)
 
-                    fetchResponse
+    /**
+     * Convenient property that is populated after fetching a page of data from the network API. This property tells us if there are more pages of data to retrieve from the API or not.
+     */
+    private var morePagesDataToLoad: Boolean = true
+
+    override fun fetchFreshCache(requirements: Requirements, pagingRequirements: PagingRequirements): Single<FetchResponse<List<IssueCommentModel>>> {
+        return service.listIssueComments(requirements.githubUsername, requirements.repoName, requirements.issueNumber, pagingRequirements.pageNumber)
+                .transformMapSuccess { httpResult ->
+                    when (httpResult.statusCode) {
+                        in 500..600 -> FetchResponse.fail(ServerNotAvailableException("The GitHub API is down. Please, try again later."))
+                        in 200..300 -> {
+                            val successfulBody = FetchResponse.success(httpResult.responseBody!!.map { IssueCommentModel.from(it, requirements.githubUsername, requirements.repoName, requirements.issueNumber) })
+
+                            /**
+                             * According to GitHub's API documents, https://developer.github.com/v3/guides/traversing-with-pagination/, the `Link` in the response header tells us if there is another page of data to retrieve or not.
+                             */
+                            morePagesDataToLoad = httpResult.responseHeaders.get("Link")!!.contains("rel=\"next\"")
+
+                            successfulBody
+                        }
+                        else -> {
+                            // I do not like when apps say, "Unknown error. Please try again". It's terrible to do. But if it ever happens, that means you need to handle more HTTP status codes. Above are the only ones that I know GitHub will return. They don't document the rest of them, I don't think?
+                            FetchResponse.fail(UnknownHttpResponseError("Unknown error. Please, try again."))
+                        }
+                    }
                 }
     }
 
-    override fun saveCache(cache: SearchCodeFetchResponse, requirements: SearchCodeRequirements) {
-        db.dao().insertSearchCodeResults(cache.searchCodeItems)
+    /**
+     * Nothing special here. We simply save the cache somehow. If a cache exists already, this will be appended to it.
+     */
+    override fun saveCache(cache: List<IssueCommentModel>, requirements: Requirements, pagingRequirements: PagingRequirements) {
+        db.reposDao().insertIssueComments(cache)
     }
 
-    override fun observeCache(requirements: SearchCodeRequirements): Observable<SearchCodeFetchResponse> {
-        val offset = requirements.pageNumber * PAGE_SIZE
-        return db.dao().observeSearchedCodeResults(requirements.searchQuery, limit = PAGE_SIZE, offset = offset).toObservable()
-            .map { codeResultsList ->
-                val morePagesAreAvailable = codeResultsList.count() >= PAGE_SIZE || requirements.morePagesAvailable
+    /**
+     * Where you observe the cache. Nothing special here. Because Teller helps you with deleting old cache, you can feel free to observe your full cache.
+     */
+    override fun observeCache(requirements: Requirements, pagingRequirements: PagingRequirements): Observable<PagedList<IssueCommentModel>> {
+        return db.reposDao().observeIssueCommentsForRepo(requirements.githubUsername, requirements.repoName, requirements.issueNumber)
+                .toObservable(
+                        PAGE_SIZE,
+                        boundaryCallback = PagedListBoundaryCallback())
+                .subscribeOn(schedulersProvider.io())
+    }
 
-                SearchCodeFetchResponse(morePagesAreAvailable, codeResultsList)
+    override fun isCacheEmpty(cache: PagedList<IssueCommentModel>, requirements: Requirements, pagingRequirements: PagingRequirements): Boolean = cache.isEmpty()
+
+    /**
+     * When using paging and a cache together, there are scenarios when you should delete old pages of cache. Teller takes care of determining when to delete old pages of data, but it's up to you to perform the actual deletion.
+     *
+     * @param persistFirstPage When true, delete the old cache that is beyond the first page cache. When false, go ahead and delete the full cache, including the first page.
+     */
+    override fun deleteOldCache(requirements: Requirements, persistFirstPage: Boolean): Completable {
+        return Completable.fromCallable {
+            db.reposDao().getIssueCommentsForRepo(requirements.githubUsername, requirements.repoName, requirements.issueNumber).let { allComments ->
+                val commentsToDelete = if (persistFirstPage) allComments.subList(PAGE_SIZE, allComments.size) else allComments
+
+                db.reposDao().deleteIssueComments(commentsToDelete)
             }
+        }.subscribeOn(schedulersProvider.io())
     }
 
-    override fun isCacheEmpty(cache: SearchCodeFetchResponse, requirements: SearchCodeRequirements): Boolean = cache.searchCodeItems.isEmpty()
-
-    fun getToNextPage() {
-        if (this.requirements == null) throw RuntimeException("Cannot go to next page if you have not even looked at the first one.")
-
-        this.requirements = SearchCodeRequirements(requirements.searchQuery,
-                                                   requirements.pageNumber += 1)
+    /**
+     * Convenient function to call when the user has scrolled to the end of the RecyclerView list. Here, we are setting a new value for the [pagingRequirements]. When this new property is set, Teller will automatically attempt to fetch the next page of cache.
+     */
+    private fun goToNextPage() {
+        if (morePagesDataToLoad) {
+            val currentPage = pagingRequirements.pageNumber
+            pagingRequirements = PagingRequirements(currentPage + 1)
+        }
     }
 
-    fun getToPreviousPage() {
-        if (this.requirements == null) throw RuntimeException("Cannot go to next page if you have not even looked at the first one.")
-        if (this.requirements.pageNumber <= 0) throw RuntimeException("Already on the first page. Cannot go to previous one.")
-
-        this.requirements = SearchCodeRequirements(requirements.searchQuery,
-                                                  requirements.pageNumber -= 1)
+    data class Requirements(val githubUsername: String, val repoName: String, val issueNumber: Int) : OnlineRepository.GetCacheRequirements {
+        override var tag = "Issue comments for repo $githubUsername/$repoName, number $issueNumber"
     }
 
-    class SearchCodeRequirements(val searchQuery: String, 
-                                 val pageNumber: Int = 0, 
-                                 var morePagesAvailable: Boolean = true): GetCacheRequirements {
-        override var tag = "Search code for repo. Query:$searchQuery, pageNumber:$pageNumber"
-    }
+    /**
+     * Because we are using the GitHub API, we use a page number to request pages of data from the GitHub API. Depending on the API you are working with, you may use a different set of requirements.
+     *
+     * @param pageNumber Defaulted to 1 as that's the value for the first page of data.
+     */
+    data class PagingRequirements(val pageNumber: Int = 1) : OnlinePagingRepository.PagingRequirements
 
-    // We use a custom POJO to represent the search results because we want to show in our UI if more pages are available or not. 
-    // When your user scrolls in a RecyclerView and they hit the bottom, you need to know if you should show a loading view as you load another page of cache or not. This property will indicate that.
-    data class SearchCodeFetchResponse(val searchCodeItems: List<SearchResultModel>,
-                                       val morePagesAvailable: Boolean)
+    /**
+     * Android Jetpack's BoundaryCallback that is called when the user has scrolled to the end of the RecyclerView and we can navigate to the next page of data.
+     *
+     * *Note: If you're not using the Jetpack paging library, you need to detect on your own when the RecyclerView has been scrolled to the end. When it has, call [goToNextPage] on your repository.*
+     */
+    inner class PagedListBoundaryCallback : PagedList.BoundaryCallback<IssueCommentModel>() {
+
+        override fun onItemAtEndLoaded(itemAtEnd: IssueCommentModel) {
+            this@IssueCommentsRepository.goToNextPage()
+        }
+
+    }
 
 }
 ```
 
-The above code has a few interesting additions. 
+4. Now that your repository is made, you can use it like a regular Teller `OnlineRepository`. The only difference is that when your user has scrolled through your RecyclerView and it's time to go to the next page of data, you need to call `goToNextPage()`. 
 
-1. The addition of a POJO, `SearchCodeFetchResponse` that is the response Object of the `fetchFreshCache()` function as well as the Object we return back from `observeCached()`. The reason a POJO is used here is because we need to send more information to the UI then just the list of code search results. We need to know if there is more cache available in paging or not!
+Oh, and quick tip. If you want to implement swipe-to-refresh into your app to refresh your cache, Teller has made this super easy for you. All you need to do is call the `.refresh(force = true)` on your instance of `OnlinePagingRepository` that you made. This is the same behavior that the `OnlineRepository` subclass offers to perform a pull-to-refresh. Teller takes care of deleting your old cache and resetting your paging number requirements for you. 
 
-View the documentation for the API that you are using to learn how to determine if more cache is available or not in paging. Each API is unique.
+#### Jetpack paging library 
 
-2. The `fetchFreshCache()` passes in the `SearchCodeRequirements.pageNumber` property into the API request to determine what page number to get.
+*Optional Jetpack paging library steps below. If not using this library, skip this section*
 
-3. `getToNextPage()` and `getToPreviousPage()` functions have been added as convenient ways for the UI to go to the next page. When the user scrolls to the bottom of the RecyclerView, for example, and the cache Object, `SearchCodeFetchResponse` says `morePagesAvailable`, then go ahead and attempt to load it!
+If you are using the Jetpack paging library in your app, you can go ahead and read the official Jetpack paging library documentation to learn how to use the library in your app. To help you get up and running faster with Teller paging, here is some help. 
 
-4. `observeCached()` is querying the database for a limit of `PAGE_SIZE` and an offset. This is important to do as it is what allows Teller to keep the cache up-to-date.
+* For your RecyclerView, extend `PagedListAdapter`. 
 
-Say you had an `OnlineRepository` that fetched 200 GitHub repositories. 4 separate fetch calls, 50 repositories in each page chunk. If the user of your app closes the app, reopens it, your `OnlineRepository` loads all 200 repositories in `observeCache()`, your user scrolls to the bottom of the list, Teller is instructed to load page number 2 of cache (which is chunks 51-100 repositories) and updates those in the local database. What about repositories 101-200? Your user will think that cache is fresh. Teller will never be instructed to ever fetch that cache.
-
-By having a page size and limit implemented, it allows your UI to control the loading and fetching of Teller. As the user scrolls, you can detect when the user has reached the top of bottom of the RecyclerView list which then triggers the loading of a previous or next page of cache in Teller. This allows Teller to always keep cache up-to-date.
-
-!> To go along with the explanation above, make sure to set the `PAGE_SIZE` value to the page size found in the API documentation or set it to a value you are certain is smaller then the page size found in the API documentation. As long as `PAGE_SIZE` <= actual page size returned from the API, then Teller will make sure that all of your cache is up-to-date.
-
-* Lastly, you need to detect when the bottom of the RecyclerView is reached so that you know when to load the next chunk of cache.
-
-This is out of the scope of this documentation as there are many ways to accomplish this. However, it is recommended to check out the [Android Jetpack Paging library](https://developer.android.com/topic/libraries/architecture/paging/). 
-
-This documentation will not go over the Paging library, but here is some example code that you may find helpful while reading through the [Paging library documentation](https://developer.android.com/topic/libraries/architecture/paging/)]. 
-
-Here is an example `OnlineRepository` using `PagedList`s and a `BoundaryCallback`:
-
-```kotlin
-import androidx.paging.PagedList
-import androidx.paging.RxPagedListBuilder
-import com.levibostian.teller.repository.OnlineRepository
-import com.levibostian.teller.type.Age
-import io.reactivex.BackpressureStrategy
-import io.reactivex.Observable
-import io.reactivex.Single
-
-class SearchCodeRepository(private val service: GitHubRetrofitService,
-                           private val db: Database,
-                           private val boundaryCallbackFactory: SearchCodeRepositoryPagedListBoundaryCallback): OnlineRepository<SearchCode, SearchCodeRepository.SearchCodeRequirements, SearchCodeFetchResponse>() {
+```kotlin 
+class IssueCommentsRecyclerViewAdapter: PagedListAdapter<IssueCommentModel, IssueCommentsRecyclerViewAdapter.ViewHolder>(DIFF_CALLBACK) {
 
     companion object {
-        const val PAGE_SIZE = 50
+        private val DIFF_CALLBACK = object : DiffUtil.ItemCallback<IssueCommentModel>() {
+            override fun areItemsTheSame(old: IssueCommentModel, new: IssueCommentModel): Boolean = old.id == new.id
+
+            override fun areContentsTheSame(old: IssueCommentModel, new: IssueCommentModel): Boolean = old == new
+        }
     }
 
-    override var maxAgeOfCache: Age = Age(5, Age.Unit.MINUTES)
-
-    override fun fetchFreshCache(requirements: SearchCodeRequirements): Single<FetchResponse<SearchCodeFetchResponse>> {
-        return service.searchCode(requirements.searchQuery, pageNumber = requirements.pageNumber)
-                .map { response ->
-                    val fetchResponse: FetchResponse<SearchCodeFetchResponse>
-                    if (!response.isSuccessful) {
-                        fetchResponse = when (response.code()) {
-                            in 500..600 -> {
-                                FetchResponse.fail("The GitHub API is down. Please, try again later.")
-                            }
-                            else -> {
-                                // I do not like when apps say, "Unknown error. Please try again". It's terrible to do. But if it ever happens, that means you need to handle more HTTP status codes. Above are the only ones that I know GitHub will return. They don't document the rest of them, I don't think?
-                                FetchResponse.fail("Unknown error. Please, try again.")
-                            }
-                        }
-                    } else {
-                        // Here, I am specifying if more pages are available or not.
-                        val areMorePagesAvailable = response.body()!!.incomplete_results
-                        this.requirements.morePagesAvailable = areMorePagesAvailable
-                        val items = response.body()!!.items
-
-                        fetchResponse = FetchResponse.success(SearchCodeFetchResponse(items, areMorePagesAvailable))
-                    }
-
-                    fetchResponse
-                }
+    class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val nameTextView: TextView = view.findViewById(R.id.repo_name_textview)
     }
 
-    override fun isCacheEmpty(cache: SearchCode, requirements: SearchCodeRequirements): Boolean = cache.searchCodeItems.isEmpty()
-
-    override fun observeCache(requirements: SearchCodeRequirements): Observable<SearchCode> {
-        return RxPagedListBuilder<Int, StatWithGamePlayers>(db.dao().observeSearchedCodeResults(), PAGE_SIZE)
-                .setBoundaryCallback(boundaryCallbackFactory.build(this))
-                .buildFlowable(BackpressureStrategy.LATEST)
-                .distinctUntilChanged()
-                .toObservable()
-                .map { codeResultsList ->
-                    val morePagesAreAvailable = codeResultsList.count() >= PAGE_SIZE || requirements.morePagesAvailable
-
-                    SearchCode(morePagesAreAvailable, codeResultsList)
-                }
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.adapter_repo_recyclerview, parent, false)
+        return ViewHolder(view)
     }
 
-    override fun saveCache(cache: SearchCodeFetchResponse, requirements: SearchCodeRequirements) {
-        db.dao().insertSearchCodeResults(cache.searchCodeItems)
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val comment = getItem(position)
+
+        holder.nameTextView.text = "${comment?.body ?: "Loading comment..."}"
     }
-
-    fun getToNextPage() {
-        if (this.requirements == null) throw RuntimeException("Cannot go to next page if you have not even looked at the first one.")
-
-        this.requirements = SearchCodeRequirements(requirements.searchQuery,
-                                                   requirements.pageNumber += 1)
-    }
-
-    fun getToPreviousPage() {
-        if (this.requirements == null) throw RuntimeException("Cannot go to next page if you have not even looked at the first one.")
-        if (this.requirements.pageNumber <= 0) throw RuntimeException("Already on the first page. Cannot go to previous one.")
-
-        this.requirements = SearchCodeRequirements(requirements.searchQuery,
-                                                  requirements.pageNumber -= 1)
-    }    
-
-    class SearchCodeRequirements(val searchQuery: String,
-                                 val pageNumber: Int = 0,
-                                 var morePagesAvailable: Boolean = true): GetCacheRequirements {
-        override var tag = "Search code for repo. Query:$searchQuery, pageNumber:$pageNumber"
-    }
-    
-    // POJO returned from Observable for the UI to receive. Uses a `PagedList` instead of a `List`
-    data class SearchCode(val searchCodeItems: PagedList<SearchResultModel>,
-                          val morePagesAvailable: Boolean)
-    
-    // POJO returned from fetch response. Uses a `List` instead of a `PagedList`
-    data class SearchCodeFetchResponse(val searchCodeItems: List<SearchResultModel>,
-                                       val morePagesAvailable: Boolean)
 
 }
 ```
 
-Here is a `PagedList.BoundaryCallback` example for the `OnlineRepository` above. 
+* If you're using Room change your DAO to return `DataSource.Factory` instead of what you were doing before for observing your cache. 
 
 ```kotlin
-import androidx.paging.PagedList
-
-class SearchCodeRepositoryPagedListBoundaryCallback(private val repository: SearchCodeRepository): PagedList.BoundaryCallback<SearchCodeRepository.SearchCode>() {
-
-    override fun onItemAtEndLoaded(itemAtEnd: SearchCodeRepository.SearchCode) {
-        if (itemAtEnd.morePagesAvailable) repository.getToNextPage()
-    }
-
-    class Factory() {
-        fun build(repo: SearchCodeRepository): SearchCodeRepositoryPagedListBoundaryCallback = SearchCodeRepositoryPagedListBoundaryCallback(repo)
-    }
-
+@Dao
+interface ReposDao {
+    @Query("SELECT * FROM issue_comment WHERE github_username = :username AND repo = :repoName AND issue_number = :issueNumber")
+    fun observeIssueCommentsForRepo(username: String, repoName: String, issueNumber: Int): DataSource.Factory<Int, IssueCommentModel>
 }
 ```
 
-By using the Paging library, it takes care of loading pages of cache from the database using Teller, displaying that information using a `PagedListAdapter`, then when the end of the list has been reached it will tell the Teller repository to go to the next page if there is another page available.
-
-Awesome! That was easy. 
+* Add this to whatever you have already seen from the example `OnlinePagingRepository` subclass above and you're set!

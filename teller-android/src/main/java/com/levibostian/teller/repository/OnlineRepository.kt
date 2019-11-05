@@ -395,7 +395,7 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
      * When a [OnlineRepository.fetchFreshCache] task is performed, Teller needs to know if the fetch request is considered to be a success or a failure.
      */
     class FetchResponse<FETCH_RESPONSE: OnlineRepositoryFetchResponse> private constructor(val response: FETCH_RESPONSE? = null,
-                                                                 val failure: Throwable? = null) {
+                                                                                           val failure: Throwable? = null) {
 
         companion object {
             fun <FETCH_RESPONSE: OnlineRepositoryFetchResponse> success(response: FETCH_RESPONSE): FetchResponse<FETCH_RESPONSE> {

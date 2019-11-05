@@ -1,13 +1,17 @@
 package com.levibostian.teller.repository
 
+import com.levibostian.teller.extensions.plusAssign
 import io.reactivex.Completable
 import io.reactivex.Observable
 import io.reactivex.Single
+import io.reactivex.disposables.CompositeDisposable
 
 /**
  * [OnlineRepository] that is designed specifically for paging.
  */
 abstract class OnlinePagingRepository<CACHE: OnlineRepositoryCache, PAGING_REQUIREMENTS: OnlinePagingRepository.PagingRequirements, GET_CACHE_REQUIREMENTS: OnlineRepository.GetCacheRequirements, FETCH_RESPONSE: OnlineRepositoryFetchResponse>(val firstPageRequirements: PAGING_REQUIREMENTS): OnlineRepository<CACHE, GET_CACHE_REQUIREMENTS, FETCH_RESPONSE>() {
+
+    private var disposeBag: CompositeDisposable = CompositeDisposable()
 
     /**
      * Requirements specifically to determine what page of data we are requesting.
@@ -58,11 +62,17 @@ abstract class OnlinePagingRepository<CACHE: OnlineRepositoryCache, PAGING_REQUI
          */
         if (force) {
             _pagingRequirements = firstPageRequirements
-            first = persistOnlyFirstPage(requirements)
+            first = deleteOldCache(requirements, persistFirstPage = true)
         }
 
         return first
                 .andThen(super._refresh(force, requirements))
+    }
+
+    override fun _dispose() {
+        disposeBag.clear()
+
+        super._dispose()
     }
 
     /**
@@ -72,7 +82,7 @@ abstract class OnlinePagingRepository<CACHE: OnlineRepositoryCache, PAGING_REQUI
      *
      * **Called on main thread** to match what [observeCache] is called on. Because this is an async function, you can move into another thread if you need.
      */
-    protected abstract fun persistOnlyFirstPage(requirements: GET_CACHE_REQUIREMENTS): Completable
+    protected abstract fun deleteOldCache(requirements: GET_CACHE_REQUIREMENTS, persistFirstPage: Boolean): Completable
 
     /**
      * Save the new cache [cache] to whatever storage method [OnlineRepository] chooses.
@@ -82,7 +92,13 @@ abstract class OnlinePagingRepository<CACHE: OnlineRepositoryCache, PAGING_REQUI
     protected abstract fun saveCache(cache: FETCH_RESPONSE, requirements: GET_CACHE_REQUIREMENTS, pagingRequirements: PAGING_REQUIREMENTS)
 
     override fun saveCache(cache: FETCH_RESPONSE, requirements: GET_CACHE_REQUIREMENTS) {
-        saveCache(cache, requirements, pagingRequirements)
+        // saveCache is called after successfully fetching pages of data. If we just got the first page of data, we should delete the old cache before saving the new. That way you don't have 2 pages of cache: 1 brand new and one that is old.
+        val first: Completable = if (isFirstPage) deleteOldCache(requirements, persistFirstPage = false) else Completable.complete()
+
+        disposeBag += first
+                .subscribe {
+                    saveCache(cache, requirements, pagingRequirements)
+                }
     }
 
     /**
@@ -101,7 +117,7 @@ abstract class OnlinePagingRepository<CACHE: OnlineRepositoryCache, PAGING_REQUI
          *
          * Only delete if paging requirements is set to initial. If the paging requirements has changed, it means the user has scrolled in the app and you don't want to delete that data while they are viewing it.
          */
-        val first: Completable = if (isFirstPage) persistOnlyFirstPage(requirements) else Completable.complete()
+        val first: Completable = if (isFirstPage) deleteOldCache(requirements, persistFirstPage = true) else Completable.complete()
 
         return first
                 .andThen(observeCache(requirements, pagingRequirements))
