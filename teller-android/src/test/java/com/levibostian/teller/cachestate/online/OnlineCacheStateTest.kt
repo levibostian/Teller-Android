@@ -127,6 +127,32 @@ class OnlineCacheStateTest {
     }
 
     @Test
+    fun convert_givenCache_expectConvertToNewType() {
+        val givenCache = "1"
+        val expectedCache = 1
+
+        cacheState = OnlineCacheStateStateMachine.cacheExists<String>(cacheRequirements, Date()).change().fetchingFreshCache().change().cache(givenCache)
+
+        val newCacheState = cacheState.convert { oldData ->
+            oldData!!.toInt()
+        }
+
+        assertThat(newCacheState.cache).isEqualTo(expectedCache)
+
+        assertThat(cacheState.noCacheExists).isEqualTo(newCacheState.noCacheExists)
+        assertThat(cacheState.isFetchingFirstCache).isEqualTo(newCacheState.isFetchingFirstCache)
+        // assertThat(cacheState.cache).isNull()
+        assertThat(cacheState.lastSuccessfulFetch).isEqualTo(newCacheState.lastSuccessfulFetch)
+        assertThat(cacheState.isFetchingToUpdateCache).isEqualTo(newCacheState.isFetchingToUpdateCache)
+        assertThat(cacheState.requirements).isEqualTo(newCacheState.requirements)
+        // assertThat(cacheState.stateMachine).isNull()
+        assertThat(cacheState.fetchFirstCacheError).isEqualTo(newCacheState.fetchFirstCacheError)
+        assertThat(cacheState.justSuccessfullyFetchedFirstCache).isEqualTo(newCacheState.justSuccessfullyFetchedFirstCache)
+        assertThat(cacheState.fetchToUpdateCacheError).isEqualTo(newCacheState.fetchToUpdateCacheError)
+        assertThat(cacheState.justSuccessfullyFetchedToUpdateCache).isEqualTo(newCacheState.justSuccessfullyFetchedToUpdateCache)
+    }
+
+    @Test
     fun whenNoCache_noCache_expectCallbacks() {
         cacheState = OnlineCacheStateStateMachine.noCacheExists(cacheRequirements)
 

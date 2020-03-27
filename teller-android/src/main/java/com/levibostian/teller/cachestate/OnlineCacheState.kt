@@ -127,6 +127,24 @@ open class OnlineCacheState<CACHE: OnlineRepositoryCache> internal constructor(
         return stateMachine ?: throw RuntimeException("State machine is null. Cannot change state when there is no state machine!")
     }
 
+    fun <NewDataType: Any> convert(converter: (CACHE?) -> NewDataType?): OnlineCacheState<NewDataType> {
+        val newCache = converter(cache)
+
+        // Notice that because this function is not used internally in the library, we provide `null` as the state machine because the state machine does not matter once it gets to the user.
+        return OnlineCacheState(
+                noCacheExists = noCacheExists,
+                isFetchingFirstCache = isFetchingFirstCache,
+                cache = newCache,
+                lastSuccessfulFetch = lastSuccessfulFetch,
+                isFetchingToUpdateCache = isFetchingToUpdateCache,
+                requirements = requirements,
+                stateMachine = null,
+                fetchFirstCacheError = fetchFirstCacheError,
+                justSuccessfullyFetchedFirstCache = justSuccessfullyFetchedFirstCache,
+                fetchToUpdateCacheError = fetchToUpdateCacheError,
+                justSuccessfullyFetchedToUpdateCache = justSuccessfullyFetchedToUpdateCache)
+    }
+
     /**
      * Status of when a cache has never been successfully fetched before.
      *
