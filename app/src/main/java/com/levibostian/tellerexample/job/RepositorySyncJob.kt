@@ -1,11 +1,11 @@
 package com.levibostian.tellerexample.job
 
+import android.preference.PreferenceManager
 import com.evernote.android.job.Job
 import com.levibostian.tellerexample.repository.ReposRepository
 import com.evernote.android.job.JobRequest
-import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.repository.TellerRepository
 import com.levibostian.tellerexample.MainApplication
-import com.levibostian.tellerexample.repository.GitHubUsernameRepository
 import com.levibostian.tellerexample.service.provider.AppSchedulersProvider
 import com.levibostian.tellerexample.util.DependencyUtil
 import io.reactivex.Single
@@ -29,9 +29,10 @@ class RepositorySyncJob: Job() {
     }
 
     override fun onRunJob(params: Params): Result {
-        val repos: ArrayList<Single<OnlineRepository.RefreshResult>> = arrayListOf()
+        val repos: ArrayList<Single<TellerRepository.RefreshResult>> = arrayListOf()
+        val sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
 
-        val latestUsername = GitHubUsernameRepository(MainApplication.appContext).currentUsernameSaved
+        val latestUsername = sharedPreferences.getString("githubUsernameKey", null)
         if (latestUsername != null) repos.add(
                 ReposRepository(DependencyUtil.serviceInstance(), DependencyUtil.dbInstance(MainApplication.appContext), AppSchedulersProvider()).apply {
                     requirements = ReposRepository.GetReposRequirements(latestUsername)

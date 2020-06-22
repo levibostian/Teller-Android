@@ -2,13 +2,9 @@ package com.levibostian.teller
 
 import android.annotation.SuppressLint
 import android.app.Application
-import android.content.Context
 import android.content.SharedPreferences
 import com.levibostian.teller.error.TellerLimitedFunctionalityException
 import com.levibostian.teller.extensions.getTellerSharedPreferences
-import com.levibostian.teller.repository.OnlineRepository
-import com.levibostian.teller.util.ConstantsUtil
-import io.reactivex.Observable
 
 class Teller internal constructor(internal val sharedPreferences: SharedPreferences?,
                                   internal val unitTesting: Boolean) {

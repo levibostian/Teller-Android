@@ -1,41 +1,32 @@
 package com.levibostian.tellerexample.viewmodel
 
 import android.content.Context
+import android.content.SharedPreferences
+import android.preference.PreferenceManager
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.ViewModel
-import com.levibostian.teller.cachestate.LocalCacheState
-import com.levibostian.tellerexample.repository.GitHubUsernameRepository
+import com.f2prateek.rx.preferences2.RxSharedPreferences
 import io.reactivex.BackpressureStrategy
 
 class GitHubUsernameViewModel: ViewModel() {
 
-    private lateinit var repository: GitHubUsernameRepository
+    private lateinit var sharedPreferences: SharedPreferences
+    private lateinit var rxSharedPreferences: RxSharedPreferences
 
-    private val requirements = GitHubUsernameRepository.GitHubUsernameGetCacheRequirements()
-
-    fun init(repository: GitHubUsernameRepository) {
-        this.repository = repository
-    }
+    private val usernameKey = "githubUsernameKey"
 
     fun init(context: Context) {
-        init(GitHubUsernameRepository(context).apply {
-            requirements = this@GitHubUsernameViewModel.requirements
-        })
+        this.sharedPreferences = PreferenceManager.getDefaultSharedPreferences(context)
+        this.rxSharedPreferences = RxSharedPreferences.create(sharedPreferences)
     }
 
     fun setUsername(username: String) {
-        repository.newCache(username, requirements)
+        sharedPreferences.edit().putString(usernameKey, username).apply()
     }
 
-    fun observeUsername(): LiveData<LocalCacheState<String>> {
-        return LiveDataReactiveStreams.fromPublisher(repository.observe().toFlowable(BackpressureStrategy.LATEST))
-    }
-
-    override fun onCleared() {
-        repository.dispose()
-
-        super.onCleared()
+    fun observeUsername(): LiveData<String> {
+        return LiveDataReactiveStreams.fromPublisher(rxSharedPreferences.getString(usernameKey).asObservable().toFlowable(BackpressureStrategy.LATEST))
     }
 
 }
