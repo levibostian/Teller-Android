@@ -1,11 +1,13 @@
 package com.levibostian.teller.subject
 
 
+import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.cachestate.CacheState
 import com.levibostian.teller.cachestate.statemachine.CacheStateStateMachine
 import com.levibostian.teller.extensions.plusAssign
 import com.levibostian.teller.repository.TellerRepository
+import com.levibostian.teller.repository.TellerRepositoryStub
 import com.levibostian.teller.util.AssertionUtil.Companion.check
 import io.reactivex.disposables.CompositeDisposable
 import org.junit.After
@@ -19,7 +21,7 @@ import java.util.*
 @RunWith(MockitoJUnitRunner::class)
 class CacheStateBehaviorSubjectTest {
 
-    private lateinit var subject: OnlineCacheStateBehaviorSubject<String>
+    private lateinit var subject: CacheStateBehaviorSubject<String>
     @Mock private lateinit var requirements: TellerRepository.GetCacheRequirements
 
     private lateinit var compositeDisposable: CompositeDisposable
@@ -27,7 +29,7 @@ class CacheStateBehaviorSubjectTest {
     @Before
     fun setup() {
         compositeDisposable = CompositeDisposable()
-        subject = OnlineCacheStateBehaviorSubject()
+        subject = CacheStateBehaviorSubject()
     }
 
     @After
@@ -88,7 +90,7 @@ class CacheStateBehaviorSubjectTest {
 
         val testObserver = subject.asObservable().test()
 
-        subject.changeState { it.firstFetch() }
+        subject.changeState(requirements) { it.firstFetch() }
 
         compositeDisposable += testObserver
                 .awaitCount(2)
@@ -98,20 +100,37 @@ class CacheStateBehaviorSubjectTest {
     }
 
     @Test
+    fun changeState_givenNoExistingRequirements_expectIgnoreRequest() {
+        subject.changeState(requirements) { it.firstFetch() }
+
+        assertThat(subject.currentState!!.isFetchingFirstCache).isFalse()
+    }
+
+    @Test
+    fun changeState_givenExistingRequirementsTagsDontMatch_expectIgnoreRequest() {
+        subject.resetToNoCacheState(TellerRepositoryStub.GetRequirements("tag1"))
+        subject.changeState(TellerRepositoryStub.GetRequirements("tag2")) { it.firstFetch() }
+        assertThat(subject.currentState!!.isFetchingFirstCache).isFalse()
+
+        subject.changeState(TellerRepositoryStub.GetRequirements("tag1")) { it.firstFetch() }
+        assertThat(subject.currentState!!.isFetchingFirstCache).isTrue()
+    }
+
+    @Test
     fun multipleObservers_receiveDifferentNumberOfEvents() {
         subject.resetStateToNone()
         subject.resetToNoCacheState(requirements)
-        subject.changeState { it.firstFetch() }
+        subject.changeState(requirements) { it.firstFetch() }
 
         val testObserver1 = subject.asObservable().test()
 
         val fetched = Date()
-        subject.changeState { it.successfulFirstFetch(fetched) }
+        subject.changeState(requirements) { it.successfulFirstFetch(fetched) }
 
         val testObserver2 = subject.asObservable().test()
 
         val data = "foo"
-        subject.changeState { it.cache(data) }
+        subject.changeState(requirements) { it.cache(data) }
 
         val expectedSeriesOfEvents = listOf(
                 CacheStateStateMachine.noCacheExists<String>(requirements).change()

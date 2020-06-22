@@ -91,6 +91,9 @@ open class CacheState<CACHE: RepositoryCache> internal constructor(
     val justSuccessfullyFetchedCache: Boolean
         get() = justSuccessfullyFetchedFirstCache || justSuccessfullyFetchedToUpdateCache
 
+    internal val isNone: Boolean
+        get() = cacheExists && lastSuccessfulFetch == null
+
     internal companion object {
         /**
          * This constructor is meant to be more of a placeholder. It's having "no state".

@@ -21,7 +21,7 @@ import java.util.*
  *
  * This class is meant to work with [TellerRepository] because it has all the states cache can have, including loading and fetching of fresh cache.
  */
-internal class OnlineCacheStateBehaviorSubject<CACHE: RepositoryCache> {
+internal class CacheStateBehaviorSubject<CACHE: RepositoryCache> {
 
     private var cacheState: CacheState<CACHE> = CacheState.none()
         set(value) {
@@ -56,8 +56,15 @@ internal class OnlineCacheStateBehaviorSubject<CACHE: RepositoryCache> {
         changeDataState(CacheStateStateMachine.cacheExists(requirements, lastTimeFetched))
     }
 
-    fun changeState(change: (CacheStateStateMachine<CACHE>) -> CacheState<CACHE>) {
+    fun changeState(requirements: TellerRepository.GetCacheRequirements, change: (CacheStateStateMachine<CACHE>) -> CacheState<CACHE>) {
         synchronized(this) {
+            val existingRequirements = cacheState.requirements ?: return
+            if (existingRequirements.tag != requirements.tag) return
+
+            if (cacheState.isNone) {
+                throw IllegalStateException("data state cannot be none. Reset it to another state, then change it.")
+            }
+
             val stateMachine = cacheState.stateMachine!!
             cacheState = change(stateMachine)
         }

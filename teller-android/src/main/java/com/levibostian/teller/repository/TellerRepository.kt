@@ -10,7 +10,7 @@ import com.levibostian.teller.repository.manager.RepositoryRefreshManager
 import com.levibostian.teller.repository.manager.RepositoryRefreshManagerWrapper
 import com.levibostian.teller.repository.manager.RepositoryCacheAgeManager
 import com.levibostian.teller.repository.manager.TellerRepositoryCacheAgeManager
-import com.levibostian.teller.subject.OnlineCacheStateBehaviorSubject
+import com.levibostian.teller.subject.CacheStateBehaviorSubject
 import com.levibostian.teller.testing.repository.OnlineRepositoryRefreshResultTesting
 import com.levibostian.teller.type.Age
 import com.levibostian.teller.util.TaskExecutor
@@ -66,7 +66,7 @@ abstract class TellerRepository<CACHE: RepositoryCache, GET_CACHE_REQUIREMENTS: 
 
     internal var observeCacheDisposeBag: CompositeDisposable = CompositeDisposable()
     // Important to never be nil so that we can call `observe` on this class and always be able to listen.
-    internal var currentStateOfCache: OnlineCacheStateBehaviorSubject<CACHE> = OnlineCacheStateBehaviorSubject()
+    internal var currentStateOfCache: CacheStateBehaviorSubject<CACHE> = CacheStateBehaviorSubject()
     internal lateinit var schedulersProvider: SchedulersProvider
     internal lateinit var taskExecutor: TaskExecutor
     /**
@@ -162,9 +162,9 @@ abstract class TellerRepository<CACHE: RepositoryCache, GET_CACHE_REQUIREMENTS: 
                         val needsToRefreshCache = cacheAgeManager.isCacheTooOld(requirements.tag, maxAgeOfCache)
 
                         if (isCacheEmpty(cache, requirements)) {
-                            currentStateOfCache.changeState { it.cacheEmpty() }
+                            currentStateOfCache.changeState(requirements) { it.cacheEmpty() }
                         } else {
-                            currentStateOfCache.changeState { it.cache(cache) }
+                            currentStateOfCache.changeState(requirements) { it.cache(cache) }
                         }
 
                         if (needsToRefreshCache) {
@@ -297,9 +297,9 @@ abstract class TellerRepository<CACHE: RepositoryCache, GET_CACHE_REQUIREMENTS: 
         val noCacheExists = currentStateOfCache.currentState?.noCacheExists ?: return
 
         if (noCacheExists) {
-            currentStateOfCache.changeState { it.firstFetch() }
+            currentStateOfCache.changeState(requirements) { it.firstFetch() }
         } else {
-            currentStateOfCache.changeState { it.fetchingFreshCache() }
+            currentStateOfCache.changeState(requirements) { it.fetchingFreshCache() }
         }
     }
 
@@ -323,17 +323,17 @@ abstract class TellerRepository<CACHE: RepositoryCache, GET_CACHE_REQUIREMENTS: 
              * Note: Make sure that you **do not** [restartObservingCache] if there is a failure and we have never fetched cache successfully before. We cannot begin observing a cache until we know for sure a cache actually exists!
              */
             if (noCacheExists) {
-                currentStateOfCache.changeState { it.failFirstFetch(fetchError) }
+                currentStateOfCache.changeState(requirements) { it.failFirstFetch(fetchError) }
             } else {
-                currentStateOfCache.changeState { it.failRefreshCache(fetchError) }
+                currentStateOfCache.changeState(requirements) { it.failRefreshCache(fetchError) }
             }
         } else {
             val timeFetched = Date()
 
             if (noCacheExists) {
-                currentStateOfCache.changeState { it.successfulFirstFetch(timeFetched) }
+                currentStateOfCache.changeState(requirements) { it.successfulFirstFetch(timeFetched) }
             } else {
-                currentStateOfCache.changeState { it.successfulRefreshCache(timeFetched) }
+                currentStateOfCache.changeState(requirements) { it.successfulRefreshCache(timeFetched) }
             }
 
             val newCache = response.response!!
