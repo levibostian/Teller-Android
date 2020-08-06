@@ -14,6 +14,7 @@
   - [Refresh in background](refresh.md)
   - [Paging](paging.md)
   - [Multiple data types](multiple_data_types_repositories.md)
+  - [Convert](convert.md)
 
 - [Testing](testing)
 
