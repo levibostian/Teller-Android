@@ -3,8 +3,8 @@ package com.levibostian.tellerexample.viewmodel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.LiveDataReactiveStreams
 import androidx.lifecycle.ViewModel
-import com.levibostian.teller.cachestate.OnlineCacheState
-import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.cachestate.CacheState
+import com.levibostian.teller.repository.TellerRepository
 import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.repository.ReposRepository
@@ -12,8 +12,6 @@ import com.levibostian.tellerexample.service.GitHubService
 import com.levibostian.tellerexample.service.provider.SchedulersProvider
 import io.reactivex.BackpressureStrategy
 import io.reactivex.Single
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 
 class ReposViewModel: ViewModel() {
 
@@ -33,7 +31,7 @@ class ReposViewModel: ViewModel() {
         reposRepository.requirements = ReposRepository.GetReposRequirements(username)
     }
 
-    fun observeRepos(): LiveData<OnlineCacheState<List<RepoModel>>> {
+    fun observeRepos(): LiveData<CacheState<List<RepoModel>>> {
         return LiveDataReactiveStreams.fromPublisher(reposRepository.observe()
                 .toFlowable(BackpressureStrategy.LATEST)
                 .subscribeOn(schedulersProvider.io())
@@ -46,7 +44,7 @@ class ReposViewModel: ViewModel() {
         super.onCleared()
     }
 
-    fun refresh(): Single<OnlineRepository.RefreshResult> {
+    fun refresh(): Single<TellerRepository.RefreshResult> {
         return reposRepository.refresh(force = true)
     }
 

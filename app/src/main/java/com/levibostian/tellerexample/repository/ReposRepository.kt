@@ -3,7 +3,7 @@ package com.levibostian.tellerexample.repository
 import com.levibostian.teller.error.ServerNotAvailableException
 import com.levibostian.teller.error.UnknownHttpResponseError
 import com.levibostian.teller.error.UserNotFoundException
-import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.repository.TellerRepository
 import com.levibostian.teller.type.Age
 import com.levibostian.tellerexample.model.db.AppDatabase
 import com.levibostian.tellerexample.model.RepoModel
@@ -14,7 +14,7 @@ import io.reactivex.Single
 
 class ReposRepository(private val service: GitHubService,
                       private val db: AppDatabase,
-                      private val schedulersProvider: SchedulersProvider): OnlineRepository<List<RepoModel>, ReposRepository.GetReposRequirements, List<RepoModel>>() {
+                      private val schedulersProvider: SchedulersProvider): TellerRepository<List<RepoModel>, ReposRepository.GetReposRequirements, List<RepoModel>>() {
 
     /**
      * Tells Teller how old cache can be before it's determined "too old" and new cache is fetched automatically by calling `fetchFreshCache()`.

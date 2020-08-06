@@ -9,8 +9,8 @@ import org.junit.runner.RunWith
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.google.common.truth.Truth.assertThat
-import com.levibostian.teller.cachestate.OnlineCacheState
-import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.cachestate.CacheState
+import com.levibostian.teller.repository.TellerRepository
 import com.levibostian.tellerexample.rule.TellerInitRule
 import com.levibostian.teller.testing.extensions.cache
 import com.levibostian.teller.testing.extensions.initState
@@ -20,11 +20,9 @@ import com.levibostian.tellerexample.repository.ReposRepository
 import com.levibostian.tellerexample.rule.MockitoInitRule
 import com.levibostian.tellerexample.service.GitHubService
 import com.levibostian.tellerexample.service.provider.AppSchedulersProvider
-import com.levibostian.tellerexample.util.DependencyUtil
 import com.levibostian.tellerexample.util.TestDependencyUtil
 import com.levibostian.tellerexample.util.Wait
 import com.levibostian.tellerexample.viewmodel.ReposViewModel
-import com.nhaarman.mockito_kotlin.verify
 import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
@@ -76,16 +74,16 @@ class ReposIntegrationTest {
     fun observeRepos_cacheEmptyNotTooOld_expectGetEmptyRepos() {
         val wait = Wait.times(1)
 
-        val setValues = OnlineRepository.Testing.initState(reposRepository, defaultRequirements) {
+        val setValues = TellerRepository.Testing.initState(reposRepository, defaultRequirements) {
             cacheEmpty {
                 cacheNotTooOld()
             }
         }
-        val expectObserveResult = OnlineCacheState.Testing.cache<List<RepoModel>>(defaultRequirements, setValues.lastFetched!!)
+        val expectObserveResult = CacheState.Testing.cache<List<RepoModel>>(defaultRequirements, setValues.lastFetched!!)
 
         reposRepository.requirements = defaultRequirements
 
-        val observer = Observer<OnlineCacheState<List<RepoModel>>> { cacheState ->
+        val observer = Observer<CacheState<List<RepoModel>>> { cacheState ->
             assertThat(cacheState).isEqualTo(expectObserveResult)
 
             wait.countDown()
@@ -102,18 +100,18 @@ class ReposIntegrationTest {
         whenever(service.listRepos(defaultGitHubUsername)).thenReturn(Single.never())
         val wait = Wait.times(1)
 
-        val setValues = OnlineRepository.Testing.initState(reposRepository, defaultRequirements) {
+        val setValues = TellerRepository.Testing.initState(reposRepository, defaultRequirements) {
             cacheEmpty {
                 cacheTooOld()
             }
         }
-        val expectObserveResult = OnlineCacheState.Testing.cache<List<RepoModel>>(defaultRequirements, setValues.lastFetched!!) {
+        val expectObserveResult = CacheState.Testing.cache<List<RepoModel>>(defaultRequirements, setValues.lastFetched!!) {
             fetching()
         }
 
         reposRepository.requirements = defaultRequirements
 
-        val observer = Observer<OnlineCacheState<List<RepoModel>>> { cacheState ->
+        val observer = Observer<CacheState<List<RepoModel>>> { cacheState ->
             assertThat(cacheState).isEqualTo(expectObserveResult)
 
             wait.countDown()

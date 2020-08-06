@@ -4,8 +4,8 @@ import androidx.paging.PagedList
 import androidx.paging.toObservable
 import com.levibostian.teller.error.ServerNotAvailableException
 import com.levibostian.teller.error.UnknownHttpResponseError
-import com.levibostian.teller.repository.OnlinePagingRepository
-import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.repository.TellerPagingRepository
+import com.levibostian.teller.repository.TellerRepository
 import com.levibostian.teller.type.Age
 import com.levibostian.tellerexample.extensions.transformMapSuccess
 import com.levibostian.tellerexample.model.IssueCommentModel
@@ -21,7 +21,7 @@ import io.reactivex.Single
  */
 class IssueCommentsRepository(private val service: GitHubService,
                               private val db: AppDatabase,
-                              private val schedulersProvider: SchedulersProvider) : OnlinePagingRepository<PagedList<IssueCommentModel>, IssueCommentsRepository.PagingRequirements, IssueCommentsRepository.Requirements, List<IssueCommentModel>>(PagingRequirements()) {
+                              private val schedulersProvider: SchedulersProvider) : TellerPagingRepository<PagedList<IssueCommentModel>, IssueCommentsRepository.PagingRequirements, IssueCommentsRepository.Requirements, List<IssueCommentModel>>(PagingRequirements()) {
 
     companion object {
         /**
@@ -108,7 +108,7 @@ class IssueCommentsRepository(private val service: GitHubService,
         }
     }
 
-    data class Requirements(val githubUsername: String, val repoName: String, val issueNumber: Int) : OnlineRepository.GetCacheRequirements {
+    data class Requirements(val githubUsername: String, val repoName: String, val issueNumber: Int) : TellerRepository.GetCacheRequirements {
         override var tag = "Issue comments for repo $githubUsername/$repoName, number $issueNumber"
     }
 
@@ -117,7 +117,7 @@ class IssueCommentsRepository(private val service: GitHubService,
      *
      * @param pageNumber Defaulted to 1 as that's the value for the first page of data.
      */
-    data class PagingRequirements(val pageNumber: Int = 1) : OnlinePagingRepository.PagingRequirements
+    data class PagingRequirements(val pageNumber: Int = 1) : TellerPagingRepository.PagingRequirements
 
     /**
      * Android Jetpack's BoundaryCallback that is called when the user has scrolled to the end of the RecyclerView and we can navigate to the next page of data.

@@ -1,11 +1,8 @@
 package com.levibostian.tellerexample.repository
 
-import android.content.Context
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
-import com.google.common.truth.Truth
 import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.error.ServerNotAvailableException
-import com.levibostian.teller.repository.OnlineRepository
 import com.levibostian.tellerexample.dao.ReposDao
 import com.levibostian.tellerexample.model.RepoModel
 import com.levibostian.tellerexample.model.db.AppDatabase
@@ -15,11 +12,7 @@ import com.levibostian.tellerexample.service.provider.SchedulersProvider
 import com.levibostian.tellerexample.util.FakeDataUtil
 import com.levibostian.tellerexample.util.TestDependencyUtil
 import com.nhaarman.mockito_kotlin.*
-import io.reactivex.Flowable
 import io.reactivex.Observable
-import io.reactivex.Single
-import okhttp3.MediaType
-import okhttp3.ResponseBody
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
@@ -27,14 +20,8 @@ import org.junit.Before
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.ArgumentCaptor
-import org.mockito.Captor
 import org.mockito.Mock
-import org.mockito.Mockito
-import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
-import retrofit2.Response
-import retrofit2.adapter.rxjava2.Result
 import com.levibostian.tellerexample.util.AssertionsUtil.Companion.check
 import io.reactivex.schedulers.Schedulers
 

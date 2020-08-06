@@ -132,15 +132,8 @@ class ReposForUserFragment : Fragment() {
                 })
 
         gitHubUsernameViewModel.observeUsername()
-                .observe(this, Observer { usernameState ->
-                    usernameState.apply {
-                        if (cache == null) {
-                            username_edittext.setText("", TextView.BufferType.EDITABLE)
-                        } else {
-                            username_edittext.setText(cache, TextView.BufferType.EDITABLE)
-                            reposViewModel.setUsername(cache!!)
-                        }
-                    }
+                .observe(this, Observer { username ->
+                    username_edittext.setText(username, TextView.BufferType.EDITABLE)
                 })
 
         go_button.setOnClickListener {

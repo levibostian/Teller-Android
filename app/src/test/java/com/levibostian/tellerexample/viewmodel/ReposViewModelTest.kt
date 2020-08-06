@@ -3,8 +3,8 @@ package com.levibostian.tellerexample.viewmodel
 import androidx.arch.core.executor.testing.InstantTaskExecutorRule
 import androidx.lifecycle.Observer
 import com.google.common.truth.Truth.assertThat
-import com.levibostian.teller.cachestate.OnlineCacheState
-import com.levibostian.teller.repository.OnlineRepository
+import com.levibostian.teller.cachestate.CacheState
+import com.levibostian.teller.repository.TellerRepository
 import com.levibostian.teller.testing.extensions.cache
 import com.levibostian.teller.testing.extensions.success
 import com.levibostian.tellerexample.model.RepoModel
@@ -22,14 +22,13 @@ import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
 import java.util.*
-import java.util.concurrent.TimeUnit
 
 @RunWith(MockitoJUnitRunner::class)
 class ReposViewModelTest {
 
     @Mock lateinit var reposRepository: ReposRepository
     @Mock lateinit var schedulers: SchedulersProvider
-    @Mock private lateinit var reposObserver: Observer<OnlineCacheState<List<RepoModel>>>
+    @Mock private lateinit var reposObserver: Observer<CacheState<List<RepoModel>>>
     @Mock lateinit var requirements: ReposRepository.GetReposRequirements
 
     @get:Rule val rule = InstantTaskExecutorRule()
@@ -60,7 +59,7 @@ class ReposViewModelTest {
 
     @Test
     fun `observeRepos() - Observe repos from repository`() {
-        val reposCache = OnlineCacheState.Testing.cache<List<RepoModel>>(requirements, Date()) {
+        val reposCache = CacheState.Testing.cache<List<RepoModel>>(requirements, Date()) {
             cache(listOf(RepoModel()))
         }
         `when`(reposRepository.observe()).thenReturn(Observable.just(reposCache))
@@ -74,7 +73,7 @@ class ReposViewModelTest {
 
     @Test
     fun `refresh() - Refreshes from repository`() {
-        val refreshResult = OnlineRepository.RefreshResult.Testing.success()
+        val refreshResult = TellerRepository.RefreshResult.Testing.success()
 
         `when`(reposRepository.refresh(force = true)).thenReturn(Single.just(refreshResult))
 
