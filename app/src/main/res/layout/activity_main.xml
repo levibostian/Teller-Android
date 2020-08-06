@@ -1,87 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:id="@+id/parent_view"
+    android:fitsSystemWindows="true"
     tools:context=".activity.MainActivity">
 
     <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <EditText
-            android:id="@+id/username_edittext"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:hint="GitHub username"
-            android:layout_weight="1"/>
-
-        <Button
-            android:id="@+id/go_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="GO"/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/data_view"
+        android:id="@+id/parent_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/data_age_textview"
+        <androidx.appcompat.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_height="?attr/actionBarSize"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            tools:text="Data last synced 5 minutes ago"
-            android:gravity="end"/>
+            android:background="@color/colorPrimary"
+            android:theme="@style/ThemeOverlay.MaterialComponents.Dark.ActionBar"/>
 
-        <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
-            android:id="@+id/repos_refresh_layout"
+        <fragment
+            android:id="@+id/nav_host_fragment"
+            android:name="androidx.navigation.fragment.NavHostFragment"
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/repos_recyclerview"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-        </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+            app:defaultNavHost="true"
+            app:navGraph="@navigation/nav_graph" />
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/empty_view"
-        android:layout_width="match_parent"
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical">
+        android:layout_gravity="start"
+        app:menu="@menu/nav_drawer_menu"
+        android:fitsSystemWindows="true" />
 
-        <TextView
-            android:id="@+id/empty_view_textview"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            tools:text="There are no repos."/>
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/loading_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center"
-        android:orientation="vertical">
-
-        <ProgressBar
-            android:layout_width="30dp"
-            android:layout_height="30dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Loading repos..."/>
-    </LinearLayout>
-
-</LinearLayout>
+</androidx.drawerlayout.widget.DrawerLayout>

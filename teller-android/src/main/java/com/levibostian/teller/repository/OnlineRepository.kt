@@ -63,21 +63,21 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
     /**
      * Idea taken from [CompositeDisposable]. Use of volatile variable to mark object as no longer used.
      */
-    @Volatile private var disposed = false
+    @Volatile internal var disposed = false
 
-    private var observeCacheDisposeBag: CompositeDisposable = CompositeDisposable()
+    internal var observeCacheDisposeBag: CompositeDisposable = CompositeDisposable()
     // Important to never be nil so that we can call `observe` on this class and always be able to listen.
-    private var currentStateOfCache: OnlineCacheStateBehaviorSubject<CACHE> = OnlineCacheStateBehaviorSubject()
-    private lateinit var schedulersProvider: SchedulersProvider
-    private lateinit var taskExecutor: TaskExecutor
+    internal var currentStateOfCache: OnlineCacheStateBehaviorSubject<CACHE> = OnlineCacheStateBehaviorSubject()
+    internal lateinit var schedulersProvider: SchedulersProvider
+    internal lateinit var taskExecutor: TaskExecutor
     /**
      * Use of an object as listener to allow [refreshBegin], [refreshComplete] functions to be private.
      */
-    private lateinit var refreshManagerListener: OnlineRepositoryRefreshManager.Listener
+    internal lateinit var refreshManagerListener: OnlineRepositoryRefreshManager.Listener
 
-    private lateinit var cacheAgeManager: OnlineRepositoryCacheAgeManager
-    private lateinit var refreshManager: OnlineRepositoryRefreshManager
-    private lateinit var teller: Teller
+    internal lateinit var cacheAgeManager: OnlineRepositoryCacheAgeManager
+    internal lateinit var refreshManager: OnlineRepositoryRefreshManager
+    internal lateinit var teller: Teller
 
     internal constructor(schedulersProvider: SchedulersProvider,
                          cacheAgeManager: OnlineRepositoryCacheAgeManager,
@@ -117,7 +117,7 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
         // 2. Cancel refreshing so no fetch can finish.
         // 3. Set currentStateOfCache to something so anyone observing does not think they are still observing old requirements (old cache).
         // 4. Start everything up again.
-        set(value) {
+        set(newRequirements) {
             teller.assertNotLimitedFunctionality()
             assertNotDisposed()
 
@@ -126,9 +126,8 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
                 stopObservingCache()
             }
 
-            field = value
+            field = newRequirements
 
-            val newRequirements = field
             if (newRequirements != null) {
                 if (cacheAgeManager.hasSuccessfullyFetchedCache(newRequirements.tag)) {
                     currentStateOfCache.resetToCacheState(newRequirements, cacheAgeManager.lastSuccessfulFetch(newRequirements.tag)!!)
@@ -143,6 +142,9 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
             }
         }
 
+    /**
+     * Have thought about making this function protected so that subclass can dispose of old observable to restart with a new one but always decide to keep it private. I can always conclude with, "Observables should be able to react to changes and stream data of any type". So if you need to change the cache you're observing for some reason, perhaps use a Subject or something. Design of your subclass may solve this problem.
+     */
     private fun restartObservingCache(requirements: GET_CACHE_REQUIREMENTS) {
         /**
          * You need to subscribe and observe on the UI thread because popular database solutions such as Realm, SQLite all have a "write on background, read on UI" approach. You cannot read on the background and send the read objects to the UI thread. So, we read on the UI.
@@ -211,16 +213,9 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
     }
 
     /**
-     * Dispose of the [OnlineRepository] to shut down observing of the cache and stops refresh tasks if they have begun.
-     *
-     * Do this in onDestroy() of your Fragment or Activity, for example.
-     *
-     * After calling [dispose], your [OnlineRepository] instance is useless. Calling any function on the instance in the future will result in a [RuntimeException].
-     *
-     * @throws TellerLimitedFunctionalityException If calling when initializing Teller via [Teller.initUnitTesting].
+     * Only exists because need to override this in [OnlinePagingRepository], but don't want public subclasses to be able to override. [See](https://github.com/levibostian/Teller-Android/issues/57) for how this function could be removed because we would only have internal subclasses.
      */
-    @Synchronized
-    fun dispose() {
+    internal open fun _dispose() {
         teller.assertNotLimitedFunctionality()
 
         if (disposed) return
@@ -235,9 +230,33 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
         stopObservingCache()
     }
 
+    /**
+     * Dispose of the [OnlineRepository] to shut down observing of the cache and stops refresh tasks if they have begun.
+     *
+     * Do this in onDestroy() of your Fragment or Activity, for example.
+     *
+     * After calling [dispose], your [OnlineRepository] instance is useless. Calling any function on the instance in the future will result in a [RuntimeException].
+     *
+     * @throws TellerLimitedFunctionalityException If calling when initializing Teller via [Teller.initUnitTesting].
+     */
+    @Synchronized
+    fun dispose() {
+        this._dispose()
+    }
+
     private fun stopObservingCache() {
         observeCacheDisposeBag.clear()
         observeCacheDisposeBag = CompositeDisposable()
+    }
+
+    /**
+     * Only exists because need to override this in [OnlinePagingRepository], but don't want public subclasses to be able to override. [See](https://github.com/levibostian/Teller-Android/issues/57) for how this function could be removed because we would only have internal subclasses.
+     */
+    internal open fun _refresh(force: Boolean, requirements: GET_CACHE_REQUIREMENTS): Single<RefreshResult> {
+        teller.assertNotLimitedFunctionality()
+        assertNotDisposed()
+
+        return getRefresh(force, requirements)
     }
 
     /**
@@ -253,15 +272,12 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
      */
     @Throws(IllegalStateException::class)
     fun refresh(force: Boolean): Single<RefreshResult> {
-        teller.assertNotLimitedFunctionality()
-        assertNotDisposed()
-
         val requirements = this.requirements ?: throw IllegalStateException("You need to set requirements before calling refresh.")
 
-        return getRefresh(force, requirements)
+        return _refresh(force, requirements)
     }
 
-    private fun getRefresh(force: Boolean, requirements: GET_CACHE_REQUIREMENTS): Single<RefreshResult> {
+    internal fun getRefresh(force: Boolean, requirements: GET_CACHE_REQUIREMENTS): Single<RefreshResult> {
         return if (force || !cacheAgeManager.hasSuccessfullyFetchedCache(requirements.tag) || cacheAgeManager.isCacheTooOld(requirements.tag, maxAgeOfCache)) {
             refreshManager.refresh(fetchFreshCache(requirements), requirements.tag, refreshManagerListener)
         } else {
@@ -379,7 +395,7 @@ abstract class OnlineRepository<CACHE: OnlineRepositoryCache, GET_CACHE_REQUIREM
      * When a [OnlineRepository.fetchFreshCache] task is performed, Teller needs to know if the fetch request is considered to be a success or a failure.
      */
     class FetchResponse<FETCH_RESPONSE: OnlineRepositoryFetchResponse> private constructor(val response: FETCH_RESPONSE? = null,
-                                                                 val failure: Throwable? = null) {
+                                                                                           val failure: Throwable? = null) {
 
         companion object {
             fun <FETCH_RESPONSE: OnlineRepositoryFetchResponse> success(response: FETCH_RESPONSE): FetchResponse<FETCH_RESPONSE> {

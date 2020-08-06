@@ -8,6 +8,7 @@ import androidx.room.Room
 import com.f2prateek.rx.preferences2.RxSharedPreferences
 import com.levibostian.teller.Teller
 import com.levibostian.tellerexample.model.db.AppDatabase
+import com.levibostian.tellerexample.model.db.migration.Migration1
 import com.levibostian.tellerexample.service.GitHubService
 import com.levibostian.tellerexample.wrapper.AppRxSharedPrefsWrapper
 import com.levibostian.tellerexample.wrapper.RxSharedPrefsWrapper
@@ -22,7 +23,9 @@ class DependencyUtil {
 
     companion object {
         fun dbInstance(context: Context): AppDatabase {
-            return Room.databaseBuilder(context, AppDatabase::class.java, "teller-example").build()
+            return Room.databaseBuilder(context, AppDatabase::class.java, "teller-example")
+                    .addMigrations(Migration1())
+                    .build()
         }
 
         fun serviceInstance(): GitHubService {

@@ -32,8 +32,10 @@ class GitHubUsernameViewModel: ViewModel() {
         return LiveDataReactiveStreams.fromPublisher(repository.observe().toFlowable(BackpressureStrategy.LATEST))
     }
 
-    fun dispose() {
+    override fun onCleared() {
         repository.dispose()
+
+        super.onCleared()
     }
 
 }
