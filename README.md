@@ -15,6 +15,10 @@ Teller facilitates the downloading, saving, and reading of the cached data of yo
 
 iOS developer? Check out the [iOS version of Teller](https://github.com/levibostian/teller-ios).
 
+### Announcement - version 1.0
+
+Version 1.0 has been announced and is in development. Check out [the issue](https://github.com/levibostian/Teller-Android/issues/74) to learn more. The pre-1.0 code will be in maintenance mode until v1.0 is complete. Pre-1.0 is used by myself in production apps today, but you have been warned that there will more then likely be large breaking changes when 1.0 comes out. 
+
 ## What is Teller?
 
 The data used in your mobile app: user profiles, a collection of photos, list of friends, etc. *all have state*. Your data is in 1 of many different states:
