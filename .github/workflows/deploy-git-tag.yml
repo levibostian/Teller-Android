@@ -1,0 +1,34 @@
+name: Deploy git tag
+
+# Only run after a pull request has been merged. This is because
+# bot account runs write operations on the github repo to push a tag. 
+on:
+  push:
+    branches: [ main, beta, alpha ]
+
+jobs:
+  deploy-tag:
+    name: Deploy git tag
+    runs-on: ubuntu-latest
+    steps:
+      - name: semantic-release setup
+        uses: levibostian/action-semantic-release-justwork@v1
+      - name: Deploy git tag via semantic-release 
+        uses: cycjimmy/semantic-release-action@v2
+        with: 
+          # version numbers below can be in many forms: M, M.m, M.m.p
+          semantic_version: 18
+          extra_plugins: |
+            @semantic-release/changelog@6
+            @semantic-release/git@10
+            @semantic-release/github@8
+            @semantic-release/exec@6
+        # Needs to push git commits to repo. Needs write access. 
+          GITHUB_TOKEN: ${{ secrets.WRITE_ACCESS_BOT_TOKEN }}
+
+      - name: Copy commits into develop after main deployment 
+        uses: levibostian/action-sync-branches@v1
+        with:
+          behind: develop
+          ahead: main 
+          githubToken: ${{ secrets.WRITE_ACCESS_BOT_TOKEN }}

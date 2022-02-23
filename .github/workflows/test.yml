@@ -1,0 +1,31 @@
+name: Tests
+
+on: [push, pull_request]
+
+jobs:
+  unit-test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        module: [teller-android]
+    name: Unit tests (${{ matrix.module }})
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK
+      uses: actions/setup-java@v2
+      with:
+        distribution: 'adopt'
+        java-version: '11' # Robolectric requires v9, but we choose LTS: https://adoptopenjdk.net/
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v2
+
+    - name: Run unit tests (${{ matrix.module }})
+      run: ./gradlew :${{ matrix.module }}:testDebugUnitTest
+
+    - name: Publish test results (${{ matrix.module }})
+      uses: mikepenz/action-junit-report@v2      
+      with:
+        report_paths: '**/build/test-results/test*/TEST-*.xml'
+        fail_on_failure: true 
+        require_tests: true 
+      if: ${{ always() }} # if running tests fails, we still want to parse the test results 
