@@ -11,5 +11,5 @@ jobs:
       - name: Promote release 
         uses: levibostian/action-promote-semantic-release@v1
         with:
-          sequence: "develop,alpha,beta,main"
+          sequence: "develop,main"
           githubToken: ${{ secrets.WRITE_ACCESS_BOT_TOKEN }}
