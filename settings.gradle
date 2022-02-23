@@ -1,1 +1,1 @@
-include ':app', ':teller-android'
+include ':teller-android'
