@@ -1,72 +1,74 @@
-// Maven install
-apply plugin: 'com.github.dcendents.android-maven'
+apply plugin: 'maven-publish'
+apply plugin: 'signing'
+apply plugin: 'org.jetbrains.dokka'
 
-group = publishedGroupId // Maven Group ID for the artifact
-version = teller_version
-
-install {
-    repositories.mavenInstaller {
-        pom.project {
-            packaging 'aar'
-            groupId publishedGroupId
-            artifactId artifact
-
-            name libraryName
-            description libraryDescription
-            url siteUrl
-
-            scm {
-                connection gitUrl
-                developerConnection gitUrl
-                url siteUrl
-            }
-        }
+task androidSourcesJar(type: Jar) {
+    archiveClassifier.set('sources')
+    if (project.plugins.findPlugin("com.android.library")) {
+        from android.sourceSets.main.java.srcDirs
+        from android.sourceSets.main.kotlin.srcDirs
+    } else {
+        from sourceSets.main.java.srcDirs
+        from sourceSets.main.kotlin.srcDirs
     }
-}
-
-// some artifacts
-apply plugin: 'org.jetbrains.dokka-android'
-
-task sourcesJar(type: Jar) {
-    classifier = 'sources'
-    from android.sourceSets.main.java.srcDirs
 }
 
 task javadocJar(type: Jar, dependsOn: dokkaJavadoc) {
-    classifier = 'javadoc'
-    from "$buildDir/javadoc"
+    archiveClassifier.set('javadoc')
+    from dokkaJavadoc.outputDirectory
 }
 
 artifacts {
-    archives sourcesJar
+    archives androidSourcesJar
     archives javadocJar
 }
 
-// Bintray publish
-if (!System.getenv('CI')) { // Disable block on CI server as an exception will be thrown in the code below trying to read `local.properties` file as it will not exist on a CI server. If in the future we decide to have a CI server deploy the library, we will load values from environment variables so we can replace the code then. For now, all deployments are happening on a local dev machine with local.properties file populated.
-    apply plugin: 'com.jfrog.bintray'
+group = moduleGroupId // Maven Group ID for the artifact
+version = moduleVersion
 
-    Properties properties = new Properties()
-    properties.load(project.rootProject.file('local.properties').newDataInputStream())
+afterEvaluate {
+    publishing {
+        publications {
+            release(MavenPublication) {
+                groupId moduleGroupId
+                artifactId moduleArtifactId
+                version moduleVersion
 
-    bintray {
-        user = properties.getProperty("bintray.user")
-        key = properties.getProperty("bintray.apikey")
+                if (project.plugins.findPlugin("com.android.library")) {
+                    from components.release
+                } else {
+                    from components.java
+                }
 
-        configurations = ['archives']
-        pkg {
-            repo = bintrayRepo
-            name = bintrayPackageName
-            desc = libraryDescription
-            websiteUrl = siteUrl
-            vcsUrl = gitUrl
-            licenses = allLicenses
-            publish = true
-            override = false // Overwrite published versions already published.
-            publicDownloadNumbers = true
-            version {
-                desc = libraryDescription
+                // to speed up local development build times, skip dokka
+                if (!IS_DEVELOPMENT) {
+                    artifact androidSourcesJar
+                    artifact javadocJar
+                }
+
+                pom {
+                    name = moduleArtifactId
+                    description = moduleDescription
+                    url = moduleSiteUrl
+                    licenses moduleLicenses
+                    developers moduleDevelopers
+                    scm {
+                        url = "https://$moduleGitHostname/$moduleGitPath"
+                        connection = "scm:git@$moduleGitHostname:${moduleGitPath}.git"
+                        developerConnection = "scm:git@$moduleGitHostname:${moduleGitPath}.git"
+                    }
+                }
             }
         }
     }
+}
+
+signing {
+    useInMemoryPgpKeys(
+            System.getenv("GRADLE_SIGNING_KEY_ID"),
+            System.getenv("GRADLE_SIGNING_KEY"),
+            System.getenv("GRADLE_SIGNING_PASSWORD")
+    )
+    if (!IS_DEVELOPMENT) // skip signing for local installs during development
+        sign publishing.publications
 }
