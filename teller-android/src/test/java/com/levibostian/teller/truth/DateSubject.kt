@@ -12,7 +12,7 @@ import java.util.*
  *
  * (after `import com.levibostian.teller.truth.DateSubject.Companion.assertThat` to import static function.
  */
-class DateSubject(metaData: FailureMetadata, actual: Date): Subject<DateSubject, Date>(metaData, actual) {
+class DateSubject(metaData: FailureMetadata, private val actual: Date): Subject(metaData, actual) {
 
     companion object {
         private val factory = object : Subject.Factory<DateSubject, Date> {
@@ -26,11 +26,11 @@ class DateSubject(metaData: FailureMetadata, actual: Date): Subject<DateSubject,
     }
 
     fun isNewerThan(expected: Date) {
-        check("date").that(actual().time).isGreaterThan(expected.time)
+        check("date").that(actual.time).isGreaterThan(expected.time)
     }
 
     fun isOlderThan(expected: Date) {
-        check("date").that(actual().time).isLessThan(expected.time)
+        check("date").that(actual.time).isLessThan(expected.time)
     }
 
 }

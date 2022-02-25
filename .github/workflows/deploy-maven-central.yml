@@ -1,0 +1,29 @@
+name: Deploy SDK Maven Central 
+# If deployment tries to push to maven central and then push git tags
+# when git tag deployment fails, you cannot push to maven central again
+# as it doesn't allow overwriting previously deployed artifacts. Deploy 
+# tag first, then deploy to Maven Central on successful tag deployment. 
+on:
+  release:
+    types: [published]
+
+jobs:
+  deploy-sonatype:
+    name: Deploy SDK to Sonatype 
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK
+        uses: actions/setup-java@v2
+        with:
+          distribution: adopt
+          java-version: 11
+      - name: Push to Sonatype servers 
+        run: MODULE_VERSION=${{ github.event.release.tag_name }} ./gradlew publishReleasePublicationToSonatypeRepository
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          GRADLE_SIGNING_KEY_ID: ${{ secrets.GRADLE_SIGNING_KEY_ID }}
+          GRADLE_SIGNING_PASSWORD: ${{ secrets.GRADLE_SIGNING_PASSWORD }}
+          GRADLE_SIGNING_KEY: ${{ secrets.GRADLE_SIGNING_KEY }}
+          SONATYPE_STAGING_PROFILE_ID: ${{ secrets.SONATYPE_STAGING_PROFILE_ID }}

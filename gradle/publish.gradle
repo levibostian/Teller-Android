@@ -58,6 +58,20 @@ afterEvaluate {
                         developerConnection = "scm:git@$moduleGitHostname:${moduleGitPath}.git"
                     }
                 }
+
+                repositories {
+                    maven {
+                        name = "Sonatype"
+
+                        def releasesRepoUrl = "https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/"
+                        def snapshotsRepoUrl = "https://s01.oss.sonatype.org/content/repositories/snapshots/"
+                        url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : releasesRepoUrl
+                        credentials {
+                            username = System.getenv("GRADLE_PUBLISH_USERNAME")
+                            password = System.getenv("GRADLE_PUBLISH_PASSWORD")
+                        }
+                    }
+                }
             }
         }
     }

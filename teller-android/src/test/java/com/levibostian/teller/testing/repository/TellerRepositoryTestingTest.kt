@@ -6,14 +6,13 @@ import com.levibostian.teller.repository.RepositoryCache
 import com.levibostian.teller.repository.DataSourceFetchResponse
 import com.levibostian.teller.repository.manager.RepositoryCacheAgeManager
 import com.levibostian.teller.type.Age
-import com.nhaarman.mockito_kotlin.*
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
-import org.mockito.Mockito.`when`
-import org.mockito.Mockito.anyString
+import org.mockito.Mockito.*
 import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.kotlin.argumentCaptor
 import java.util.*
 
 @RunWith(MockitoJUnitRunner::class)
@@ -36,8 +35,8 @@ class TellerRepositoryTestingTest {
             noCache()
         }
 
-        verifyZeroInteractions(repository)
-        verifyZeroInteractions(requirements)
+        verifyNoInteractions(repository)
+        verifyNoInteractions(requirements)
     }
 
     @Test
@@ -49,9 +48,10 @@ class TellerRepositoryTestingTest {
             cacheEmpty()
         }
 
-        val setLastFetchedCaptor = argumentCaptor<Date>()
-        verify(cacheAgeManager).updateLastSuccessfulFetch(eq(requirements.tag), setLastFetchedCaptor.capture())
-        assertThat(setLastFetchedCaptor.firstValue).isNewerThan(maxAgeOfCache.toDate())
+        argumentCaptor<Date> {
+            verify(cacheAgeManager).updateLastSuccessfulFetch(eq(requirements.tag), capture())
+            assertThat(firstValue).isNewerThan(maxAgeOfCache.toDate())
+        }
 
         verify(repository, never()).saveCacheSyncCurrentThread(anyString(), eq(requirements))
     }

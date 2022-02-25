@@ -6,14 +6,14 @@ import android.content.SharedPreferences
 import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.error.TellerLimitedFunctionalityException
 import com.levibostian.teller.util.ConstantsUtil
-import com.nhaarman.mockito_kotlin.verify
-import com.nhaarman.mockito_kotlin.whenever
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.kotlin.verify
+import org.mockito.kotlin.whenever
 import kotlin.test.assertFailsWith
 
 @RunWith(MockitoJUnitRunner::class)

@@ -11,9 +11,6 @@ import com.levibostian.teller.repository.manager.RepositoryCacheAgeManager
 import com.levibostian.teller.repository.manager.RepositoryRefreshManager
 import com.levibostian.teller.util.AssertionUtil.Companion.check
 import com.levibostian.teller.util.TaskExecutor
-import com.nhaarman.mockito_kotlin.any
-import com.nhaarman.mockito_kotlin.anyOrNull
-import com.nhaarman.mockito_kotlin.whenever
 import io.reactivex.Single
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.schedulers.Schedulers
@@ -24,6 +21,9 @@ import org.junit.runner.RunWith
 import org.mockito.Mock
 import org.mockito.Mockito.`when`
 import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.kotlin.any
+import org.mockito.kotlin.anyOrNull
+import org.mockito.kotlin.whenever
 import java.util.*
 import kotlin.test.assertFailsWith
 
