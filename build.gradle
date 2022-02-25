@@ -8,7 +8,7 @@ buildscript {
 
     ext {
         // use "local" for local development to make it easy to install from local maven repository
-        moduleVersion = ext.IS_DEVELOPMENT ? "local" : System.getenv('MODULE_VERSION')
+        moduleVersion = ext.IS_DEVELOPMENT ? "local" : (System.getenv('MODULE_VERSION') ?: "")
         // In each module's build.gradle file, have it contain the ext.moduleArtifactId that it chooses.
         // moduleArtifactId = "teller-android"
         moduleGroupId = 'com.levibostian.teller'

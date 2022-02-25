@@ -4,11 +4,12 @@ import com.google.common.truth.Truth.assertThat
 import com.levibostian.teller.cachestate.*
 import com.levibostian.teller.cachestate.statemachine.CacheStateStateMachine
 import com.levibostian.teller.repository.TellerRepository
-import com.nhaarman.mockito_kotlin.*
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.mockito.Mock
+import org.mockito.Mockito.mock
 import org.mockito.junit.MockitoJUnitRunner
+import org.mockito.kotlin.*
 import java.util.*
 
 @RunWith(MockitoJUnitRunner::class)
@@ -155,7 +156,7 @@ class CacheStateTest {
     fun whenNoCache_noCache_expectCallbacks() {
         cacheState = CacheStateStateMachine.noCacheExists(cacheRequirements)
 
-        val callback = mock<WhenNoCacheCallback>()
+        val callback: WhenNoCacheCallback = mock()
 
         cacheState.whenNoCache(callback)
 
