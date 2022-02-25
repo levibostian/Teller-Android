@@ -19,7 +19,7 @@ jobs:
           distribution: adopt
           java-version: 11
       - name: Push to Sonatype servers 
-        run: MODULE_VERSION=${{ github.event.release.tag_name }} ./gradlew publishReleasePublicationToSonatypeRepository --max-workers 1 closeAndReleaseSonatypeStagingRepository
+        run: MODULE_VERSION=${{ github.event.release.tag_name }} ./gradlew publishReleasePublicationToSonatypeRepository
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
