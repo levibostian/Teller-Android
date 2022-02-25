@@ -20,13 +20,12 @@ jobs:
       uses: android-actions/setup-android@v2
 
     - name: Run lint (${{ matrix.module }})
-      run: ./gradlew :${{ matrix.module }}:lintDebug
+      run: ./gradlew :${{ matrix.module }}:lintDebug || true
 
     - name: Parse lint results (${{ matrix.module }})
       uses: yutailang0119/action-android-lint@v1.0.2
       with:
         xml_path: ${{ matrix.module }}/build/reports/lint-results-debug.xml
-      if: ${{ always() }} # if running tests fails, we still want to parse the test results 
 
   # Task to verify ktlint already ran for all commits. This verifies you have your git hooks installed. 
   kotlin-lint:

@@ -49,7 +49,7 @@ dependencies {
     def androidTestLibVersion = "1.4.0"
     androidTestImplementation "androidx.test:runner:$androidTestLibVersion"
     androidTestImplementation "androidx.test:rules:$androidTestLibVersion"
-    androidTestImplementation "androidx.test.ext:junit:$androidTestLibVersion"
+    androidTestImplementation "androidx.test.ext:junit-ktx:1.1.3"
     androidTestImplementation "androidx.test.ext:truth:$androidTestLibVersion"
 
     // RxSharedPreferences
@@ -72,7 +72,7 @@ dependencies {
     testImplementation "org.mockito:mockito-core:$mockitoVersion"
     testImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
     androidTestImplementation "org.mockito:mockito-android:$mockitoVersion"
-    androidTestImplementation "org.mockito.kotlin:mockito-kotlin::$mockitoKotlinVersion"
+    androidTestImplementation "org.mockito.kotlin:mockito-kotlin:$mockitoKotlinVersion"
 
     // Espresso UI Testing
     def espressoVersion = '3.4.0'

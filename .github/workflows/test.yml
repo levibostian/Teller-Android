@@ -20,6 +20,8 @@ jobs:
       uses: android-actions/setup-android@v2
 
     - name: Run unit tests (${{ matrix.module }})
+      # if test(s) fail, gradle will fail. We want the github action step to pass but let
+      # our junit-reporter make a github action check failure if it finds failed tests. 
       run: ./gradlew :${{ matrix.module }}:testDebugUnitTest || true 
 
     - name: Publish test results (${{ matrix.module }})
@@ -27,4 +29,3 @@ jobs:
       with:
         report_paths: '**/build/test-results/test*/TEST-*.xml'
         require_tests: true 
-      if: ${{ always() }} # if running tests fails, we still want to parse the test results 
